@@ -300,7 +300,7 @@ class UI {
         <h2 style="color:#f5c842;font-size:1.8em;margin:0">YOU WIN!</h2>
         <p style="font-size:1.1em;margin:0">You bought the ring and won her heart!</p>
         <p style="color:#aaa;font-size:0.9em;margin:0">
-          Thanks for playing Miner VGA.
+          Thanks for playing Miner.
         </p>
         <button class="close-btn" style="margin-top:8px" onclick="location.reload()">
           🎊 Play Again
@@ -453,6 +453,7 @@ class UI {
         focusIdx = (focusIdx + items.length - 1) % items.length;
         setFocus(focusIdx);
       } else if (e.key === 'Enter') {
+        e.preventDefault();
         items[focusIdx].click();
       }
     };

@@ -97,17 +97,23 @@ class Game {
     // World boundary (left / right / top of pavement)
     if (nx < 0) {
       // Walking off the left edge
+      this.input.clear();
       this.state = 'overlay';
       this.ui.openDragons(() => { this.state = 'playing'; this.input.clear(); });
       return;
     }
     if (nx >= this.world.width) {
       // Walking off the right edge
+      this.input.clear();
       this.state = 'overlay';
       this.ui.openDragons(() => { this.state = 'playing'; this.input.clear(); });
       return;
     }
-    if (ny < 1) return;
+    if (ny < 1) {
+      // Walking into the building row — treat as interact if player is on pavement
+      if (p.y === 1) this._handleInteract();
+      return;
+    }
 
     // Pavement (y=1) ↔ mine (y=2) boundary: only crossable at mine-entrance columns
     if ((p.y === 1 && ny === 2) || (p.y === 2 && ny === 1)) {

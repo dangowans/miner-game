@@ -370,6 +370,14 @@ class Renderer {
         break;
       }
     }
+
+    // ── Sky horizon for the building-facade row ───────────────────────────────
+    // Draw a sky-blue strip across the top of every y=0 tile (except mine-entrance
+    // arch tiles, which sit in solid rock and should stay dark).
+    if (ty === 0 && tile !== TILE.MINE_ENT) {
+      ctx.fillStyle = '#7ab8e8';
+      ctx.fillRect(px, py, ts, 8);
+    }
   }
 
   // -------------------------------------------------------------------------
