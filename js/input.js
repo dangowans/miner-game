@@ -61,7 +61,7 @@ class Input {
   // -------------------------------------------------------------------------
 
   _push(action) {
-    if (this._queue.length < 12) this._queue.push(action);
+    if (this._queue.length < MAX_INPUT_QUEUE) this._queue.push(action);
   }
 
   /** Pop the next action from the queue, or null if empty. */

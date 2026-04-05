@@ -56,7 +56,7 @@ class Game {
   // -------------------------------------------------------------------------
 
   _loop(timestamp) {
-    const dt = Math.min(timestamp - this._lastTime, 100);
+    const dt = Math.min(timestamp - this._lastTime, MAX_DELTA_TIME_MS);
     this._lastTime = timestamp;
     this._update(dt);
     this._render();

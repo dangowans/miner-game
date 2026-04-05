@@ -71,9 +71,10 @@ class UI {
       const affordable = player.money >= item.price;
       const buyable    = !owned && affordable;
       const cls        = buyable ? 'shop-item buyable' : 'shop-item disabled';
-      const note       = owned      ? ' <em>(owned)</em>'
-                       : !affordable ? ` <em class="short">(need $${item.price - player.money} more)</em>`
-                       : '';
+      let note;
+      if (owned)        note = ' <em>(owned)</em>';
+      else if (!affordable) note = ` <em class="short">(need $${item.price - player.money} more)</em>`;
+      else              note = '';
       return `<div class="${cls}" data-id="${item.id}" data-price="${item.price}">
         <strong>${item.name}</strong> — <span class="price">$${item.price}</span>${note}<br>
         <small>${item.desc}</small>

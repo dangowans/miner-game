@@ -321,7 +321,7 @@ class Renderer {
     const cx = px + hs;
 
     // Flash white during invincibility frames
-    if (player.iFrames > 0 && Math.floor(player.iFrames / 6) % 2 === 0) {
+    if (player.iFrames > 0 && Math.floor(player.iFrames / BLINK_INTERVAL) % 2 === 0) {
       return;   // Blink by skipping draw every other 6-frame window
     }
 

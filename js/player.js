@@ -93,7 +93,7 @@ class Player {
   takeDamage() {
     if (this.iFrames > 0) return false;
     this.hearts  = Math.max(0, this.hearts - 1);
-    this.iFrames = 90;   // ~1.5 s of invincibility at 60 fps
+    this.iFrames = INVINCIBILITY_FRAMES;   // ~1.5 s of invincibility at 60 fps
     if (this.hearts <= 0) { this.dead = true; return true; }
     return false;
   }

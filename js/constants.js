@@ -138,14 +138,23 @@ const HAZARD_SPREAD = 12;  // Max EMPTY tiles a water/lava spring floods
 // ---------------------------------------------------------------------------
 // Mine entrance x-range (right side of surface row)
 // ---------------------------------------------------------------------------
-const MINE_ENT_X_MIN = 22;
-const MINE_ENT_X_MAX = 24;
+const MINE_ENT_X_MIN         = 22;
+const MINE_ENT_X_MAX         = 24;
+const MINE_ENT_CLEARED_DEPTH = 2;   // Rows pre-cleared below the surface at entrance
 
 // ---------------------------------------------------------------------------
 // Player start position
 // ---------------------------------------------------------------------------
 const PLAYER_START_X = 11;
 const PLAYER_START_Y = 0;
+
+// ---------------------------------------------------------------------------
+// Player physics / UI timings
+// ---------------------------------------------------------------------------
+const INVINCIBILITY_FRAMES = 90;   // Frames of invincibility after taking damage (~1.5 s at 60 fps)
+const BLINK_INTERVAL       = 6;    // Every N frames the player sprite toggles during invincibility
+const MAX_DELTA_TIME_MS    = 100;  // Cap on per-frame dt to avoid spiral-of-death after tab switch
+const MAX_INPUT_QUEUE      = 12;   // Maximum queued input actions before dropping new ones
 
 // ---------------------------------------------------------------------------
 // Tile render colours (VGA-inspired palette)

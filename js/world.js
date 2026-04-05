@@ -26,7 +26,7 @@ class World {
     this.rowTiles      = new Map();   // y → Uint8Array[MAP_WIDTH]
     this.rowData       = new Map();   // y → Array[MAP_WIDTH] of null|object
     this.deepestGenY   = 0;           // Lowest row generated so far
-    this._rng          = this._makeRng(Date.now()); // Seeded PRNG for reproducibility within session
+    this._rng          = this._makeRng(Date.now()); // New seed each page load → different mine every game
 
     // Track spring-source water tiles (these cannot be cleared by the bucket).
     // The Set stores coordinate keys "x,y".
@@ -157,8 +157,8 @@ class World {
       for (let i = 0; i < this.width; i++) data[i] = null;
 
       for (let x = 0; x < this.width; x++) {
-        // Mine-entrance columns: first two mine rows stay pre-cleared
-        if (x >= MINE_ENT_X_MIN && y <= 2) {
+        // Mine-entrance columns: pre-clear rows down to MINE_ENT_CLEARED_DEPTH
+        if (x >= MINE_ENT_X_MIN && y <= MINE_ENT_CLEARED_DEPTH) {
           tiles[x] = TILE.EMPTY;
           continue;
         }
