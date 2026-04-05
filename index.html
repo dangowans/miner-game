@@ -74,11 +74,11 @@
       padding-bottom: 2px;
     }
     #overlay .shop-item {
-      margin: 5px 0;
-      padding: 8px 10px;
+      margin: 6px 0;
+      padding: 9px 10px;
       border-radius: 4px;
       font-size: 0.88em;
-      line-height: 1.5;
+      line-height: 1.7;
     }
     #overlay .shop-item.buyable {
       background: #1e2a1e;
@@ -98,7 +98,7 @@
     #overlay .shop-item.sell-btn:hover { background: #222a18; }
     #overlay .price  { color: #f5c842; }
     #overlay .short  { color: #ff8888; font-size: 0.85em; }
-    #overlay .bar-girl { font-size: 1.05em; margin: 14px 0; line-height: 1.6; }
+    #overlay .bar-girl { font-size: 1.05em; margin: 14px 0; line-height: 1.8; }
     #overlay .hint  { color: #aaa; font-size: 0.85em; margin-top: 8px; }
 
     #overlay .close-btn {
@@ -131,23 +131,28 @@
       background: #1a1a1a;
       border: 1px solid #333;
       border-top: none;
-      padding: 5px 10px;
+      padding: 4px 10px 5px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 0.82em;
+    }
+    #hud-stats {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       gap: 14px;
-      font-size: 0.82em;
-      min-height: 34px;
+      min-height: 22px;
     }
     #hud-hearts { font-size: 1.05em; letter-spacing: 1px; color: #ff8888; }
     .hud-sep { color: #444; }
     #hud-msg {
-      flex: 1;
       color: #aad4ff;
       font-size: 0.85em;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      min-height: 16px;
     }
 
     /* ── D-pad controls ── */
@@ -198,12 +203,14 @@
 
   <!-- HUD -->
   <div id="hud">
-    <span id="hud-hearts">♥♥♥</span>
-    <span class="hud-sep">|</span>
-    <span>💰&nbsp;<span id="hud-money">0</span></span>
-    <span class="hud-sep">|</span>
-    <span>💎&nbsp;<span id="hud-gems">0</span>/<span id="hud-cap">10</span></span>
-    <span id="hud-tools"></span>
+    <div id="hud-stats">
+      <span id="hud-hearts">♥♥♥</span>
+      <span class="hud-sep">|</span>
+      <span>💰&nbsp;<span id="hud-money">0</span></span>
+      <span class="hud-sep">|</span>
+      <span>💎&nbsp;<span id="hud-gems">0</span>/<span id="hud-cap">10</span></span>
+      <span id="hud-tools"></span>
+    </div>
     <span id="hud-msg"></span>
   </div>
 
@@ -219,6 +226,7 @@
 
   <!-- Game scripts (order matters – constants first) -->
   <script src="js/constants.js"></script>
+  <script src="js/audio.js"></script>
   <script src="js/world.js"></script>
   <script src="js/player.js"></script>
   <script src="js/renderer.js"></script>

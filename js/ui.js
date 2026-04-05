@@ -110,6 +110,7 @@ class UI {
         else if (id === 'bag')         { player.hasBag = true; player.maxGems = 20; }
         else if (id === 'ring')        { player.hasRing = true; }
         player.setMessage(`Bought: ${id}!`);
+        sounds.playTransaction();
         this._closeOverlay();
       });
     });
@@ -191,6 +192,7 @@ class UI {
         if (player.money < DRINK_PRICE) return;
         player.money -= DRINK_PRICE;
         player.drinksBought++;
+        sounds.playTransaction();
         this._closeOverlay();
         onClose(false);
       });
@@ -256,6 +258,7 @@ class UI {
       healBtn.addEventListener('click', () => {
         const restored = player.heal();
         player.setMessage(`Restored ${restored} heart${restored !== 1 ? 's' : ''}!`);
+        sounds.playTransaction();
         this._closeOverlay();
       });
     }
@@ -266,6 +269,7 @@ class UI {
         if (player.buyExtraHeart()) {
           player.setMessage(`New heart slot unlocked! (${player.maxHearts} max)`);
         }
+        sounds.playTransaction();
         this._closeOverlay();
       });
     }
@@ -358,6 +362,7 @@ class UI {
       sellBtn.addEventListener('click', () => {
         const earned = player.sellGems();
         player.setMessage(`Sold ore for $${earned}!`);
+        sounds.playTransaction();
         this._closeOverlay();
       });
     }
