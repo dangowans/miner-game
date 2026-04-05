@@ -145,6 +145,12 @@ const SHOP_ITEMS = [
 ];
 
 // ---------------------------------------------------------------------------
+// Bar
+// ---------------------------------------------------------------------------
+const DRINK_PRICE       = 10;   // Cost of one drink at the bar
+const DRINKS_TO_UNLOCK  = 6;    // Drinks required before the girl accepts a proposal
+
+// ---------------------------------------------------------------------------
 // Doctor services
 // ---------------------------------------------------------------------------
 const HEAL_PRICE        = 40;   // Cost to restore 1 heart

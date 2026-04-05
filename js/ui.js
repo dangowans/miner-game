@@ -119,8 +119,11 @@ class UI {
   // -------------------------------------------------------------------------
 
   openBar(player, onClose) {
+    const drinksLeft = Math.max(0, DRINKS_TO_UNLOCK - player.drinksBought);
+    const unlockedByDrinks = player.drinksBought >= DRINKS_TO_UNLOCK;
+
     let html;
-    if (player.hasRing) {
+    if (unlockedByDrinks && player.hasRing) {
       html = `
         <div style="text-align:center;padding-top:20px">
           <p style="font-size:1.1em">You walk up to her with the ring in your hand…</p>
@@ -132,7 +135,27 @@ class UI {
             🎊 Play Again
           </button>
         </div>`;
+    } else if (!unlockedByDrinks) {
+      const drinkLines = [
+        `"I don't know you well enough yet. Buy me a drink?"`,
+        `"Slow down, cowboy. A few more rounds first."`,
+        `"You seem nice. Keep the drinks coming and we'll see…"`,
+        `"I appreciate the company. Another round?"`,
+      ];
+      const line = drinkLines[Math.floor(Math.random() * drinkLines.length)];
+      const canAfford = player.money >= DRINK_PRICE;
+      const drinkBtnCls = canAfford ? 'shop-item buyable' : 'shop-item disabled';
+      const drinkNote = canAfford ? '' : ` <em class="short">(need $${DRINK_PRICE - player.money} more)</em>`;
+      html = `
+        <h2>🍺 The Bar</h2>
+        <p class="bar-girl">👱‍♀️ <em>${line}</em></p>
+        <p class="hint">Buy her ${drinksLeft} more drink${drinksLeft !== 1 ? 's' : ''} to win her over. (${player.drinksBought}/${DRINKS_TO_UNLOCK} bought)</p>
+        <div class="${drinkBtnCls}" id="buy-drink-btn">
+          <strong>🍺 Buy a Drink</strong> — <span class="price">$${DRINK_PRICE}</span>${drinkNote}
+        </div>
+        <button class="close-btn" id="overlay-close">Close &nbsp;<kbd>Esc</kbd></button>`;
     } else {
+      // Drinks done, just need the ring
       const lines = [
         `"Hey there, miner. A girl needs security — and maybe a ring…"`,
         `"Come back when you have something special for me."`,
@@ -146,11 +169,23 @@ class UI {
         <p class="hint">Hint: buy a ring at the Shop for $${SHOP_ITEMS.find(i => i.id === 'ring').price}.</p>
         <button class="close-btn" id="overlay-close">Close &nbsp;<kbd>Esc</kbd></button>`;
     }
+
     this.overlay.innerHTML = html;
     this._openOverlay((win) => onClose(win));
 
+    const drinkBtn = document.getElementById('buy-drink-btn');
+    if (drinkBtn && drinkBtn.classList.contains('buyable')) {
+      drinkBtn.addEventListener('click', () => {
+        if (player.money < DRINK_PRICE) return;
+        player.money -= DRINK_PRICE;
+        player.drinksBought++;
+        this._closeOverlay();
+        onClose(false);
+      });
+    }
+
     document.getElementById('overlay-close').addEventListener('click', () => {
-      const isWin = player.hasRing;
+      const isWin = unlockedByDrinks && player.hasRing;
       this._closeOverlay();
       onClose(isWin);
     });

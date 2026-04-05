@@ -31,6 +31,7 @@ class Player {
     this.hasExtinguisher = false;  // Converts lava to stone (TOOL_USES uses)
     this.hasBag         = false;
     this.hasRing        = false;
+    this.drinksBought   = 0;
 
     // Tool durability (remaining uses before the tool breaks)
     this.pickUses         = 0;
