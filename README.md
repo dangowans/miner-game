@@ -69,7 +69,7 @@ The pavement **cannot be crossed** downward except at the mine entrance (x=22–
 |------|------:|-------|
 | ⛏ Shovel | $50 | Reduces dirt reveal effort (−12 probes / tile) |
 | ⚒ Pick | $100 | Walk into **stone** to break it → empty |
-| 🪣 Bucket | $80 | Walk into spread **water** to clear it |
+| 🪣 Bucket | $80 | Walk into spread **water** to clear it to empty — free passage, no heart cost |
 | 🧯 Fire Extinguisher | $120 | Walk into **lava** to convert it to stone (no damage) |
 | 🎒 Large Bag | $75 | Doubles gem carry capacity (10 → 20) |
 | 💍 Ring | $500 | Buy this, then visit the Bar to win |
@@ -81,8 +81,8 @@ The pavement **cannot be crossed** downward except at the mine entrance (x=22–
 ### 💧 Water Spring
 - Hidden inside some dirt tiles.
 - When triggered (probe or dig-in), the source tile becomes **water** and the spring **floods up to 12 adjacent empty spaces**.
-- **Water (spread tiles):** blocked normally — use the **Bucket** to walk through.
-- **Water (spring source):** permanently blocked; the Bucket **cannot** clear the source.
+- **Water (spread tiles):** walk through at the cost of **1 heart** — the tile clears to empty after wading. Use the **Bucket** to clear it for free (no damage).
+- **Water (spring source):** walk through at the cost of **1 heart** — the spring keeps refilling so the source tile stays as water. The Bucket **cannot** clear the source.
 
 ### 🔥 Lava
 - When triggered, lava floods up to 12 adjacent empty spaces.
@@ -99,8 +99,8 @@ The pavement **cannot be crossed** downward except at the mine entrance (x=22–
 ## Health System
 
 - The player starts with **3 hearts ♥**.
-- Each hazard hit (lava, or water that bursts adjacent) costs **1 heart**.
-- A short invincibility window prevents multiple hits from the same hazard.
+- Each hazard interaction costs **1 heart**: wading through water or walking into lava without gear.
+- A short invincibility window prevents multiple rapid hits.
 - Hearts reach **0 → game over**.
 
 ### Doctor Services (surface, door at x=13)

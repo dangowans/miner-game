@@ -118,13 +118,13 @@ class Game {
       // Stone revealed by digging: do NOT move (need pick on next move)
       if (newTile === TILE.STONE) return;
 
+      // Hazard tiles revealed by digging are entered via their own helpers
+      if (newTile === TILE.LAVA)  { this._enterLava(p, nx, ny);  return; }
+      if (newTile === TILE.WATER) { this._enterWater(p, nx, ny); return; }
+
       if (this.world.isPassable(nx, ny)) {
-        if (newTile === TILE.LAVA) {
-          this._enterLava(p, nx, ny);
-        } else {
-          p.x = nx; p.y = ny;
-          this._afterMove(nx, ny);
-        }
+        p.x = nx; p.y = ny;
+        this._afterMove(nx, ny);
       }
       return;
     }
@@ -142,22 +142,13 @@ class Game {
       return;
     }
 
-    // ── 3. Water: needs bucket (spring source always blocked) ─────────────
+    // ── 3. Water: bucket clears spread water (free); wading costs 1 heart ─
     if (targetTile === TILE.WATER) {
-      if (p.hasBucket && !this.world.isSpringSource(nx, ny)) {
-        this.world.setTile(nx, ny, TILE.EMPTY);
-        p.x = nx; p.y = ny;
-        p.setMessage('🪣 Cleared water with bucket.');
-        this._afterMove(nx, ny);
-      } else if (this.world.isSpringSource(nx, ny)) {
-        p.setMessage('💧 That\'s the spring source – the bucket can\'t stop it.');
-      } else {
-        p.setMessage('💧 Water blocks your path. Buy a Bucket at the Shop.');
-      }
+      this._enterWater(p, nx, ny);
       return;
     }
 
-    // ── 4. Lava: extinguisher or damage ───────────────────────────────────
+    // ── 4. Lava: extinguisher converts to stone; otherwise costs 1 heart ──
     if (targetTile === TILE.LAVA) {
       this._enterLava(p, nx, ny);
       return;
@@ -174,7 +165,7 @@ class Game {
     }
   }
 
-  /** Handle player entering (or attempting to enter) a lava tile. */
+  /** Handle player entering a lava tile. */
   _enterLava(p, nx, ny) {
     if (p.hasExtinguisher) {
       // Convert lava to stone – player stays put, needs pick to continue
@@ -185,6 +176,33 @@ class Game {
       p.x = nx; p.y = ny;
       this.world.setTile(nx, ny, TILE.EMPTY);
       const died = this._applyHazardDamage('lava');
+      if (!died) this._afterMove(nx, ny);
+    }
+  }
+
+  /**
+   * Handle player entering a water tile.
+   * - With bucket (spread water only): clears tile to empty, no damage.
+   * - Otherwise: wade through at the cost of 1 heart.
+   *   Spread water is cleared to empty after wading; spring sources refill
+   *   and stay as water (their tile is never cleared).
+   */
+  _enterWater(p, nx, ny) {
+    const isSource = this.world.isSpringSource(nx, ny);
+    if (p.hasBucket && !isSource) {
+      // Bucket clears spread water – free passage, no damage
+      this.world.setTile(nx, ny, TILE.EMPTY);
+      p.x = nx; p.y = ny;
+      p.setMessage('🪣 Cleared water with bucket.');
+      this._afterMove(nx, ny);
+    } else {
+      // Wading through: 1 heart damage
+      p.x = nx; p.y = ny;
+      if (!isSource) {
+        // Spread water is waded through and clears; spring source keeps flowing
+        this.world.setTile(nx, ny, TILE.EMPTY);
+      }
+      const died = this._applyHazardDamage('water');
       if (!died) this._afterMove(nx, ny);
     }
   }
@@ -210,7 +228,9 @@ class Game {
       this.state = 'dead';
       this.ui.showDead();
     } else {
-      const what = hazardType === 'lava' ? '🔥 Lava burn' : '💧 Hazard hit';
+      const what = hazardType === 'lava'  ? '🔥 Lava burn'
+                 : hazardType === 'water' ? '💧 Waded through water'
+                 : '⚠️ Hazard hit';
       p.setMessage(`${what}! (${p.hearts}/${p.maxHearts} ♥ remaining)`);
     }
     return died;

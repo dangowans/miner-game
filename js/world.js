@@ -290,8 +290,9 @@ class World {
    * True if the player may enter (x, y).
    * DIRT is NOT passable – the game handles dig-in before calling this.
    * STONE is NOT passable – the game checks for pick before calling this.
-   * WATER is NOT passable – the game checks for bucket before calling this.
-   * LAVA is passable but damaging – game.js applies the damage.
+   * WATER and LAVA are handled explicitly by _enterWater / _enterLava in
+   * game.js (both cost 1 heart to wade/walk through); they are NOT listed
+   * here so the dig-in fallback path never silently ignores them.
    */
   isPassable(x, y) {
     const t = this.getTile(x, y);
