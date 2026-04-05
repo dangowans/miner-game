@@ -471,6 +471,16 @@ class Game {
       return;
     }
 
+    if (checkTile(TILE.JEWELER)) {
+      this.state = 'overlay';
+      this.ui.openJeweler(p, () => {
+        this.state = 'playing';
+        this.input.clear();
+        this.ui.updateHUD(p);
+      });
+      return;
+    }
+
     if (checkTile(TILE.MINE_ENT)) {
       p.setMessage('⛏ Walk down (↓ / S) to enter the mine.');
     }
