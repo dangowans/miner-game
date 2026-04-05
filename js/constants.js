@@ -3,9 +3,20 @@
 // ---------------------------------------------------------------------------
 // Map geometry
 // ---------------------------------------------------------------------------
-const TILE_SIZE   = 32;
-const MAP_WIDTH   = 25;
-const MAP_HEIGHT  = 20;
+const TILE_SIZE      = 32;
+const MAP_WIDTH      = 25;   // Fixed horizontal width (tiles)
+
+// Viewport – what the canvas shows at any one time
+const VIEWPORT_COLS  = 25;   // Must equal MAP_WIDTH
+const VIEWPORT_ROWS  = 15;   // Rows visible on screen
+
+// Canvas pixel dimensions
+const CANVAS_W       = VIEWPORT_COLS * TILE_SIZE;  // 800
+const CANVAS_H       = VIEWPORT_ROWS * TILE_SIZE;  // 480
+
+// Chunk generation
+const CHUNK_SIZE     = 30;   // Mine rows generated per chunk
+const GEN_LOOKAHEAD  = 20;   // Generate a new chunk when player is within this many rows of the deepest generated row
 
 // ---------------------------------------------------------------------------
 // Tile type IDs
