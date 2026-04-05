@@ -42,6 +42,7 @@ const TILE = Object.freeze({
   BAG:      15,  // Revealed large-bag item (also sold at shop)
   STONE:    16,  // Solid stone block – impassable without a pick
   PAVEMENT: 17,  // Surface pavement row (y=1) – walkable, separates buildings from mine
+  ELEVATOR: 18,  // Elevator shaft (rightmost column x=24 in the mine) – press E to call/ride
 });
 
 // ---------------------------------------------------------------------------
@@ -68,6 +69,11 @@ const GEM_VALUE = Object.freeze({
   [HIDDEN.GEM_MED]:  30,
   [HIDDEN.GEM_HIGH]: 75,
 });
+
+// ---------------------------------------------------------------------------
+// Tool durability (needed before SHOP_ITEMS template literals reference it)
+// ---------------------------------------------------------------------------
+const TOOL_USES = 10;  // Uses before pick / bucket / fire-extinguisher breaks
 
 // ---------------------------------------------------------------------------
 // Shop items
@@ -128,16 +134,21 @@ const START_HEARTS      = 3;
 // ---------------------------------------------------------------------------
 // Reveal thresholds
 // ---------------------------------------------------------------------------
-const REVEAL_MIN        = 18;   // Minimum probe count to reveal a dirt tile
-const REVEAL_MAX        = 60;   // Maximum probe count to reveal a dirt tile
-const SHOVEL_REDUCTION  = 12;   // Shovel reduces dirt reveal threshold by this amount
-                                // (the pick has no effect on dirt – it only breaks stone)
+const REVEAL_MIN        = 3;   // Minimum probe count to reveal a dirt tile
+const REVEAL_MAX        = 12;  // Maximum probe count to reveal a dirt tile
+const SHOVEL_REDUCTION  = 5;   // Shovel reduces dirt reveal threshold by this amount
+                                // (the pick has no effect on dirt - it only breaks stone)
 
 // ---------------------------------------------------------------------------
 // Hazard spread
 // ---------------------------------------------------------------------------
 const HAZARD_SPREAD = 12;  // Max EMPTY tiles a water/lava spring floods when triggered
-const TOOL_USES     = 10;  // Uses before pick / bucket / fire-extinguisher breaks
+
+// ---------------------------------------------------------------------------
+// Elevator
+// ---------------------------------------------------------------------------
+const ELEVATOR_CALL_PRICE = 15;  // Cost to call the elevator to your floor
+const ELEVATOR_RIDE_PRICE = 25;  // Cost to board and ride up to the surface
 
 // ---------------------------------------------------------------------------
 // Mine entrance x-range (right side of surface row)
@@ -155,8 +166,8 @@ const PLAYER_START_Y = 1;   // y=1 is the pavement row
 // ---------------------------------------------------------------------------
 // Player physics / UI timings
 // ---------------------------------------------------------------------------
-const INVINCIBILITY_FRAMES = 90;   // Blink-animation frames after taking damage (~1.5 s at 60 fps)
-const BLINK_INTERVAL       = 6;    // Every N frames the player sprite toggles during invincibility
+const INVINCIBILITY_FRAMES = 60;   // Blink-animation frames after taking damage (~1 s at 60 fps)
+const BLINK_INTERVAL       = 6;    // Every N frames the player sprite dims during invincibility
 const MAX_DELTA_TIME_MS    = 100;  // Cap on per-frame dt to avoid spiral-of-death after tab switch
 const MAX_INPUT_QUEUE      = 12;   // Maximum queued input actions before dropping new ones
 
@@ -182,4 +193,5 @@ const TILE_COLOR = {
   [TILE.BAG]:      '#aa8833',
   [TILE.STONE]:    '#5a5a5a',
   [TILE.PAVEMENT]: '#888070',
+  [TILE.ELEVATOR]: '#2a2a50',
 };

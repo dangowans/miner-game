@@ -37,6 +37,10 @@ class Player {
     this.bucketUses       = 0;
     this.extinguisherUses = 0;
 
+    // Elevator state
+    this.elevatorCalled = false;  // True after paying the call fee
+    this._elevatorRode  = false;  // Internal flag: set true when ride completed
+
     // Health
     this.hearts    = START_HEARTS;
     this.maxHearts = START_HEARTS;

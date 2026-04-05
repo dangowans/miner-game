@@ -249,14 +249,15 @@ class UI {
 
   showDead() {
     this.overlay.innerHTML = `
-      <div style="text-align:center;padding-top:30px">
-        <p style="font-size:3em">💀</p>
-        <h2 style="color:#ff4444;font-size:1.8em;margin:12px 0">YOU DIED</h2>
-        <p>The mine claimed another victim.</p>
-        <p style="color:#aaa;margin-top:8px;font-size:0.9em">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                  height:100%;gap:14px;padding:20px;text-align:center">
+        <p style="font-size:3em;line-height:1">💀</p>
+        <h2 style="color:#ff4444;font-size:1.8em;margin:0">YOU DIED</h2>
+        <p style="margin:0">The mine claimed another victim.</p>
+        <p style="color:#aaa;font-size:0.9em;margin:0">
           Tip: visit the Doctor to increase your max hearts.
         </p>
-        <button class="close-btn" style="margin-top:28px" onclick="location.reload()">
+        <button class="close-btn" style="margin-top:8px" onclick="location.reload()">
           🔄 Try Again
         </button>
       </div>`;
@@ -265,18 +266,93 @@ class UI {
 
   showWin() {
     this.overlay.innerHTML = `
-      <div style="text-align:center;padding-top:24px">
-        <p style="font-size:2.5em">💍🎉</p>
-        <h2 style="color:#f5c842;font-size:1.8em;margin:10px 0">YOU WIN!</h2>
-        <p style="font-size:1.1em">You bought the ring and won her heart!</p>
-        <p style="color:#aaa;margin-top:10px;font-size:0.9em">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                  height:100%;gap:14px;padding:20px;text-align:center">
+        <p style="font-size:2.5em;line-height:1">💍🎉</p>
+        <h2 style="color:#f5c842;font-size:1.8em;margin:0">YOU WIN!</h2>
+        <p style="font-size:1.1em;margin:0">You bought the ring and won her heart!</p>
+        <p style="color:#aaa;font-size:0.9em;margin:0">
           Thanks for playing Miner VGA.
         </p>
-        <button class="close-btn" style="margin-top:28px" onclick="location.reload()">
+        <button class="close-btn" style="margin-top:8px" onclick="location.reload()">
           🎊 Play Again
         </button>
       </div>`;
     this._openOverlay(() => {});
+  }
+
+  // -------------------------------------------------------------------------
+  // Elevator overlay
+  // -------------------------------------------------------------------------
+
+  openElevator(player, onClose) {
+    const callPrice = ELEVATOR_CALL_PRICE;
+    const ridePrice = ELEVATOR_RIDE_PRICE;
+
+    const canCall    = !player.elevatorCalled && player.money >= callPrice;
+    const canRide    = player.elevatorCalled  && player.money >= ridePrice;
+    const calledNote = player.elevatorCalled
+      ? ' <em style="color:#88ff88">(elevator is here)</em>'
+      : '';
+
+    const callHtml = player.elevatorCalled
+      ? `<div class="shop-item disabled">📞 Elevator already called${calledNote}</div>`
+      : canCall
+        ? `<div class="shop-item buyable" id="elevator-call-btn">
+             📞 Call elevator — <span class="price">$${callPrice}</span>
+             <br><small>Brings the lift to your floor</small>
+           </div>`
+        : `<div class="shop-item disabled">📞 Call elevator — $${callPrice}
+             <em class="short">(need $${callPrice - player.money} more)</em>
+           </div>`;
+
+    const rideHtml = !player.elevatorCalled
+      ? `<div class="shop-item disabled">🛗 Board &amp; ride to surface — $${ridePrice}
+           <br><small>Call the elevator first</small>
+         </div>`
+      : canRide
+        ? `<div class="shop-item buyable" id="elevator-ride-btn">
+             🛗 Board &amp; ride to surface — <span class="price">$${ridePrice}</span>
+             <br><small>Instantly returns you to the surface</small>
+           </div>`
+        : `<div class="shop-item disabled">🛗 Board &amp; ride to surface — $${ridePrice}
+             <em class="short">(need $${ridePrice - player.money} more)</em>
+           </div>`;
+
+    this.overlay.innerHTML = `
+      <h2>🛗 Mine Elevator</h2>
+      <p class="shop-balance">Your money: <strong>$${player.money}</strong></p>
+      <p class="shop-balance" style="color:#aaa;font-size:0.85em">
+        Depth: ${player.y}m below surface
+      </p>
+      <div class="section-label">STEP 1 — CALL</div>
+      ${callHtml}
+      <div class="section-label">STEP 2 — BOARD</div>
+      ${rideHtml}
+      <button class="close-btn" id="overlay-close">✕ Close &nbsp;<kbd>Esc</kbd></button>
+    `;
+    this._openOverlay(onClose);
+
+    const callBtn = document.getElementById('elevator-call-btn');
+    if (callBtn) {
+      callBtn.addEventListener('click', () => {
+        player.money -= callPrice;
+        player.elevatorCalled = true;
+        player.setMessage(`📞 Elevator called! Board it to ride up. ($${ridePrice} to ride)`);
+        this._closeOverlay();
+      });
+    }
+
+    const rideBtn = document.getElementById('elevator-ride-btn');
+    if (rideBtn) {
+      rideBtn.addEventListener('click', () => {
+        player.money -= ridePrice;
+        player.elevatorCalled = false;
+        player._elevatorRode  = true;
+        player.setMessage('🛗 Elevator ride to the surface!');
+        this._closeOverlay();
+      });
+    }
   }
 
   // -------------------------------------------------------------------------

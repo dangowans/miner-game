@@ -380,6 +380,22 @@ class Game {
       return;
     }
 
+    // Elevator shaft: x = rightmost column, y >= 2 (inside the mine)
+    if (p.x === this.world.width - 1 && p.y >= 2) {
+      this.state = 'overlay';
+      this.ui.openElevator(p, () => {
+        this.state = 'playing';
+        this.ui.updateHUD(p);
+        // If the player rode the elevator, move them to surface pavement
+        if (p._elevatorRode) {
+          p._elevatorRode = false;
+          p.x = this.world.width - 1;
+          p.y = PLAYER_START_Y;
+        }
+      });
+      return;
+    }
+
     if (checkTile(TILE.MINE_ENT)) {
       p.setMessage('⛏ Walk down (↓ / S) to enter the mine.');
     }

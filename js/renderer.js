@@ -308,6 +308,28 @@ class Renderer {
         ctx.fillText('STONE', cx, cy + 3);
         break;
       }
+
+      case TILE.ELEVATOR: {
+        // Dark shaft with vertical cable and call-button marker
+        ctx.fillStyle = '#1e1e3a';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        // Vertical cable lines
+        ctx.fillStyle = '#4a4a7a';
+        ctx.fillRect(cx - 3, py + 1, 2, ts - 2);
+        ctx.fillRect(cx + 1, py + 1, 2, ts - 2);
+        // Horizontal guide rails at edges
+        ctx.fillStyle = '#383868';
+        ctx.fillRect(px + 2, py + 4,  4, 2);
+        ctx.fillRect(px + 2, py + ts - 6, 4, 2);
+        ctx.fillRect(px + ts - 6, py + 4,  4, 2);
+        ctx.fillRect(px + ts - 6, py + ts - 6, 4, 2);
+        // 'E' hint glyph
+        ctx.fillStyle = '#6a6aaa';
+        ctx.font      = 'bold 9px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('[E]', cx, cy + 3);
+        break;
+      }
     }
   }
 
@@ -355,10 +377,11 @@ class Renderer {
     const hs = ts / 2;
     const cx = px + hs;
 
-    // Flash white during invincibility frames
-    if (player.iFrames > 0 && Math.floor(player.iFrames / BLINK_INTERVAL) % 2 === 0) {
-      return;   // Blink by skipping draw every other 6-frame window
-    }
+    // During invincibility frames, dim the sprite every other 6-frame window
+    // (draw at low alpha instead of disappearing so the player stays visible)
+    const blink = player.iFrames > 0 &&
+                  Math.floor(player.iFrames / BLINK_INTERVAL) % 2 === 0;
+    if (blink) this.ctx.globalAlpha = 0.35;
 
     // Legs
     this.ctx.fillStyle = '#2a1a08';
@@ -393,6 +416,9 @@ class Renderer {
     this.ctx.beginPath();
     this.ctx.arc(cx, py + 1, 10, 0, Math.PI * 2);
     this.ctx.fill();
+
+    // Reset alpha after dimmed-blink draw
+    if (blink) this.ctx.globalAlpha = 1;
   }
 
   // -------------------------------------------------------------------------

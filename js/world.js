@@ -147,6 +147,12 @@ class World {
       for (let i = 0; i < this.width; i++) data[i] = null;
 
       for (let x = 0; x < this.width; x++) {
+        // Elevator shaft: rightmost column is always the elevator shaft
+        if (x === this.width - 1) {
+          tiles[x] = TILE.ELEVATOR;
+          continue;
+        }
+
         // Mine-entrance columns: pre-clear rows down to MINE_ENT_CLEARED_DEPTH
         if (x >= MINE_ENT_X_MIN && y <= MINE_ENT_CLEARED_DEPTH) {
           tiles[x] = TILE.EMPTY;
@@ -313,6 +319,7 @@ class World {
       case TILE.SHOVEL:
       case TILE.PICK:
       case TILE.BAG:
+      case TILE.ELEVATOR:   // Elevator shaft – freely walkable; press E to interact
         return true;
       case TILE.BUILDING:
       case TILE.DIRT:
