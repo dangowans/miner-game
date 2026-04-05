@@ -43,9 +43,9 @@ class UI {
 
     const tools = [];
     if (player.hasShovel)       tools.push('⛏');
-    if (player.hasPick)         tools.push('⚒');
-    if (player.hasBucket)       tools.push('🪣');
-    if (player.hasExtinguisher) tools.push('🧯');
+    if (player.hasPick)         tools.push(`⚒×${player.pickUses}`);
+    if (player.hasBucket)       tools.push(`🪣×${player.bucketUses}`);
+    if (player.hasExtinguisher) tools.push(`🧯×${player.extinguisherUses}`);
     if (player.hasBag)          tools.push('🎒×2');
     if (player.hasRing)         tools.push('💍');
     this._hudTools.textContent = tools.join(' ');
@@ -72,9 +72,17 @@ class UI {
       const buyable    = !owned && affordable;
       const cls        = buyable ? 'shop-item buyable' : 'shop-item disabled';
       let note;
-      if (owned)        note = ' <em>(owned)</em>';
-      else if (!affordable) note = ` <em class="short">(need $${item.price - player.money} more)</em>`;
-      else              note = '';
+      if (owned) {
+        const usesMap = { pick: player.pickUses, bucket: player.bucketUses, extinguisher: player.extinguisherUses };
+        const uses    = usesMap[item.id] ?? null;
+        note = uses !== null
+          ? ` <em>(owned — ${uses} use${uses !== 1 ? 's' : ''} left)</em>`
+          : ' <em>(owned)</em>';
+      } else if (!affordable) {
+        note = ` <em class="short">(need $${item.price - player.money} more)</em>`;
+      } else {
+        note = '';
+      }
       return `<div class="${cls}" data-id="${item.id}" data-price="${item.price}">
         <strong>${item.name}</strong> — <span class="price">$${item.price}</span>${note}<br>
         <small>${item.desc}</small>
@@ -114,9 +122,9 @@ class UI {
         if (player.money < price) return;
         player.money -= price;
         if      (id === 'shovel')      { player.hasShovel = true; }
-        else if (id === 'pick')        { player.hasPick   = true; }
-        else if (id === 'bucket')      { player.hasBucket = true; }
-        else if (id === 'extinguisher'){ player.hasExtinguisher = true; }
+        else if (id === 'pick')        { player.hasPick = true;   player.pickUses = TOOL_USES; }
+        else if (id === 'bucket')      { player.hasBucket = true; player.bucketUses = TOOL_USES; }
+        else if (id === 'extinguisher'){ player.hasExtinguisher = true; player.extinguisherUses = TOOL_USES; }
         else if (id === 'bag')         { player.hasBag = true; player.maxGems = 20; }
         else if (id === 'ring')        { player.hasRing = true; }
         player.setMessage(`Bought: ${id}!`);

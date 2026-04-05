@@ -5,11 +5,14 @@
  *
  * Health system:
  *   - Starts with START_HEARTS (3) hearts out of START_HEARTS max.
- *   - Walking into a hazard tile (lava / water burst) costs 1 heart.
+ *   - Walking into a hazard tile (lava / water) costs 1 heart.
  *   - Hearts reach 0 → dead.
  *   - Visit the Doctor on the surface to restore hearts (HEAL_PRICE per heart).
  *   - Also buy additional max-heart slots (EXTRA_HEART_PRICE each, up to MAX_HEARTS=6).
- *   - Short invincibility window after each hit prevents multi-hit from same hazard.
+ *
+ * Tool durability:
+ *   - Pick, bucket, and fire extinguisher each last TOOL_USES uses.
+ *   - When uses reach 0 the tool breaks (hasTool → false) and must be replaced.
  */
 class Player {
   constructor() {
@@ -23,11 +26,16 @@ class Player {
 
     // Tools / one-time upgrades
     this.hasShovel      = false;
-    this.hasPick        = false;   // Breaks stone blocks
-    this.hasBucket      = false;   // Clears spread water (not spring source)
-    this.hasExtinguisher = false;  // Converts lava to stone instead of taking damage
+    this.hasPick        = false;   // Breaks stone blocks (TOOL_USES uses)
+    this.hasBucket      = false;   // Clears spread water (TOOL_USES uses; not spring source)
+    this.hasExtinguisher = false;  // Converts lava to stone (TOOL_USES uses)
     this.hasBag         = false;
     this.hasRing        = false;
+
+    // Tool durability (remaining uses before the tool breaks)
+    this.pickUses         = 0;
+    this.bucketUses       = 0;
+    this.extinguisherUses = 0;
 
     // Health
     this.hearts    = START_HEARTS;

@@ -18,18 +18,15 @@
  *             is passable (gems, empty, items).  If stone is revealed the
  *             player still needs a pick to enter on the next move.
  *
- *   STONE  → impassable without pick.  With pick: breaks to EMPTY, player
- *             moves there.  (Pick has NO effect on dirt reveal speed.)
+ *   LAVA   → lava source: impassable; walking into it triggers re-spread and costs
+ *             1 heart.  With fire extinguisher: lava → STONE (no damage, player stays
+ *             put, extinguisher loses 1 use).  Spread lava: player moves onto it,
+ *             tile remains, costs 1 heart.
  *
- *   WATER  → impassable normally.
- *             With bucket: non-source water clears to EMPTY, player moves
- *             there.  Spring-source water is ALWAYS blocked (can never be
- *             cleared by the bucket).
- *
- *   LAVA   → without fire extinguisher: 1 heart damage, tile → EMPTY,
- *             player moves there.
- *             With fire extinguisher: lava → STONE (no damage, player stays
- *             put).  Player can then break the stone with a pick.
+ *   WATER  → spring source: impassable; walking into it triggers re-spread and costs
+ *             1 heart.  Spread water: player moves onto it, tile remains, costs 1
+ *             heart.  With bucket: non-source spread water clears to EMPTY (free
+ *             passage), bucket loses 1 use.
  *
  * ── Reveal mechanic ─────────────────────────────────────────────────────────
  *   After each valid move world.probeAdjacent() increments the probe counter
@@ -134,7 +131,14 @@ class Game {
       if (p.hasPick) {
         this.world.setTile(nx, ny, TILE.EMPTY);
         p.x = nx; p.y = ny;
-        p.setMessage('⚒ Stone broken!');
+        p.pickUses--;
+        if (p.pickUses <= 0) {
+          p.hasPick   = false;
+          p.pickUses  = 0;
+          p.setMessage('⚒ Stone broken! Pick broke — buy a new one.');
+        } else {
+          p.setMessage(`⚒ Stone broken! (${p.pickUses} use${p.pickUses !== 1 ? 's' : ''} left)`);
+        }
         this._afterMove(nx, ny);
       } else {
         p.setMessage('🪨 You need a Pick to break stone.');
@@ -161,16 +165,32 @@ class Game {
     }
   }
 
-  /** Handle player entering a lava tile. */
+  /**
+   * Handle player entering a lava tile.
+   *
+   * - Extinguisher (any lava): converts to STONE, player stays, uses 1 charge.
+   * - Lava source (no extinguisher): impassable; re-spreads and deals 1 heart.
+   * - Spread lava (no extinguisher): player moves onto it, tile stays, deals 1 heart.
+   */
   _enterLava(p, nx, ny) {
     if (p.hasExtinguisher) {
-      // Convert lava to stone – player stays put, needs pick to continue
+      // Extinguisher: convert to stone regardless of source vs spread
       this.world.setTile(nx, ny, TILE.STONE);
-      p.setMessage('🧯 Lava extinguished → stone! Use your Pick to break through.');
+      p.extinguisherUses--;
+      if (p.extinguisherUses <= 0) {
+        p.hasExtinguisher   = false;
+        p.extinguisherUses  = 0;
+        p.setMessage('🧯 Lava → stone! Extinguisher used up — buy a new one.');
+      } else {
+        p.setMessage(`🧯 Lava → stone! (${p.extinguisherUses} use${p.extinguisherUses !== 1 ? 's' : ''} left) Use Pick to enter.`);
+      }
+    } else if (this.world.isLavaSource(nx, ny)) {
+      // Lava source: impassable; re-spread and deal damage
+      this.world.spreadHazard(nx, ny, TILE.LAVA);
+      this._applyHazardDamage('lava_source');
     } else {
-      // Take 1 heart damage, convert tile to empty, move there
+      // Spread lava: player moves onto it, tile stays, deal damage
       p.x = nx; p.y = ny;
-      this.world.setTile(nx, ny, TILE.EMPTY);
       const died = this._applyHazardDamage('lava');
       if (!died) this._afterMove(nx, ny);
     }
@@ -178,26 +198,34 @@ class Game {
 
   /**
    * Handle player entering a water tile.
-   * - With bucket (spread water only): clears tile to empty, no damage.
-   * - Otherwise: wade through at the cost of 1 heart.
-   *   Spread water is cleared to empty after wading; spring sources refill
-   *   and stay as water (their tile is never cleared).
+   *
+   * - Spring source (always): impassable; re-spreads and deals 1 heart.
+   * - Spread water + bucket: clears tile to EMPTY, free passage, uses 1 bucket charge.
+   * - Spread water (no bucket): player moves onto it, tile stays, deals 1 heart.
    */
   _enterWater(p, nx, ny) {
     const isSource = this.world.isSpringSource(nx, ny);
-    if (p.hasBucket && !isSource) {
-      // Bucket clears spread water – free passage, no damage
+
+    if (isSource) {
+      // Spring source: always impassable; re-spread and deal damage
+      this.world.spreadHazard(nx, ny, TILE.WATER);
+      this._applyHazardDamage('water_source');
+    } else if (p.hasBucket) {
+      // Bucket clears spread water – free passage, no damage, uses 1 charge
       this.world.setTile(nx, ny, TILE.EMPTY);
       p.x = nx; p.y = ny;
-      p.setMessage('🪣 Cleared water with bucket.');
+      p.bucketUses--;
+      if (p.bucketUses <= 0) {
+        p.hasBucket   = false;
+        p.bucketUses  = 0;
+        p.setMessage('🪣 Cleared water! Bucket broke — buy a new one.');
+      } else {
+        p.setMessage(`🪣 Cleared water with bucket. (${p.bucketUses} use${p.bucketUses !== 1 ? 's' : ''} left)`);
+      }
       this._afterMove(nx, ny);
     } else {
-      // Wading through: 1 heart damage
+      // Spread water, no bucket: player moves onto it, tile stays, deal damage
       p.x = nx; p.y = ny;
-      if (!isSource) {
-        // Spread water is waded through and clears; spring source keeps flowing
-        this.world.setTile(nx, ny, TILE.EMPTY);
-      }
       const died = this._applyHazardDamage('water');
       if (!died) this._afterMove(nx, ny);
     }
@@ -228,8 +256,10 @@ class Game {
       this.state = 'dead';
       this.ui.showDead();
     } else {
-      const what = hazardType === 'lava'  ? '🔥 Lava burn'
-                 : hazardType === 'water' ? '💧 Waded through water'
+      const what = hazardType === 'lava'         ? '🔥 Lava burn'
+                 : hazardType === 'lava_source'  ? '🔥 Lava source — can\'t pass'
+                 : hazardType === 'water'        ? '💧 Waded through water'
+                 : hazardType === 'water_source' ? '💧 Spring source — can\'t pass'
                  : '⚠️ Hazard hit';
       p.setMessage(`${what}! (${p.hearts}/${p.maxHearts} ♥ remaining)`);
     }
@@ -286,9 +316,10 @@ class Game {
 
       case TILE.PICK: {
         if (!p.hasPick) {
-          p.hasPick = true;
+          p.hasPick  = true;
+          p.pickUses = TOOL_USES;
           this.world.setTile(x, y, TILE.EMPTY);
-          p.setMessage('⚒ Found a Pick! Walk into stone to break it.');
+          p.setMessage(`⚒ Found a Pick! Walk into stone to break it. (${TOOL_USES} uses)`);
         }
         break;
       }

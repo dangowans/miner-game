@@ -34,7 +34,9 @@ const TILE = Object.freeze({
   GEM_MED:  9,   // Revealed medium-value gem (Sapphire)
   GEM_HIGH: 10,  // Revealed high-value gem  (Ruby)
   WATER:    11,  // Water – blocks movement (spring source: always blocked; spread: bucket clears it)
-  LAVA:     12,  // Lava  – deals 1 heart damage; fire extinguisher converts to STONE
+  LAVA:     12,  // Lava — source: impassable, spreads on contact, deals 1 heart.
+                //        spread: player walks onto it, tile remains, deals 1 heart.
+                //        fire extinguisher converts either to STONE.
   SHOVEL:   13,  // Revealed shovel item (also sold at shop)
   PICK:     14,  // Revealed pick item   (also sold at shop) – breaks STONE
   BAG:      15,  // Revealed large-bag item (also sold at shop)
@@ -82,22 +84,22 @@ const SHOP_ITEMS = [
     id:      'pick',
     name:    'Pick',
     price:   100,
-    desc:    'Break stone blocks found in the mine (walk into them)',
-    oneTime: true,
+    desc:    `Break stone blocks found in the mine (walk into them) — lasts ${TOOL_USES} uses`,
+    oneTime: false,
   },
   {
     id:      'bucket',
     name:    'Bucket',
     price:   80,
-    desc:    'Clear spread water by walking into it (cannot clear the spring source)',
-    oneTime: true,
+    desc:    `Clear spread water by walking into it (cannot clear the spring source) — lasts ${TOOL_USES} uses`,
+    oneTime: false,
   },
   {
     id:      'extinguisher',
     name:    'Fire Extinguisher',
     price:   120,
-    desc:    'Walk into lava to turn it into stone instead of taking damage',
-    oneTime: true,
+    desc:    `Walk into lava to turn it into stone instead of taking damage — lasts ${TOOL_USES} uses`,
+    oneTime: false,
   },
   {
     id:      'bag',
@@ -134,7 +136,8 @@ const SHOVEL_REDUCTION  = 12;   // Shovel reduces dirt reveal threshold by this 
 // ---------------------------------------------------------------------------
 // Hazard spread
 // ---------------------------------------------------------------------------
-const HAZARD_SPREAD = 12;  // Max EMPTY tiles a water/lava spring floods
+const HAZARD_SPREAD = 12;  // Max EMPTY tiles a water/lava spring floods when triggered
+const TOOL_USES     = 10;  // Uses before pick / bucket / fire-extinguisher breaks
 
 // ---------------------------------------------------------------------------
 // Mine entrance x-range (right side of surface row)

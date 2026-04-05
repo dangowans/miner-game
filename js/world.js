@@ -22,6 +22,10 @@ class World {
     // The Set stores coordinate keys "x,y".
     this.springTiles   = new Set();
 
+    // Track lava-source tiles (original hidden lava, not spread lava).
+    // The Set stores coordinate keys "x,y".
+    this.lavaSources   = new Set();
+
     this._buildSurface();
     this._generateChunk(2);          // First mine chunk (mine starts at y=2)
   }
@@ -242,12 +246,11 @@ class World {
       case HIDDEN.STONE:    this.setTile(x, y, TILE.STONE);     break;
       case HIDDEN.WATER:
         this.setTile(x, y, TILE.WATER);
-        this.springTiles.add(`${x},${y}`);   // Mark as spring source
-        this._spread(x, y, TILE.WATER);
+        this.springTiles.add(`${x},${y}`);   // Mark as spring source (no spread until walked into)
         break;
       case HIDDEN.LAVA:
         this.setTile(x, y, TILE.LAVA);
-        this._spread(x, y, TILE.LAVA);
+        this.lavaSources.add(`${x},${y}`);   // Mark as lava source (no spread until walked into)
         break;
       case HIDDEN.SHOVEL: this.setTile(x, y, TILE.SHOVEL); break;
       case HIDDEN.PICK:   this.setTile(x, y, TILE.PICK);   break;
@@ -291,8 +294,7 @@ class World {
    * DIRT is NOT passable – the game handles dig-in before calling this.
    * STONE is NOT passable – the game checks for pick before calling this.
    * WATER and LAVA are handled explicitly by _enterWater / _enterLava in
-   * game.js (both cost 1 heart to wade/walk through); they are NOT listed
-   * here so the dig-in fallback path never silently ignores them.
+   * game.js before isPassable is ever reached; they are NOT listed here.
    */
   isPassable(x, y) {
     const t = this.getTile(x, y);
@@ -311,12 +313,12 @@ class World {
       case TILE.SHOVEL:
       case TILE.PICK:
       case TILE.BAG:
-      case TILE.LAVA:     // passable but damaging – handled in game.js
         return true;
       case TILE.BUILDING:
       case TILE.DIRT:
       case TILE.STONE:    // impassable without a pick
-      case TILE.WATER:    // impassable without a bucket (spring source: always blocked)
+      case TILE.WATER:    // isPassable returns false; _enterWater in game.js handles all variants
+      case TILE.LAVA:     // isPassable returns false; _enterLava  in game.js handles all variants
         return false;
       default:
         return false;
@@ -329,5 +331,21 @@ class World {
    */
   isSpringSource(x, y) {
     return this.springTiles.has(`${x},${y}`);
+  }
+
+  /**
+   * Returns true if (x, y) is an original lava-source tile (not spread lava).
+   * Checks that the tile is still LAVA to handle cases where it was extinguished.
+   */
+  isLavaSource(x, y) {
+    return this.lavaSources.has(`${x},${y}`) && this.getTile(x, y) === TILE.LAVA;
+  }
+
+  /**
+   * Trigger a BFS flood-fill spread of tileType from (x, y).
+   * Called by game.js when the player runs into a hazard source.
+   */
+  spreadHazard(x, y, tileType) {
+    this._spread(x, y, tileType);
   }
 }
