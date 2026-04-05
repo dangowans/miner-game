@@ -161,6 +161,21 @@ class Renderer {
         break;
       }
 
+      case TILE.PAVEMENT: {
+        // Flat stone slabs with subtle seam lines
+        ctx.fillStyle = '#7a7060';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        // Horizontal seam every other tile row
+        ctx.fillStyle = '#686050';
+        if (ty % 2 === 0) {
+          ctx.fillRect(px + 1, py + ts / 2, ts - 2, 2);
+        }
+        // Vertical seam offset between rows
+        const seamX = ty % 2 === 0 ? px + ts / 3 : px + (2 * ts / 3);
+        ctx.fillRect(Math.floor(seamX), py + 1, 2, ts / 2 - 1);
+        break;
+      }
+
       case TILE.DIRT: {
         // Layered earthy texture
         ctx.fillStyle = '#7a4028';

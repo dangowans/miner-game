@@ -22,12 +22,12 @@ const GEN_LOOKAHEAD  = 20;   // Generate a new chunk when player is within this 
 // Tile type IDs
 // ---------------------------------------------------------------------------
 const TILE = Object.freeze({
-  GRASS:    0,   // Surface walkable ground
+  GRASS:    0,   // Surface walkable ground (gaps between buildings at y=0)
   BUILDING: 1,   // Impassable building wall/facade
-  SHOP:     2,   // Shop door – press E to buy upgrades & sell gems
-  BAR:      3,   // Bar door  – press E to talk to the girl
-  DOCTOR:   4,   // Doctor building door – press E to heal / buy extra hearts
-  MINE_ENT: 5,   // Mine entrance (right side of surface)
+  SHOP:     2,   // Shop door at y=0 – interact from pavement (y=1) by pressing E
+  BAR:      3,   // Bar door at y=0  – interact from pavement (y=1) by pressing E
+  DOCTOR:   4,   // Doctor door at y=0 – interact from pavement (y=1) by pressing E
+  MINE_ENT: 5,   // Mine entrance (right side of pavement row, y=1; arch visible at y=0)
   DIRT:     6,   // Unexcavated mine tile (hides content)
   EMPTY:    7,   // Mined-out open space
   GEM_LOW:  8,   // Revealed low-value gem  (Emerald)
@@ -39,6 +39,7 @@ const TILE = Object.freeze({
   PICK:     14,  // Revealed pick item   (also sold at shop) – breaks STONE
   BAG:      15,  // Revealed large-bag item (also sold at shop)
   STONE:    16,  // Solid stone block – impassable without a pick
+  PAVEMENT: 17,  // Surface pavement row (y=1) – walkable, separates buildings from mine
 });
 
 // ---------------------------------------------------------------------------
@@ -140,13 +141,13 @@ const HAZARD_SPREAD = 12;  // Max EMPTY tiles a water/lava spring floods
 // ---------------------------------------------------------------------------
 const MINE_ENT_X_MIN         = 22;
 const MINE_ENT_X_MAX         = 24;
-const MINE_ENT_CLEARED_DEPTH = 2;   // Rows pre-cleared below the surface at entrance
+const MINE_ENT_CLEARED_DEPTH = 3;   // Mine-entrance columns pre-cleared down to this row (y=2 & y=3)
 
 // ---------------------------------------------------------------------------
-// Player start position
+// Player start position (pavement row, open area east of buildings)
 // ---------------------------------------------------------------------------
-const PLAYER_START_X = 11;
-const PLAYER_START_Y = 0;
+const PLAYER_START_X = 16;
+const PLAYER_START_Y = 1;   // y=1 is the pavement row
 
 // ---------------------------------------------------------------------------
 // Player physics / UI timings
@@ -177,4 +178,5 @@ const TILE_COLOR = {
   [TILE.PICK]:     '#aabbcc',
   [TILE.BAG]:      '#aa8833',
   [TILE.STONE]:    '#5a5a5a',
+  [TILE.PAVEMENT]: '#888070',
 };

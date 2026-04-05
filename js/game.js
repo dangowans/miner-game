@@ -98,11 +98,11 @@ class Game {
     const nx = p.x + dx;
     const ny = p.y + dy;
 
-    // World boundary (left / right / top)
-    if (nx < 0 || nx >= this.world.width || ny < 0) return;
+    // World boundary (left / right / top of pavement)
+    if (nx < 0 || nx >= this.world.width || ny < 1) return;
 
-    // Surface ↔ mine boundary: only crossable at mine-entrance columns
-    if ((p.y === 0 && ny > 0) || (p.y > 0 && ny === 0)) {
+    // Pavement (y=1) ↔ mine (y=2) boundary: only crossable at mine-entrance columns
+    if ((p.y === 1 && ny === 2) || (p.y === 2 && ny === 1)) {
       if (nx < MINE_ENT_X_MIN || nx > MINE_ENT_X_MAX) return;
     }
 
@@ -290,10 +290,15 @@ class Game {
   // -------------------------------------------------------------------------
 
   _handleInteract() {
-    const p    = this.player;
-    const tile = this.world.getTile(p.x, p.y);
+    const p = this.player;
+    // Check both the tile the player stands on AND the facade tile directly above.
+    // Buildings are at y=0; the player walks the pavement at y=1 and interacts
+    // by standing below a door tile and pressing E.
+    const checkTile = (type) =>
+      this.world.getTile(p.x, p.y)     === type ||
+      this.world.getTile(p.x, p.y - 1) === type;
 
-    if (tile === TILE.SHOP) {
+    if (checkTile(TILE.SHOP)) {
       this.state = 'overlay';
       this.ui.openShop(p, () => {
         this.state = 'playing';
@@ -302,7 +307,7 @@ class Game {
       return;
     }
 
-    if (tile === TILE.BAR) {
+    if (checkTile(TILE.BAR)) {
       this.state = 'overlay';
       this.ui.openBar(p, (won) => {
         if (won) {
@@ -315,7 +320,7 @@ class Game {
       return;
     }
 
-    if (tile === TILE.DOCTOR) {
+    if (checkTile(TILE.DOCTOR)) {
       this.state = 'overlay';
       this.ui.openDoctor(p, () => {
         this.state = 'playing';
@@ -324,7 +329,7 @@ class Game {
       return;
     }
 
-    if (tile === TILE.MINE_ENT) {
+    if (checkTile(TILE.MINE_ENT)) {
       p.setMessage('⛏ Walk down (↓ / S) to enter the mine.');
     }
   }

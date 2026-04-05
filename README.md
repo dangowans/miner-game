@@ -30,14 +30,22 @@ python3 -m http.server 8080
 ## Gameplay Overview
 
 ### The Surface
-The top row of the map is a small neighbourhood with four buildings:
+The surface consists of two rows:
 
-| Building | Interact (E) |
-|----------|-------------|
-| 🏪 **Shop** (door at x=5) | Sell gems · buy tools & upgrades |
-| 🍺 **Bar** (door at x=9) | Talk to the girl · win condition |
-| 🏥 **Doctor** (door at x=13) | Restore hearts · buy extra heart slots |
-| ▼ **Mine Entrance** (x=22–24) | Walk south to enter the mine |
+**Row y=0 — Building facades** (impassable wall):
+The entire row is a solid wall of buildings. Special door tiles mark the shops you can interact with.
+
+**Row y=1 — Pavement** (walkable):
+The player walks along this stone pavement. Stand below a building door and press **E** to interact.
+
+| Building | Door (x) | Interact (E) |
+|----------|----------|-------------|
+| 🏪 **Shop** | x=5 | Sell gems · buy tools & upgrades |
+| 🍺 **Bar** | x=9 | Talk to the girl · win condition |
+| 🏥 **Doctor** | x=13 | Restore hearts · buy extra heart slots |
+| ▼ **Mine Entrance** | x=22–24 | Walk south (↓) to enter the mine |
+
+The pavement **cannot be crossed** downward except at the mine entrance (x=22–24).
 
 ### The Mine
 - The mine is **randomly generated every game** and extends **infinitely downward**.

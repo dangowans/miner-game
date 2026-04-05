@@ -3,29 +3,19 @@
 /**
  * World – infinite-depth mine with lazy chunk generation.
  *
- * The world is stored as sparse rows: two Maps keyed by world-y.
- *   rowTiles: Map<y, Uint8Array(MAP_WIDTH)>   – tile IDs
- *   rowData:  Map<y, Array(MAP_WIDTH)>         – per-tile metadata or null
- *
- * Row y=0 is the fixed surface neighbourhood.
- * Rows y≥1 are mine rows, generated in chunks of CHUNK_SIZE on demand.
- * There is no lower boundary – the mine extends as far as the player digs.
- *
- * Reveal mechanic (per dirt tile):
- *   { hidden: HIDDEN.*, threshold: number, probes: number }
- *   probes++ each time the player moves to an adjacent tile.
- *   When probes >= (threshold - toolReduction) the tile auto-reveals.
- *   Stepping directly into a DIRT tile digs immediately (no probe needed).
- *
- * Hazard spreading:
- *   Water / lava flood-fills into adjacent EMPTY tiles (up to HAZARD_SPREAD).
+ * Layout:
+ *   y=0  Building facades row – BUILDING/SHOP/BAR/DOCTOR tiles (all impassable
+ *        from below; player interacts by pressing E while on pavement at y=1).
+ *   y=1  Pavement row – PAVEMENT (walkable east/west); MINE_ENT at x=22-24
+ *        is the only crossing point to the mine below.
+ *   y≥2  Mine – starts as DIRT, generated in chunks, extends infinitely.
  */
 class World {
   constructor() {
     this.width         = MAP_WIDTH;
     this.rowTiles      = new Map();   // y → Uint8Array[MAP_WIDTH]
     this.rowData       = new Map();   // y → Array[MAP_WIDTH] of null|object
-    this.deepestGenY   = 0;           // Lowest row generated so far
+    this.deepestGenY   = 1;           // Mine starts at y=2; pavement at y=1 is not a mine row
     this._rng          = this._makeRng(Date.now()); // New seed each page load → different mine every game
 
     // Track spring-source water tiles (these cannot be cleared by the bucket).
@@ -33,7 +23,7 @@ class World {
     this.springTiles   = new Set();
 
     this._buildSurface();
-    this._generateChunk(1);          // First mine chunk
+    this._generateChunk(2);          // First mine chunk (mine starts at y=2)
   }
 
   // -------------------------------------------------------------------------
@@ -93,32 +83,28 @@ class World {
   // -------------------------------------------------------------------------
 
   _buildSurface() {
-    const { tiles } = this._getOrCreateRow(0);
-    tiles.fill(TILE.GRASS);
+    // ── y=0: Building facades (impassable wall the player sees from pavement) ──
+    // The entire row is building material; special "door" tiles mark interactable spots.
+    const { tiles: top } = this._getOrCreateRow(0);
+    top.fill(TILE.BUILDING);
 
-    // House 1 (left, decorative)
-    tiles[0] = TILE.BUILDING;
-    tiles[1] = TILE.BUILDING;
-    tiles[2] = TILE.BUILDING;
-
-    // Shop: walls x=4,6  door x=5
-    tiles[4] = TILE.BUILDING;
-    tiles[5] = TILE.SHOP;
-    tiles[6] = TILE.BUILDING;
-
-    // Bar: walls x=8,10  door x=9
-    tiles[8]  = TILE.BUILDING;
-    tiles[9]  = TILE.BAR;
-    tiles[10] = TILE.BUILDING;
-
-    // Doctor: walls x=12,14  door x=13
-    tiles[12] = TILE.BUILDING;
-    tiles[13] = TILE.DOCTOR;
-    tiles[14] = TILE.BUILDING;
-
-    // Mine entrance (right side)
+    // Shop door at x=5
+    top[5] = TILE.SHOP;
+    // Bar door at x=9
+    top[9] = TILE.BAR;
+    // Doctor door at x=13
+    top[13] = TILE.DOCTOR;
+    // Mine entrance arch at x=22-24 (decorative upper arch; actual entrance is y=1 below)
     for (let x = MINE_ENT_X_MIN; x <= MINE_ENT_X_MAX; x++) {
-      tiles[x] = TILE.MINE_ENT;
+      top[x] = TILE.MINE_ENT;
+    }
+
+    // ── y=1: Pavement row (fully walkable; mine entrance at right) ──────────
+    const { tiles: pave } = this._getOrCreateRow(1);
+    pave.fill(TILE.PAVEMENT);
+    // Mine entrance tiles – the crossing point to the mine below
+    for (let x = MINE_ENT_X_MIN; x <= MINE_ENT_X_MAX; x++) {
+      pave[x] = TILE.MINE_ENT;
     }
   }
 
@@ -312,6 +298,7 @@ class World {
     if (t === null) return false;
     switch (t) {
       case TILE.GRASS:
+      case TILE.PAVEMENT:  // Pavement row walkable east-west
       case TILE.SHOP:
       case TILE.BAR:
       case TILE.DOCTOR:
