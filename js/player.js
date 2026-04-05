@@ -89,11 +89,12 @@ class Player {
   /**
    * Apply 1 point of hazard damage.
    * Returns true if the player just died.
+   * iFrames is set for the blink animation only; damage is not gated by it
+   * because hazard hits only occur on explicit player moves (never passively).
    */
   takeDamage() {
-    if (this.iFrames > 0) return false;
     this.hearts  = Math.max(0, this.hearts - 1);
-    this.iFrames = INVINCIBILITY_FRAMES;   // ~1.5 s of invincibility at 60 fps
+    this.iFrames = INVINCIBILITY_FRAMES;   // Blink timer – visual feedback only
     if (this.hearts <= 0) { this.dead = true; return true; }
     return false;
   }

@@ -152,7 +152,7 @@ const PLAYER_START_Y = 1;   // y=1 is the pavement row
 // ---------------------------------------------------------------------------
 // Player physics / UI timings
 // ---------------------------------------------------------------------------
-const INVINCIBILITY_FRAMES = 90;   // Frames of invincibility after taking damage (~1.5 s at 60 fps)
+const INVINCIBILITY_FRAMES = 90;   // Blink-animation frames after taking damage (~1.5 s at 60 fps)
 const BLINK_INTERVAL       = 6;    // Every N frames the player sprite toggles during invincibility
 const MAX_DELTA_TIME_MS    = 100;  // Cap on per-frame dt to avoid spiral-of-death after tab switch
 const MAX_INPUT_QUEUE      = 12;   // Maximum queued input actions before dropping new ones
