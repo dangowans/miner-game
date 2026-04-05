@@ -32,6 +32,8 @@ class Player {
     this.hasBag         = false;
     this.hasRing        = false;
     this.drinksBought   = 0;
+    this.dynamiteCount  = 0;       // Sticks of dynamite owned
+    this.placingDynamite = false;  // True while in dynamite-placement mode
 
     // Tool durability (remaining uses before the tool breaks)
     this.pickUses         = 0;
@@ -113,6 +115,17 @@ class Player {
   takeDamage() {
     this.hearts  = Math.max(0, this.hearts - 1);
     this.iFrames = INVINCIBILITY_FRAMES;   // Blink timer – visual feedback only
+    if (this.hearts <= 0) { this.dead = true; return true; }
+    return false;
+  }
+
+  /**
+   * Apply multiple points of damage at once (e.g. dynamite blast).
+   * Returns true if the player just died.
+   */
+  takeDamageMultiple(n) {
+    this.hearts  = Math.max(0, this.hearts - n);
+    this.iFrames = INVINCIBILITY_FRAMES;
     if (this.hearts <= 0) { this.dead = true; return true; }
     return false;
   }

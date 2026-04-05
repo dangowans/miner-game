@@ -359,6 +359,7 @@ class World {
       case TILE.OUTHOUSE:
       case TILE.JEWELER:
       case TILE.SKY:
+      case TILE.DYNAMITE:
       case TILE.MINE_ENT:
       case TILE.EMPTY:
       case TILE.SILVER:

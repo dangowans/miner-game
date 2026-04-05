@@ -43,7 +43,8 @@ class Game {
     this.input    = new Input();
     this.state    = 'playing';
 
-    this._lastTime = 0;
+    this._lastTime  = 0;
+    this._dynamites = [];   // Array of { x, y, frames } for lit dynamite placements
     requestAnimationFrame((t) => this._loop(t));
   }
 
@@ -67,6 +68,9 @@ class Game {
     if (this.state !== 'playing') return;
     if (this.ui.overlayOpen)      return;
 
+    // Always tick dynamite fuses each frame, independent of player input
+    this._tickDynamites();
+
     // Pre-generate mine rows ahead of the player
     this.world.ensureGenerated(this.player.y + GEN_LOOKAHEAD);
 
@@ -79,6 +83,7 @@ class Game {
       case 'left':     this._tryMove(-1,  0); break;
       case 'right':    this._tryMove( 1,  0); break;
       case 'interact': this._handleInteract(); break;
+      case 'dynamite': this._toggleDynamitePlacement(); break;
     }
 
     this.player.tick();
@@ -93,6 +98,12 @@ class Game {
     const p  = this.player;
     const nx = p.x + dx;
     const ny = p.y + dy;
+
+    // ── Dynamite placement mode ───────────────────────────────────────────
+    if (p.placingDynamite) {
+      this._placeDynamite(dx, dy);
+      return;
+    }
 
     // World boundary (left / right / top of pavement)
     if (nx < 0) {
@@ -287,6 +298,120 @@ class Game {
       p.setMessage(`${what}! (${p.hearts}/${p.maxHearts} ♥ remaining)`);
     }
     return died;
+  }
+
+  // -------------------------------------------------------------------------
+  // Dynamite
+  // -------------------------------------------------------------------------
+
+  /** Toggle dynamite placement mode on/off. */
+  _toggleDynamitePlacement() {
+    const p = this.player;
+    if (p.placingDynamite) {
+      p.placingDynamite = false;
+      p.setMessage('Dynamite placement cancelled.');
+    } else if (p.dynamiteCount > 0) {
+      p.placingDynamite = true;
+      p.setMessage('💣 Move in any direction to place dynamite, or press 💣 again to cancel.');
+    } else {
+      p.setMessage('No dynamite — buy some at the Shop.');
+    }
+  }
+
+  /**
+   * Place a stick of dynamite in the tile adjacent to the player in direction (dx, dy).
+   * The player stays put; a TILE.DYNAMITE tile is created and the fuse starts.
+   */
+  _placeDynamite(dx, dy) {
+    const p  = this.player;
+    const tx = p.x + dx;
+    const ty = p.y + dy;
+
+    // Can only place inside the mine (y≥2) in an empty tile
+    const tile = this.world.getTile(tx, ty);
+    if (ty < 2 || tile !== TILE.EMPTY) {
+      p.setMessage('💣 Can only place dynamite on empty mine tiles.');
+      p.placingDynamite = false;
+      return;
+    }
+
+    this.world.setTile(tx, ty, TILE.DYNAMITE);
+    this.world.setData(tx, ty, { frames: DYNAMITE_FUSE_FRAMES });
+    this._dynamites.push({ x: tx, y: ty, frames: DYNAMITE_FUSE_FRAMES });
+    p.dynamiteCount--;
+    p.placingDynamite = false;
+    p.setMessage('💣 Dynamite placed! 5 seconds — RUN!');
+    sounds.playDynamitePlace();
+    this.ui.updateHUD(p);
+  }
+
+  /** Decrement fuse counters each frame; detonate any that reach zero. */
+  _tickDynamites() {
+    if (this._dynamites.length === 0) return;
+    const toExplode = [];
+    for (const dyn of this._dynamites) {
+      dyn.frames--;
+      // Update the per-tile data so the renderer can show remaining seconds
+      this.world.setData(dyn.x, dyn.y, { frames: dyn.frames });
+      if (dyn.frames <= 0) toExplode.push(dyn);
+    }
+    for (const dyn of toExplode) {
+      this._explodeDynamite(dyn);
+      if (this.state !== 'playing') return;  // Player may have died
+    }
+    this._dynamites = this._dynamites.filter(d => d.frames > 0);
+  }
+
+  /**
+   * Detonate a dynamite charge.
+   * Clears DIRT and STONE in a circular blast radius; damages the player
+   * based on distance (2 hearts within 2 tiles, 1 heart within full radius).
+   */
+  _explodeDynamite(dyn) {
+    const { x: bx, y: by } = dyn;
+    sounds.playDynamiteExplode();
+
+    // Clear tiles in blast radius (mine rows only)
+    for (let dx = -DYNAMITE_RADIUS; dx <= DYNAMITE_RADIUS; dx++) {
+      for (let dy = -DYNAMITE_RADIUS; dy <= DYNAMITE_RADIUS; dy++) {
+        if (dx * dx + dy * dy > DYNAMITE_RADIUS * DYNAMITE_RADIUS) continue;
+        const tx = bx + dx;
+        const ty = by + dy;
+        if (ty < 2) continue;  // Don't blast the surface
+        const t = this.world.getTile(tx, ty);
+        if (t === TILE.DIRT || t === TILE.STONE || t === TILE.DYNAMITE) {
+          this.world.setTile(tx, ty, TILE.EMPTY);
+          this.world.setData(tx, ty, null);
+          // Also remove any chained dynamite entries that got blasted
+          this._dynamites = this._dynamites.filter(d => d.x !== tx || d.y !== ty);
+        }
+      }
+    }
+
+    // Damage player based on distance from blast centre (squared to avoid sqrt)
+    const p       = this.player;
+    const distSq  = (p.x - bx) ** 2 + (p.y - by) ** 2;
+    if (distSq <= DYNAMITE_CRITICAL_RADIUS * DYNAMITE_CRITICAL_RADIUS) {
+      const died = p.takeDamageMultiple(2);
+      sounds.playHazardHit();
+      if (died) {
+        this.state = 'dead';
+        this.ui.showDead();
+        return;
+      }
+      p.setMessage(`💥 Too close to the blast! 2 damage (${p.hearts}/${p.maxHearts} ♥)`);
+    } else if (distSq <= DYNAMITE_RADIUS * DYNAMITE_RADIUS) {
+      const died = p.takeDamage();
+      sounds.playHazardHit();
+      if (died) {
+        this.state = 'dead';
+        this.ui.showDead();
+        return;
+      }
+      p.setMessage(`💥 Caught in the blast! 1 damage (${p.hearts}/${p.maxHearts} ♥)`);
+    }
+
+    this.ui.updateHUD(p);
   }
 
   // -------------------------------------------------------------------------

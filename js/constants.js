@@ -49,6 +49,7 @@ const TILE = Object.freeze({
   GLASSES:     25,   // Unique novelty item
   JEWELER:     26,   // Jeweler building – craft a ring from 3 diamonds + $1000
   SKY:         27,   // Open sky between surface buildings (decorative, y=0)
+  DYNAMITE:    28,   // Lit dynamite placed by the player – explodes after fuse
 });
 
 // ---------------------------------------------------------------------------
@@ -145,7 +146,22 @@ const SHOP_ITEMS = [
     desc:    'Doubles ore carry capacity (10 → 20)',
     oneTime: true,
   },
+  {
+    id:      'dynamite',
+    name:    'Dynamite',
+    price:   75,
+    desc:    'Press 💣 to enter placement mode, then move in any direction to place. 5-second fuse — get clear!',
+    oneTime: false,
+  },
 ];
+
+// ---------------------------------------------------------------------------
+// Dynamite
+// ---------------------------------------------------------------------------
+const DYNAMITE_FUSE_FRAMES           = 300;  // ~5 seconds at 60 fps before detonation
+const DYNAMITE_RADIUS                = 3;    // Blast radius in tiles (Euclidean)
+const DYNAMITE_CRITICAL_RADIUS       = 2;    // Within this many tiles: 2 hearts of damage
+const DYNAMITE_URGENT_SECS           = 2;    // Fuse seconds remaining when urgent warning starts
 
 // ---------------------------------------------------------------------------
 // Bar
@@ -243,6 +259,7 @@ const TILE_COLOR = {
   [TILE.GLASSES]:      '#111122',
   [TILE.JEWELER]:      '#8844aa',
   [TILE.SKY]:          '#7ab8e8',
+  [TILE.DYNAMITE]:     '#cc2200',
 };
 
 // Ore tile types that can be destroyed when a hazard spreads over them

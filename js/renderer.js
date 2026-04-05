@@ -407,6 +407,30 @@ class Renderer {
         ctx.stroke();
         break;
       }
+
+      case TILE.DYNAMITE: {
+        // Dark tile with bomb emoji and a countdown label
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '18px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('💣', cx, cy + 6);
+        const d = world.getData(tx, ty);
+        if (d) {
+          const secs = Math.ceil(d.frames / 60);
+          ctx.fillStyle = secs <= DYNAMITE_URGENT_SECS ? '#ff4400' : '#ffdd00';
+          ctx.font      = `bold ${secs <= DYNAMITE_URGENT_SECS ? 9 : 8}px monospace`;
+          ctx.fillText(`${secs}s`, cx, py + ts - 3);
+        }
+        // Pulsing red border when fuse is in the urgent window
+        if (d && d.frames <= DYNAMITE_URGENT_SECS * 60) {
+          const pulse = Math.sin(d.frames * 0.20) * 0.5 + 0.5;
+          ctx.strokeStyle = `rgba(255,80,0,${0.4 + pulse * 0.6})`;
+          ctx.lineWidth   = 2;
+          ctx.strokeRect(px + 2, py + 2, ts - 4, ts - 4);
+        }
+        break;
+      }
     }
 
     // ── Sky horizon for the building-facade row ───────────────────────────────

@@ -17,6 +17,7 @@ class UI {
     this._hudGemsDetail = document.getElementById('hud-gems-detail');
     this._hudTools      = document.getElementById('hud-tools');
     this._hudMsg        = document.getElementById('hud-msg');
+    this._btnDynamite   = document.getElementById('btn-dynamite');
 
     // Close on Escape key
     document.addEventListener('keydown', (e) => {
@@ -62,7 +63,19 @@ class UI {
     if (player.hasExtinguisher) tools.push(`🧯×${player.extinguisherUses}`);
     if (player.hasBag)          tools.push('🎒×2');
     if (player.hasRing)         tools.push('💍');
+    if (player.dynamiteCount > 0) {
+      tools.push(player.placingDynamite
+        ? `💣×${player.dynamiteCount} [PLACING]`
+        : `💣×${player.dynamiteCount}`);
+    }
     this._hudTools.textContent = tools.join(' ');
+
+    // Dynamite button: enabled only when the player has dynamite
+    if (this._btnDynamite) {
+      this._btnDynamite.disabled = player.dynamiteCount === 0 && !player.placingDynamite;
+      this._btnDynamite.textContent = player.placingDynamite ? '✕💣' : '💣';
+      this._btnDynamite.style.borderColor = player.placingDynamite ? '#ff6600' : '';
+    }
 
     this._hudMsg.textContent = player.message;
   }
@@ -78,11 +91,18 @@ class UI {
                     (item.id === 'bucket'        && player.hasBucket)      ||
                     (item.id === 'extinguisher'  && player.hasExtinguisher)||
                     (item.id === 'bag'           && player.hasBag);
+      const dynamiteCount = item.id === 'dynamite' ? player.dynamiteCount : null;
       const affordable = player.money >= item.price;
-      const buyable    = !owned && affordable;
+      // Dynamite is never "owned once" — can always buy more if affordable
+      const buyable    = item.id === 'dynamite' ? affordable : (!owned && affordable);
       const cls        = buyable ? 'shop-item buyable' : 'shop-item disabled';
       let note;
-      if (owned) {
+      if (item.id === 'dynamite') {
+        note = dynamiteCount > 0
+          ? ` <em>(×${dynamiteCount} in stock)</em>`
+          : '';
+        if (!affordable) note += ` <em class="short">(need $${item.price - player.money} more)</em>`;
+      } else if (owned) {
         const usesMap = { pick: player.pickUses, bucket: player.bucketUses, extinguisher: player.extinguisherUses };
         const uses    = usesMap[item.id] ?? null;
         note = uses !== null
@@ -120,6 +140,7 @@ class UI {
         else if (id === 'bucket')      { player.hasBucket = true; player.bucketUses = TOOL_USES; }
         else if (id === 'extinguisher'){ player.hasExtinguisher = true; player.extinguisherUses = TOOL_USES; }
         else if (id === 'bag')         { player.hasBag = true; player.maxGems = 20; }
+        else if (id === 'dynamite')    { player.dynamiteCount++; }
         player.setMessage(`Bought: ${id}!`);
         sounds.playTransaction();
         this._closeOverlay();

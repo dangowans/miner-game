@@ -177,10 +177,11 @@
       -webkit-tap-highlight-color: transparent;
     }
     #controls button:active { background: #3a3a3a; }
+    #controls button:disabled { opacity: 0.3; cursor: default; }
 
     #btn-up    { grid-column: 2; grid-row: 1; }
     #btn-left  { grid-column: 1; grid-row: 2; }
-    #btn-act   { grid-column: 2; grid-row: 2; font-size: 1.1em; }
+    #btn-dynamite { grid-column: 2; grid-row: 2; font-size: 1.4em; }
     #btn-right { grid-column: 3; grid-row: 2; }
     #btn-down  { grid-column: 2; grid-row: 3; }
 
@@ -216,13 +217,13 @@
 
   <!-- Mobile D-pad -->
   <div id="controls" aria-label="Game controls">
-    <button id="btn-up"    title="Move up (W / ↑)"   aria-label="Up">▲</button>
-    <button id="btn-left"  title="Move left (A / ←)" aria-label="Left">◀</button>
-    <button id="btn-act"   title="Interact (E / Enter)" aria-label="Interact">USE</button>
-    <button id="btn-right" title="Move right (D / →)" aria-label="Right">▶</button>
-    <button id="btn-down"  title="Move down (S / ↓)" aria-label="Down">▼</button>
+    <button id="btn-up"       title="Move up (W / ↑)"              aria-label="Up">▲</button>
+    <button id="btn-left"     title="Move left (A / ←)"            aria-label="Left">◀</button>
+    <button id="btn-dynamite" title="Place dynamite (X)"           aria-label="Dynamite" disabled>💣</button>
+    <button id="btn-right"    title="Move right (D / →)"           aria-label="Right">▶</button>
+    <button id="btn-down"     title="Move down (S / ↓)"            aria-label="Down">▼</button>
   </div>
-  <div id="controls-label">Arrow keys / WASD to move &nbsp;·&nbsp; E / Enter to interact</div>
+  <div id="controls-label">Arrow keys / WASD to move &nbsp;·&nbsp; E / Enter to interact &nbsp;·&nbsp; X to place dynamite</div>
 
   <!-- Game scripts (order matters – constants first) -->
   <script src="js/constants.js"></script>
