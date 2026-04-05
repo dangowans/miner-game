@@ -216,9 +216,9 @@ class World {
         const threshold =
           REVEAL_MIN + Math.floor(rng() * (REVEAL_MAX - REVEAL_MIN + 1));
 
-        // ~20% of tiles are impenetrable – adjacent probing has no effect.
+        // ~40% of tiles are impenetrable – adjacent probing has no effect.
         // The player must walk directly into these tiles to reveal them.
-        const impenetrable = rng() < 0.20;
+        const impenetrable = rng() < 0.40;
 
         data[x] = { hidden, threshold, probes: 0, impenetrable };
       }

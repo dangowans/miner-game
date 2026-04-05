@@ -202,22 +202,15 @@ class Renderer {
       case TILE.DIRT: {
         const d = world.getData(tx, ty);
         if (d && d.impenetrable) {
-          // Harder rock – slightly darker with a subtle cross-hatched texture
-          ctx.fillStyle = '#3a1c0c';
+          // Impenetrable – very slightly darker than normal dirt; no special markings
+          ctx.fillStyle = '#6a3520';
           ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
-          ctx.fillStyle = '#2a1008';
-          for (let i = 0; i < 6; i++) {
-            const ox = ((tx * 13 + ty * 5 + i * 7)  % (ts - 6)) + 3;
-            const oy = ((tx *  7 + ty * 11 + i * 9) % (ts - 6)) + 3;
-            ctx.fillRect(px + ox, py + oy, 2, 2);
+          ctx.fillStyle = '#512810';
+          for (let i = 0; i < 5; i++) {
+            const ox = ((tx * 13 + ty * 5 + i * 7)  % (ts - 8)) + 4;
+            const oy = ((tx *  7 + ty * 11 + i * 9) % (ts - 8)) + 4;
+            ctx.fillRect(px + ox, py + oy, 3, 2);
           }
-          // Subtle diagonal hatch lines to hint at harder material
-          ctx.strokeStyle = 'rgba(60,30,10,0.6)';
-          ctx.lineWidth   = 1;
-          ctx.beginPath();
-          ctx.moveTo(px + 4, py + 1); ctx.lineTo(px + 1, py + 4);
-          ctx.moveTo(px + ts - 4, py + ts - 1); ctx.lineTo(px + ts - 1, py + ts - 4);
-          ctx.stroke();
         } else {
           ctx.fillStyle = '#7a4028';
           ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
