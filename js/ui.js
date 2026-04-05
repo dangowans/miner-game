@@ -58,9 +58,6 @@ class UI {
   // -------------------------------------------------------------------------
 
   openShop(player, onClose) {
-    const gemTotal = player.gems.reduce((s, g) => s + (GEM_VALUE[g] || 0), 0);
-    const hasSomethingToSell = player.gemCount > 0;
-
     const itemsHtml = SHOP_ITEMS.map(item => {
       const owned = (item.id === 'shovel'       && player.hasShovel)      ||
                     (item.id === 'pick'          && player.hasPick)        ||
@@ -89,33 +86,17 @@ class UI {
       </div>`;
     }).join('');
 
-    const sellSection = hasSomethingToSell
-      ? `<div class="shop-item buyable sell-btn" id="sell-gems-btn">
-           💰 Sell all gems — <span class="price">$${gemTotal}</span>
-           <small> (${player.gemCount} gem${player.gemCount !== 1 ? 's' : ''})</small>
-         </div>`
-      : `<div class="shop-item disabled">💰 No gems to sell</div>`;
-
     this.overlay.innerHTML = `
       <h2>🏪 General Store</h2>
       <p class="shop-balance">Your money: <strong>$${player.money}</strong></p>
-      <div class="section-label">SELL</div>
-      ${sellSection}
+      <p style="color:#aaa;font-size:0.85em;margin:4px 0 8px">Sell your ore at the 🏦 Bank next door.</p>
       <div class="section-label">BUY</div>
       ${itemsHtml}
       <button class="close-btn" id="overlay-close">✕ Close &nbsp;<kbd>Esc</kbd></button>
     `;
     this._openOverlay(onClose);
 
-    if (hasSomethingToSell) {
-      document.getElementById('sell-gems-btn').addEventListener('click', () => {
-        const earned = player.sellGems();
-        player.setMessage(`Sold gems for $${earned}!`);
-        this._closeOverlay();
-      });
-    }
-
-    this.overlay.querySelectorAll('.shop-item.buyable:not(.sell-btn)').forEach(el => {
+    this.overlay.querySelectorAll('.shop-item.buyable').forEach(el => {
       el.addEventListener('click', () => {
         const id    = el.dataset.id;
         const price = parseInt(el.dataset.price, 10);
@@ -353,6 +334,77 @@ class UI {
         this._closeOverlay();
       });
     }
+  }
+
+  // -------------------------------------------------------------------------
+  // Bank overlay
+  // -------------------------------------------------------------------------
+
+  openBank(player, onClose) {
+    const hasSomethingToSell = player.gemCount > 0;
+
+    // Build a breakdown by ore type
+    const counts = {};
+    for (const g of player.gems) counts[g] = (counts[g] || 0) + 1;
+    const oreTypes = Object.keys(counts);
+    const total = player.gems.reduce((s, g) => s + (GEM_VALUE[g] || 0), 0);
+
+    let itemsHtml;
+    if (hasSomethingToSell) {
+      const rows = oreTypes.map(type => {
+        const qty   = counts[type];
+        const each  = GEM_VALUE[type] || 0;
+        const sub   = qty * each;
+        const label = ORE_NAME[type] || type;
+        return `<div class="shop-item disabled" style="cursor:default">
+          ${label} ×${qty} — <span class="price">$${sub}</span>
+          <small> ($${each} each)</small>
+        </div>`;
+      }).join('');
+      itemsHtml = `
+        ${rows}
+        <div class="shop-item buyable" id="sell-all-btn" style="margin-top:8px">
+          💰 Sell all — <span class="price">$${total}</span>
+          <small> (${player.gemCount} item${player.gemCount !== 1 ? 's' : ''})</small>
+        </div>`;
+    } else {
+      itemsHtml = `<div class="shop-item disabled">No ore to sell — go mining!</div>`;
+    }
+
+    this.overlay.innerHTML = `
+      <h2>🏦 Town Bank</h2>
+      <p class="shop-balance">Your money: <strong>$${player.money}</strong></p>
+      <div class="section-label">SELL ORE</div>
+      ${itemsHtml}
+      <button class="close-btn" id="overlay-close">✕ Close &nbsp;<kbd>Esc</kbd></button>
+    `;
+    this._openOverlay(onClose);
+
+    const sellBtn = document.getElementById('sell-all-btn');
+    if (sellBtn) {
+      sellBtn.addEventListener('click', () => {
+        const earned = player.sellGems();
+        player.setMessage(`Sold ore for $${earned}!`);
+        this._closeOverlay();
+      });
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Outhouse overlay
+  // -------------------------------------------------------------------------
+
+  openOuthouse(onClose) {
+    this.overlay.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                  height:100%;gap:14px;padding:20px;text-align:center">
+        <p style="font-size:3em;line-height:1">🚽</p>
+        <p style="font-size:1.3em;margin:0"><em>"You feel relieved."</em></p>
+        <button class="close-btn" id="overlay-close" style="margin-top:8px">
+          Leave
+        </button>
+      </div>`;
+    this._openOverlay(onClose);
   }
 
   // -------------------------------------------------------------------------

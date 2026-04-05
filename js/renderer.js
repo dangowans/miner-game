@@ -245,19 +245,19 @@ class Renderer {
       }
 
       // ── Ore tiles ──────────────────────────────────────────────────────────
-      case TILE.SILVER:   this._drawOre(ctx, cx, cy, hs, '#c8d8e0', '#606870', '🥈'); break;
-      case TILE.GOLD:     this._drawOre(ctx, cx, cy, hs, '#f0c000', '#604800', '🥇'); break;
-      case TILE.PLATINUM: this._drawOre(ctx, cx, cy, hs, '#d8eef8', '#485868', '⬜'); break;
-      case TILE.DIAMOND:  this._drawGem(ctx, cx, cy, hs, '#aaddff', '#002244');       break;
+      case TILE.SILVER:   this._drawOreVein(ctx, px, py, ts, tx, ty, '#9aaab4', '#c8d8e0', 'Ag'); break;
+      case TILE.GOLD:     this._drawOreVein(ctx, px, py, ts, tx, ty, '#a07800', '#d4a800', 'Au'); break;
+      case TILE.PLATINUM: this._drawOreVein(ctx, px, py, ts, tx, ty, '#6888a0', '#b8ccd8', 'Pt'); break;
+      case TILE.DIAMOND:  this._drawDiamond(ctx, px, py, ts, cx, cy, hs);                         break;
 
       // ── Unique ore ─────────────────────────────────────────────────────────
       case TILE.RUBY: {
-        this._drawGem(ctx, cx, cy, hs, '#ff3060', '#440010');
-        // Crown marker – show uniqueness
+        this._drawDiamond(ctx, px, py, ts, cx, cy, hs, '#cc1040', '#ff4070');
+        // Star marker to signal uniqueness
         ctx.fillStyle = '#ffd700';
-        ctx.font      = '8px monospace';
+        ctx.font      = 'bold 8px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('★', cx, py + 8);
+        ctx.fillText('★', cx, py + 9);
         break;
       }
 
@@ -421,64 +421,113 @@ class Renderer {
   }
 
   // -------------------------------------------------------------------------
-  // Gem / ore helper drawers
+  // Ore / gem helper drawers
   // -------------------------------------------------------------------------
 
-  _drawGem(ctx, cx, cy, hs, color, shadow) {
-    const s = hs * 0.52;
-    ctx.fillStyle = '#111';
-    ctx.fillRect(cx - hs + 2, cy - hs + 2, hs * 2 - 4, hs * 2 - 4);
+  /**
+   * Draw ore as irregular veins embedded in rock — no glowing balls.
+   * Uses deterministic offsets from tile coordinates so it looks consistent.
+   * @param {string} dark   - darker shade for shadow veins
+   * @param {string} light  - lighter shade for highlight veins
+   * @param {string} label  - short chemical symbol (Ag, Au, Pt)
+   */
+  _drawOreVein(ctx, px, py, ts, tx, ty, dark, light, label) {
+    // Rock background
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+
+    // Seed deterministic layout from tile position
+    const s1 = (tx * 7 + ty * 13) % 8;
+    const s2 = (tx * 11 + ty * 5) % 6;
+    const s3 = (tx * 3 + ty * 17) % 7;
+
+    // Draw 3 irregular vein patches
+    const veins = [
+      { x: px + 4 + s1,      y: py + 5 + s2,      w: 6 + s3,      h: 3 },
+      { x: px + 8 + s2,      y: py + 12 + s1,     w: 8 + s2,      h: 3 },
+      { x: px + 3 + s3,      y: py + 19 + s2,     w: 5 + s1,      h: 3 },
+    ];
+
+    for (const v of veins) {
+      // Keep veins within tile bounds
+      const x = Math.min(v.x, px + ts - v.w - 2);
+      const y = Math.min(v.y, py + ts - v.h - 2);
+      // Dark shadow offset
+      ctx.fillStyle = dark;
+      ctx.fillRect(x + 1, y + 1, v.w, v.h);
+      // Light vein on top
+      ctx.fillStyle = light;
+      ctx.fillRect(x, y, v.w, v.h - 1);
+    }
+
+    // Small chemical symbol label
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.font      = 'bold 7px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, px + ts / 2, py + ts - 4);
+  }
+
+  /**
+   * Draw a gem/crystal as a small flat faceted shape — no glowing highlight.
+   * Defaults to diamond colours; pass overrides for ruby.
+   */
+  _drawDiamond(ctx, px, py, ts, cx, cy, hs,
+               faceColor = '#6ab8d8', edgeColor = '#2a6888') {
+    // Dark rock background
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+
+    const s = Math.round(hs * 0.48);
+
+    // Bottom dark face (depth)
     ctx.beginPath();
     ctx.moveTo(cx,     cy - s);
     ctx.lineTo(cx + s, cy);
     ctx.lineTo(cx,     cy + s);
     ctx.lineTo(cx - s, cy);
     ctx.closePath();
-    ctx.fillStyle = shadow;
+    ctx.fillStyle = edgeColor;
     ctx.fill();
+
+    // Top-left bright face
     ctx.beginPath();
-    ctx.moveTo(cx,         cy - s + 2);
-    ctx.lineTo(cx + s - 2, cy);
-    ctx.lineTo(cx,         cy + s - 2);
-    ctx.lineTo(cx - s + 2, cy);
+    ctx.moveTo(cx,     cy - s);
+    ctx.lineTo(cx + s, cy);
+    ctx.lineTo(cx,     cy);
     ctx.closePath();
-    ctx.fillStyle = color;
+    ctx.fillStyle = faceColor;
     ctx.fill();
+
+    // Top-right mid face
     ctx.beginPath();
-    ctx.moveTo(cx,     cy - s + 4);
-    ctx.lineTo(cx + 4, cy - 2);
-    ctx.lineTo(cx,     cy + 4);
-    ctx.lineTo(cx - 4, cy - 2);
+    ctx.moveTo(cx,     cy - s);
+    ctx.lineTo(cx - s, cy);
+    ctx.lineTo(cx,     cy);
     ctx.closePath();
-    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.fillStyle = this._blendHex(faceColor, 0.6);
     ctx.fill();
+
+    // Thin outline for crispness
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+    ctx.lineWidth   = 1;
+    ctx.beginPath();
+    ctx.moveTo(cx,     cy - s);
+    ctx.lineTo(cx + s, cy);
+    ctx.lineTo(cx,     cy + s);
+    ctx.lineTo(cx - s, cy);
+    ctx.closePath();
+    ctx.stroke();
   }
 
-  /** Draw ore as a rounded nugget shape with an emoji label. */
-  _drawOre(ctx, cx, cy, hs, color, shadow, emoji) {
-    const r = hs * 0.55;
-    ctx.fillStyle = '#111';
-    ctx.fillRect(cx - hs + 2, cy - hs + 2, hs * 2 - 4, hs * 2 - 4);
-    // Shadow nugget
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.fillStyle = shadow;
-    ctx.fill();
-    // Main nugget
-    ctx.beginPath();
-    ctx.arc(cx - 1, cy - 1, r - 2, 0, Math.PI * 2);
-    ctx.fillStyle = color;
-    ctx.fill();
-    // Highlight
-    ctx.beginPath();
-    ctx.arc(cx - 2, cy - 2, r * 0.4, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.fill();
-    // Small emoji label
-    ctx.font      = '9px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#fff';
-    ctx.fillText(emoji, cx, cy + hs - 4);
+  /** Darken a hex colour string by blending toward black. */
+  _blendHex(hex, factor) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const rr = Math.round(r * factor);
+    const gg = Math.round(g * factor);
+    const bb = Math.round(b * factor);
+    return `rgb(${rr},${gg},${bb})`;
   }
 
   // -------------------------------------------------------------------------

@@ -289,22 +289,66 @@ class Game {
     const tile = this.world.getTile(x, y);
 
     switch (tile) {
-      case TILE.GEM_LOW:
-      case TILE.GEM_MED:
-      case TILE.GEM_HIGH: {
-        const key = tile === TILE.GEM_LOW  ? HIDDEN.GEM_LOW
-                  : tile === TILE.GEM_MED  ? HIDDEN.GEM_MED
-                  :                          HIDDEN.GEM_HIGH;
+      // ── Ore (silver / gold / platinum / diamond) ───────────────────────
+      case TILE.SILVER:
+      case TILE.GOLD:
+      case TILE.PLATINUM:
+      case TILE.DIAMOND: {
+        const key = tile === TILE.SILVER   ? HIDDEN.SILVER
+                  : tile === TILE.GOLD     ? HIDDEN.GOLD
+                  : tile === TILE.PLATINUM ? HIDDEN.PLATINUM
+                  :                          HIDDEN.DIAMOND;
         if (p.canCarry()) {
           p.addGem(key);
           this.world.setTile(x, y, TILE.EMPTY);
-          p.setMessage(`💎 Gem collected! (worth $${GEM_VALUE[key]})`);
+          p.setMessage(`Ore collected! ${ORE_NAME[key]} (worth $${GEM_VALUE[key]})`);
         } else {
-          p.setMessage('🎒 Bag full! Return to the surface to sell gems.');
+          p.setMessage('🎒 Bag full! Return to the surface to sell at the Bank.');
         }
         break;
       }
 
+      // ── Unique legendary ruby (sellable at bank) ───────────────────────
+      case TILE.RUBY: {
+        if (p.canCarry()) {
+          p.addGem(HIDDEN.RUBY);
+          this.world.setTile(x, y, TILE.EMPTY);
+          p.setMessage(`🔴 LEGENDARY RUBY found! Sell it at the Bank for $${GEM_VALUE[HIDDEN.RUBY]}!`);
+        } else {
+          p.setMessage('🎒 Bag full! Cannot pick up the ruby.');
+        }
+        break;
+      }
+
+      // ── Unique novelty items ───────────────────────────────────────────
+      case TILE.RUBBER_BOOT: {
+        if (!p.specialItems.has('rubber_boot')) {
+          p.specialItems.add('rubber_boot');
+          this.world.setTile(x, y, TILE.EMPTY);
+          p.setMessage('🥾 You found a rubber boot. One of a kind!');
+        }
+        break;
+      }
+
+      case TILE.POCKET_WATCH: {
+        if (!p.specialItems.has('pocket_watch')) {
+          p.specialItems.add('pocket_watch');
+          this.world.setTile(x, y, TILE.EMPTY);
+          p.setMessage('⌚ A pocket watch! Still ticking after all these years.');
+        }
+        break;
+      }
+
+      case TILE.GLASSES: {
+        if (!p.specialItems.has('glasses')) {
+          p.specialItems.add('glasses');
+          this.world.setTile(x, y, TILE.EMPTY);
+          p.setMessage('🕶️ Stylish glasses. You look great down here.');
+        }
+        break;
+      }
+
+      // ── Tool items ─────────────────────────────────────────────────────
       case TILE.SHOVEL: {
         if (!p.hasShovel) {
           p.hasShovel = true;
