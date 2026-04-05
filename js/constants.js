@@ -90,6 +90,15 @@ const ORE_NAME = Object.freeze({
   [HIDDEN.RUBY]:     '🔴 Ruby',
 });
 
+// Flash colours shown behind the miner when each ore type is collected
+const ORE_FLASH_COLOR = Object.freeze({
+  [HIDDEN.SILVER]:   '#c8d8e0',
+  [HIDDEN.GOLD]:     '#d4a800',
+  [HIDDEN.PLATINUM]: '#b8ccd8',
+  [HIDDEN.DIAMOND]:  '#88ddff',
+  [HIDDEN.RUBY]:     '#ff3060',
+});
+
 // ---------------------------------------------------------------------------
 // Tool durability (needed before SHOP_ITEMS template literals reference it)
 // ---------------------------------------------------------------------------
@@ -197,6 +206,7 @@ const PLAYER_START_Y = 1;   // y=1 is the pavement row
 // ---------------------------------------------------------------------------
 const INVINCIBILITY_FRAMES = 60;   // Blink-animation frames after taking damage (~1 s at 60 fps)
 const BLINK_INTERVAL       = 6;    // Every N frames the player sprite dims during invincibility
+const COLLECT_FLASH_FRAMES = 14;   // Duration (ticks) of the ore-collect flash behind the player
 const MAX_DELTA_TIME_MS    = 100;  // Cap on per-frame dt to avoid spiral-of-death after tab switch
 const MAX_INPUT_QUEUE      = 12;   // Maximum queued input actions before dropping new ones
 
@@ -230,3 +240,8 @@ const TILE_COLOR = {
   [TILE.POCKET_WATCH]: '#332211',
   [TILE.GLASSES]:      '#111122',
 };
+
+// Ore tile types that can be destroyed when a hazard spreads over them
+const HAZARD_DESTROYABLE_TILES = new Set([
+  TILE.SILVER, TILE.GOLD, TILE.PLATINUM, TILE.DIAMOND, TILE.RUBY,
+]);

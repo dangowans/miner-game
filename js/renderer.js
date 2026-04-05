@@ -27,6 +27,7 @@ class Renderer {
     this.updateCamera(player);
     this._clear();
     this._drawWorld(world, player);
+    this._drawCollectFlash(player);
     this._drawPlayer(player);
     this._drawHeadsUpOverlay(player);
   }
@@ -489,6 +490,27 @@ class Renderer {
     const gg = Math.round(g * factor);
     const bb = Math.round(b * factor);
     return `rgb(${rr},${gg},${bb})`;
+  }
+
+  // -------------------------------------------------------------------------
+  // Ore-collect flash
+  // -------------------------------------------------------------------------
+
+  /**
+   * Draw a fading coloured rectangle over the player's tile to signal ore pickup.
+   * Rendered after the world tiles but before the player sprite so the miner
+   * is always visible on top.
+   */
+  _drawCollectFlash(player) {
+    if (player.collectFlash <= 0) return;
+    const ts    = TILE_SIZE;
+    const px    = player.x * ts;
+    const py    = (player.y - this.cameraY) * ts;
+    const alpha = (player.collectFlash / COLLECT_FLASH_FRAMES) * 0.70;
+    this.ctx.globalAlpha = alpha;
+    this.ctx.fillStyle   = player.collectFlashColor;
+    this.ctx.fillRect(px, py, ts, ts);
+    this.ctx.globalAlpha = 1;
   }
 
   // -------------------------------------------------------------------------

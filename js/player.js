@@ -57,6 +57,10 @@ class Player {
 
     // Invincibility frames after taking damage (prevents multi-hit)
     this.iFrames = 0;
+
+    // Ore-collect flash (coloured highlight drawn behind the player sprite)
+    this.collectFlash      = 0;
+    this.collectFlashColor = '#ffffff';
   }
 
   // -------------------------------------------------------------------------
@@ -151,12 +155,22 @@ class Player {
     this.messageTimer = duration;
   }
 
+  /**
+   * Trigger a brief coloured flash behind the player sprite when ore is collected.
+   * @param {string} color - CSS colour string matching the ore type
+   */
+  triggerCollectFlash(color) {
+    this.collectFlash      = COLLECT_FLASH_FRAMES;
+    this.collectFlashColor = color;
+  }
+
   /** Call once per game tick. */
   tick() {
     if (this.messageTimer > 0) {
       this.messageTimer--;
       if (this.messageTimer === 0) this.message = '';
     }
-    if (this.iFrames > 0) this.iFrames--;
+    if (this.iFrames     > 0) this.iFrames--;
+    if (this.collectFlash > 0) this.collectFlash--;
   }
 }

@@ -304,7 +304,7 @@ class World {
     return hidden;
   }
 
-  /** BFS flood-fill into adjacent EMPTY tiles. */
+  /** BFS flood-fill into adjacent EMPTY tiles and any visible ore tiles (which are destroyed). */
   _spread(sx, sy, tileType) {
     const queue   = [{ x: sx, y: sy }];
     const visited = new Set([`${sx},${sy}`]);
@@ -320,7 +320,9 @@ class World {
         const key = `${nx},${ny}`;
         if (visited.has(key)) continue;
         visited.add(key);
-        if (this.getTile(nx, ny) === TILE.EMPTY) {
+        const t = this.getTile(nx, ny);
+        // Spread into empty space or over visible ore tiles (destroying them)
+        if (t === TILE.EMPTY || HAZARD_DESTROYABLE_TILES.has(t)) {
           this.setTile(nx, ny, tileType);
           queue.push({ x: nx, y: ny });
           count++;

@@ -153,6 +153,7 @@ class Game {
           p.hasPick   = false;
           p.pickUses  = 0;
           p.setMessage('⚒ Stone broken! Pick broke — buy a new one.');
+          sounds.playToolBreak();
         } else {
           p.setMessage(`⚒ Stone broken! (${p.pickUses} use${p.pickUses !== 1 ? 's' : ''} left)`);
         }
@@ -198,6 +199,7 @@ class Game {
         p.hasExtinguisher   = false;
         p.extinguisherUses  = 0;
         p.setMessage('🧯 Lava → stone! Extinguisher used up — buy a new one.');
+        sounds.playToolBreak();
       } else {
         p.setMessage(`🧯 Lava → stone! (${p.extinguisherUses} use${p.extinguisherUses !== 1 ? 's' : ''} left) Use Pick to enter.`);
       }
@@ -236,6 +238,7 @@ class Game {
         p.hasBucket   = false;
         p.bucketUses  = 0;
         p.setMessage('🪣 Cleared water! Bucket broke — buy a new one.');
+        sounds.playToolBreak();
       } else {
         p.setMessage(`🪣 Cleared water with bucket. (${p.bucketUses} use${p.bucketUses !== 1 ? 's' : ''} left)`);
       }
@@ -269,6 +272,7 @@ class Game {
   _applyHazardDamage(hazardType) {
     const p    = this.player;
     const died = p.takeDamage();
+    sounds.playHazardHit();
     if (died) {
       this.state = 'dead';
       this.ui.showDead();
@@ -319,6 +323,8 @@ class Game {
           p.addGem(key);
           this.world.setTile(x, y, TILE.EMPTY);
           p.setMessage(`Ore collected! ${ORE_NAME[key]} (worth $${GEM_VALUE[key]})`);
+          p.triggerCollectFlash(ORE_FLASH_COLOR[key]);
+          sounds.playOreCollect(key);
         } else {
           p.setMessage('🎒 Bag full! Return to the surface to sell at the Bank.');
         }
@@ -331,6 +337,8 @@ class Game {
           p.addGem(HIDDEN.RUBY);
           this.world.setTile(x, y, TILE.EMPTY);
           p.setMessage(`🔴 LEGENDARY RUBY found! Sell it at the Bank for $${GEM_VALUE[HIDDEN.RUBY]}!`);
+          p.triggerCollectFlash(ORE_FLASH_COLOR[HIDDEN.RUBY]);
+          sounds.playOreCollect(HIDDEN.RUBY);
         } else {
           p.setMessage('🎒 Bag full! Cannot pick up the ruby.');
         }
@@ -343,6 +351,7 @@ class Game {
           p.specialItems.add('rubber_boot');
           this.world.setTile(x, y, TILE.EMPTY);
           p.setMessage('🥾 You found a rubber boot. One of a kind!');
+          sounds.playItemPickup();
         }
         break;
       }
@@ -352,6 +361,7 @@ class Game {
           p.specialItems.add('pocket_watch');
           this.world.setTile(x, y, TILE.EMPTY);
           p.setMessage('⌚ A pocket watch! Still ticking after all these years.');
+          sounds.playItemPickup();
         }
         break;
       }
@@ -361,6 +371,7 @@ class Game {
           p.specialItems.add('glasses');
           this.world.setTile(x, y, TILE.EMPTY);
           p.setMessage('🕶️ Stylish glasses. You look great down here.');
+          sounds.playItemPickup();
         }
         break;
       }
@@ -371,6 +382,7 @@ class Game {
           p.hasShovel = true;
           this.world.setTile(x, y, TILE.EMPTY);
           p.setMessage('⛏ Found a Shovel! Digging dirt is easier now.');
+          sounds.playItemPickup();
         }
         break;
       }
@@ -381,6 +393,7 @@ class Game {
           p.pickUses = TOOL_USES;
           this.world.setTile(x, y, TILE.EMPTY);
           p.setMessage(`⚒ Found a Pick! Walk into stone to break it. (${TOOL_USES} uses)`);
+          sounds.playItemPickup();
         }
         break;
       }
@@ -391,6 +404,7 @@ class Game {
           p.maxGems = 20;
           this.world.setTile(x, y, TILE.EMPTY);
           p.setMessage('🎒 Found a Large Bag! Carry capacity doubled.');
+          sounds.playItemPickup();
         }
         break;
       }
