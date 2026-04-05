@@ -64,14 +64,11 @@ class World {
     const rng    = this._rng;
     const xRange = MINE_ENT_X_MIN - 2;   // 20 safe columns (x ∈ [1, 20])
     return [
-      { content: HIDDEN.RUBY,         x: 0, y: 20 + Math.floor(rng() * 80) },
-      { content: HIDDEN.RUBBER_BOOT,  x: 0, y:  8 + Math.floor(rng() * 40) },
-      { content: HIDDEN.POCKET_WATCH, x: 0, y: 12 + Math.floor(rng() * 60) },
-      { content: HIDDEN.GLASSES,      x: 0, y:  5 + Math.floor(rng() * 35) },
-    ].map(item => {
-      item.x = 1 + Math.floor(rng() * xRange);
-      return item;
-    });
+      { content: HIDDEN.RUBY,         y: 20 + Math.floor(rng() * 80) },
+      { content: HIDDEN.RUBBER_BOOT,  y:  8 + Math.floor(rng() * 40) },
+      { content: HIDDEN.POCKET_WATCH, y: 12 + Math.floor(rng() * 60) },
+      { content: HIDDEN.GLASSES,      y:  5 + Math.floor(rng() * 35) },
+    ].map(item => ({ ...item, x: 1 + Math.floor(rng() * xRange) }));
   }
 
   // -------------------------------------------------------------------------
@@ -144,6 +141,8 @@ class World {
    * Generate CHUNK_SIZE mine rows starting at fromY.
    * Ore and hazard density shifts with depth; stone becomes more prevalent deeper.
    * Unique items are placed at pre-computed fixed positions (one each, globally).
+   * ~20% of dirt tiles are marked impenetrable – they cannot be revealed by
+   * adjacent probing and must be walked into directly.
    */
   _generateChunk(fromY) {
     const rng = this._rng;
@@ -151,19 +150,26 @@ class World {
     // Probability weights shift with depth (every 50 rows)
     const depthBonus = Math.floor(fromY / 50);
 
+    // Hazard weights scale up gradually from zero at the surface.
+    // Water starts appearing around y=20, lava around y=30.
+    const waterScale = Math.min(1, fromY / 60);
+    const lavaScale  = Math.min(1, fromY / 80);
+    const waterWeight = Math.max(0, Math.round(4 * waterScale));
+    const lavaWeight  = Math.max(0, Math.round((3 + Math.floor(depthBonus / 2)) * lavaScale));
+
     const TABLE = [
       { content: HIDDEN.NOTHING,  weight: Math.max(15, 30 - depthBonus)        },
       { content: HIDDEN.SILVER,   weight: Math.max( 8, 22 - depthBonus * 2)    },
       { content: HIDDEN.GOLD,     weight: Math.max( 4, 14 - depthBonus)        },
       { content: HIDDEN.PLATINUM, weight:  4 + depthBonus                      },
       { content: HIDDEN.DIAMOND,  weight:  1 + Math.floor(depthBonus / 3)      },
-      { content: HIDDEN.WATER,    weight:  4                                    },
-      { content: HIDDEN.LAVA,     weight:  3 + Math.floor(depthBonus / 2)      },
+      { content: HIDDEN.WATER,    weight: waterWeight                           },
+      { content: HIDDEN.LAVA,     weight: lavaWeight                            },
       { content: HIDDEN.STONE,    weight: 10 + Math.floor(depthBonus * 1.5)    },
       { content: HIDDEN.SHOVEL,   weight:  2                                    },
       { content: HIDDEN.PICK,     weight:  2                                    },
       { content: HIDDEN.BAG,      weight:  1                                    },
-    ];
+    ].filter(e => e.weight > 0);   // Drop zero-weight entries
     const totalWeight = TABLE.reduce((s, e) => s + e.weight, 0);
 
     // Per-chunk item caps so common pickups stay controlled
@@ -210,7 +216,11 @@ class World {
         const threshold =
           REVEAL_MIN + Math.floor(rng() * (REVEAL_MAX - REVEAL_MIN + 1));
 
-        data[x] = { hidden, threshold, probes: 0 };
+        // ~20% of tiles are impenetrable – adjacent probing has no effect.
+        // The player must walk directly into these tiles to reveal them.
+        const impenetrable = rng() < 0.20;
+
+        data[x] = { hidden, threshold, probes: 0, impenetrable };
       }
     }
 
@@ -249,6 +259,8 @@ class World {
       if (this.getTile(nx, ny) !== TILE.DIRT) continue;
       const d = this.getData(nx, ny);
       if (!d) continue;
+      // Impenetrable tiles cannot be revealed by probing – must be walked into.
+      if (d.impenetrable) continue;
       d.probes++;
       const effective = Math.max(1, d.threshold - toolReduction);
       if (d.probes >= effective) {

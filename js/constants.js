@@ -155,9 +155,9 @@ const START_HEARTS      = 3;
 // ---------------------------------------------------------------------------
 // Reveal thresholds
 // ---------------------------------------------------------------------------
-const REVEAL_MIN        = 3;   // Minimum probe count to reveal a dirt tile
-const REVEAL_MAX        = 12;  // Maximum probe count to reveal a dirt tile
-const SHOVEL_REDUCTION  = 5;   // Shovel reduces dirt reveal threshold by this amount
+const REVEAL_MIN        = 10;  // Minimum probe count to reveal a dirt tile
+const REVEAL_MAX        = 35;  // Maximum probe count to reveal a dirt tile
+const SHOVEL_REDUCTION  = 12;  // Shovel reduces dirt reveal threshold by this amount
 
 // ---------------------------------------------------------------------------
 // Hazard spread
