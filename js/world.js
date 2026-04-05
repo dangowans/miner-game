@@ -4,30 +4,37 @@
  * World – infinite-depth mine with lazy chunk generation.
  *
  * Layout:
- *   y=0  Building facades row – BUILDING/SHOP/BAR/DOCTOR tiles (all impassable
- *        from below; player interacts by pressing E while on pavement at y=1).
- *   y=1  Pavement row – PAVEMENT (walkable east/west); MINE_ENT at x=22-24
- *        is the only crossing point to the mine below.
- *   y≥2  Mine – starts as DIRT, generated in chunks, extends infinitely.
+ *   y=0  Building facades – BUILDING/OUTHOUSE/SHOP/BAR/DOCTOR/BANK/MINE_ENT tiles.
+ *   y=1  Pavement row – PAVEMENT; MINE_ENT at x=22-24 is the crossing point.
+ *   y≥2  Mine – DIRT initially, generated in chunks, extends infinitely.
+ *        x=24 (rightmost) is always ELEVATOR shaft (impassable; interact from x=23).
+ *
+ * Unique items (ruby, rubber boot, pocket watch, glasses) are pre-placed at
+ * fixed random positions decided at construction time, so each appears exactly
+ * once in the entire mine.
  */
 class World {
   constructor() {
-    this.width         = MAP_WIDTH;
-    this.rowTiles      = new Map();   // y → Uint8Array[MAP_WIDTH]
-    this.rowData       = new Map();   // y → Array[MAP_WIDTH] of null|object
-    this.deepestGenY   = 1;           // Tracks the deepest generated row; first mine chunk starts at y=2
-    this._rng          = this._makeRng(Date.now()); // New seed each page load → different mine every game
+    // RNG is created first so unique item positions can consume values before
+    // chunk generation begins (keeping generation deterministic from the seed).
+    this._rng = this._makeRng(Date.now());
 
-    // Track spring-source water tiles (these cannot be cleared by the bucket).
-    // The Set stores coordinate keys "x,y".
-    this.springTiles   = new Set();
+    // Pre-compute unique item positions (uses RNG before chunk generation).
+    this.uniqueItemPositions = this._computeUniqueItemPositions();
 
-    // Track lava-source tiles (original hidden lava, not spread lava).
-    // The Set stores coordinate keys "x,y".
-    this.lavaSources   = new Set();
+    this.width       = MAP_WIDTH;
+    this.rowTiles    = new Map();   // y → Uint8Array[MAP_WIDTH]
+    this.rowData     = new Map();   // y → Array[MAP_WIDTH] of null|object
+    this.deepestGenY = 1;
+
+    // Track spring-source water tiles (cannot be cleared by bucket).
+    this.springTiles = new Set();
+
+    // Track lava-source tiles (original, not spread).
+    this.lavaSources = new Set();
 
     this._buildSurface();
-    this._generateChunk(2);          // First mine chunk (mine starts at y=2)
+    this._generateChunk(2);   // First mine chunk (mine starts at y=2)
   }
 
   // -------------------------------------------------------------------------
@@ -42,6 +49,29 @@ class World {
       t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) >>> 0;
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
+  }
+
+  // -------------------------------------------------------------------------
+  // Unique item pre-placement
+  // -------------------------------------------------------------------------
+
+  /**
+   * Decide fixed positions for the four unique items using the shared RNG.
+   * Positions are restricted to columns 1-20 (avoiding mine entrance / elevator)
+   * and to depths where the mine is fully generated as DIRT.
+   */
+  _computeUniqueItemPositions() {
+    const rng    = this._rng;
+    const xRange = MINE_ENT_X_MIN - 2;   // 20 safe columns (x ∈ [1, 20])
+    return [
+      { content: HIDDEN.RUBY,         x: 0, y: 20 + Math.floor(rng() * 80) },
+      { content: HIDDEN.RUBBER_BOOT,  x: 0, y:  8 + Math.floor(rng() * 40) },
+      { content: HIDDEN.POCKET_WATCH, x: 0, y: 12 + Math.floor(rng() * 60) },
+      { content: HIDDEN.GLASSES,      x: 0, y:  5 + Math.floor(rng() * 35) },
+    ].map(item => {
+      item.x = 1 + Math.floor(rng() * xRange);
+      return item;
+    });
   }
 
   // -------------------------------------------------------------------------
@@ -87,26 +117,24 @@ class World {
   // -------------------------------------------------------------------------
 
   _buildSurface() {
-    // ── y=0: Building facades (impassable wall the player sees from pavement) ──
-    // The entire row is building material; special "door" tiles mark interactable spots.
+    // ── y=0: Building facades ──────────────────────────────────────────────
     const { tiles: top } = this._getOrCreateRow(0);
     top.fill(TILE.BUILDING);
 
-    // Shop door at x=5
-    top[5] = TILE.SHOP;
-    // Bar door at x=9
-    top[9] = TILE.BAR;
-    // Doctor door at x=13
-    top[13] = TILE.DOCTOR;
-    // Mine entrance arch at x=22-24 (decorative upper arch; actual entrance is y=1 below)
+    top[OUTHOUSE_X] = TILE.OUTHOUSE;   // Left-side outhouse (x=1)
+    top[5]          = TILE.SHOP;        // General store
+    top[9]          = TILE.BAR;         // Bar
+    top[13]         = TILE.DOCTOR;      // Doctor
+    top[BANK_X]     = TILE.BANK;        // Town bank (x=17)
+
+    // Mine entrance arch at x=22-24 (decorative upper; actual entrance at y=1)
     for (let x = MINE_ENT_X_MIN; x <= MINE_ENT_X_MAX; x++) {
       top[x] = TILE.MINE_ENT;
     }
 
-    // ── y=1: Pavement row (fully walkable; mine entrance at right) ──────────
+    // ── y=1: Pavement row ──────────────────────────────────────────────────
     const { tiles: pave } = this._getOrCreateRow(1);
     pave.fill(TILE.PAVEMENT);
-    // Mine entrance tiles – the crossing point to the mine below
     for (let x = MINE_ENT_X_MIN; x <= MINE_ENT_X_MAX; x++) {
       pave[x] = TILE.MINE_ENT;
     }
@@ -114,8 +142,8 @@ class World {
 
   /**
    * Generate CHUNK_SIZE mine rows starting at fromY.
-   * Gem and hazard density shifts slightly with depth for variety.
-   * Stone becomes more prevalent deeper down.
+   * Ore and hazard density shifts with depth; stone becomes more prevalent deeper.
+   * Unique items are placed at pre-computed fixed positions (one each, globally).
    */
   _generateChunk(fromY) {
     const rng = this._rng;
@@ -124,10 +152,11 @@ class World {
     const depthBonus = Math.floor(fromY / 50);
 
     const TABLE = [
-      { content: HIDDEN.NOTHING,  weight: Math.max(15, 32 - depthBonus)        },
-      { content: HIDDEN.GEM_LOW,  weight: Math.max( 8, 26 - depthBonus)        },
-      { content: HIDDEN.GEM_MED,  weight: 13 + depthBonus                      },
-      { content: HIDDEN.GEM_HIGH, weight:  4 + depthBonus                      },
+      { content: HIDDEN.NOTHING,  weight: Math.max(15, 30 - depthBonus)        },
+      { content: HIDDEN.SILVER,   weight: Math.max( 8, 22 - depthBonus * 2)    },
+      { content: HIDDEN.GOLD,     weight: Math.max( 4, 14 - depthBonus)        },
+      { content: HIDDEN.PLATINUM, weight:  4 + depthBonus                      },
+      { content: HIDDEN.DIAMOND,  weight:  1 + Math.floor(depthBonus / 3)      },
       { content: HIDDEN.WATER,    weight:  4                                    },
       { content: HIDDEN.LAVA,     weight:  3 + Math.floor(depthBonus / 2)      },
       { content: HIDDEN.STONE,    weight: 10 + Math.floor(depthBonus * 1.5)    },
@@ -137,7 +166,7 @@ class World {
     ];
     const totalWeight = TABLE.reduce((s, e) => s + e.weight, 0);
 
-    // Per-chunk item caps so rare pickups stay rare
+    // Per-chunk item caps so common pickups stay controlled
     const CHUNK_CAPS = { shovel: 1, pick: 1, bag: 1 };
     const chunkCount = { shovel: 0, pick: 0, bag: 0 };
 
@@ -147,7 +176,7 @@ class World {
       for (let i = 0; i < this.width; i++) data[i] = null;
 
       for (let x = 0; x < this.width; x++) {
-        // Elevator shaft: rightmost column is always the elevator shaft
+        // Elevator shaft: rightmost column is always the elevator shaft (impassable)
         if (x === this.width - 1) {
           tiles[x] = TILE.ELEVATOR;
           continue;
@@ -159,7 +188,7 @@ class World {
           continue;
         }
 
-        let roll = rng() * totalWeight;
+        let roll   = rng() * totalWeight;
         let hidden = HIDDEN.NOTHING;
         for (const entry of TABLE) {
           roll -= entry.weight;
@@ -185,12 +214,20 @@ class World {
       }
     }
 
+    // Override with pre-decided unique item positions that fall in this chunk
+    for (const item of this.uniqueItemPositions) {
+      if (item.y >= fromY && item.y < fromY + CHUNK_SIZE) {
+        const tile = this.getTile(item.x, item.y);
+        if (tile === TILE.DIRT) {
+          const d = this.getData(item.x, item.y);
+          if (d) d.hidden = item.content;
+        }
+      }
+    }
+
     this.deepestGenY = Math.max(this.deepestGenY, fromY + CHUNK_SIZE - 1);
   }
 
-  /**
-   * Called by the game loop – ensures rows up to (and beyond) `untilY` exist.
-   */
   ensureGenerated(untilY) {
     while (this.deepestGenY < untilY) {
       this._generateChunk(this.deepestGenY + 1);
@@ -201,10 +238,6 @@ class World {
   // Reveal logic
   // -------------------------------------------------------------------------
 
-  /**
-   * Probe all DIRT tiles adjacent to (px, py).
-   * Returns array of { x, y, content } for any newly-revealed tiles.
-   */
   probeAdjacent(px, py, toolReduction) {
     const revealed = [];
     const DIRS = [
@@ -226,10 +259,6 @@ class World {
     return revealed;
   }
 
-  /**
-   * Immediately dig a DIRT tile (player stepped directly onto it).
-   * Returns the hidden content string, or null if not DIRT.
-   */
   digInto(x, y) {
     if (this.getTile(x, y) !== TILE.DIRT) return null;
     return this._revealTile(x, y);
@@ -246,22 +275,27 @@ class World {
     this.setData(x, y, null);
 
     switch (hidden) {
-      case HIDDEN.GEM_LOW:  this.setTile(x, y, TILE.GEM_LOW);  break;
-      case HIDDEN.GEM_MED:  this.setTile(x, y, TILE.GEM_MED);  break;
-      case HIDDEN.GEM_HIGH: this.setTile(x, y, TILE.GEM_HIGH); break;
-      case HIDDEN.STONE:    this.setTile(x, y, TILE.STONE);     break;
+      case HIDDEN.SILVER:       this.setTile(x, y, TILE.SILVER);       break;
+      case HIDDEN.GOLD:         this.setTile(x, y, TILE.GOLD);         break;
+      case HIDDEN.PLATINUM:     this.setTile(x, y, TILE.PLATINUM);     break;
+      case HIDDEN.DIAMOND:      this.setTile(x, y, TILE.DIAMOND);      break;
+      case HIDDEN.STONE:        this.setTile(x, y, TILE.STONE);        break;
       case HIDDEN.WATER:
         this.setTile(x, y, TILE.WATER);
-        this.springTiles.add(`${x},${y}`);   // Mark as spring source (no spread until walked into)
+        this.springTiles.add(`${x},${y}`);
         break;
       case HIDDEN.LAVA:
         this.setTile(x, y, TILE.LAVA);
-        this.lavaSources.add(`${x},${y}`);   // Mark as lava source (no spread until walked into)
+        this.lavaSources.add(`${x},${y}`);
         break;
-      case HIDDEN.SHOVEL: this.setTile(x, y, TILE.SHOVEL); break;
-      case HIDDEN.PICK:   this.setTile(x, y, TILE.PICK);   break;
-      case HIDDEN.BAG:    this.setTile(x, y, TILE.BAG);    break;
-      default:            this.setTile(x, y, TILE.EMPTY);  break;
+      case HIDDEN.SHOVEL:       this.setTile(x, y, TILE.SHOVEL);       break;
+      case HIDDEN.PICK:         this.setTile(x, y, TILE.PICK);         break;
+      case HIDDEN.BAG:          this.setTile(x, y, TILE.BAG);          break;
+      case HIDDEN.RUBY:         this.setTile(x, y, TILE.RUBY);         break;
+      case HIDDEN.RUBBER_BOOT:  this.setTile(x, y, TILE.RUBBER_BOOT);  break;
+      case HIDDEN.POCKET_WATCH: this.setTile(x, y, TILE.POCKET_WATCH); break;
+      case HIDDEN.GLASSES:      this.setTile(x, y, TILE.GLASSES);      break;
+      default:                  this.setTile(x, y, TILE.EMPTY);        break;
     }
     return hidden;
   }
@@ -297,61 +331,56 @@ class World {
 
   /**
    * True if the player may enter (x, y).
-   * DIRT is NOT passable – the game handles dig-in before calling this.
-   * STONE is NOT passable – the game checks for pick before calling this.
-   * WATER and LAVA are handled explicitly by _enterWater / _enterLava in
-   * game.js before isPassable is ever reached; they are NOT listed here.
+   * DIRT is NOT passable – game handles dig-in before calling this.
+   * STONE is NOT passable – game checks for pick before calling this.
+   * WATER/LAVA are handled by _enterWater/_enterLava in game.js.
+   * ELEVATOR is NOT passable – player interacts from the adjacent tile.
    */
   isPassable(x, y) {
     const t = this.getTile(x, y);
     if (t === null) return false;
     switch (t) {
       case TILE.GRASS:
-      case TILE.PAVEMENT:  // Pavement row walkable east-west
+      case TILE.PAVEMENT:
       case TILE.SHOP:
       case TILE.BAR:
       case TILE.DOCTOR:
+      case TILE.BANK:
+      case TILE.OUTHOUSE:
       case TILE.MINE_ENT:
       case TILE.EMPTY:
-      case TILE.GEM_LOW:
-      case TILE.GEM_MED:
-      case TILE.GEM_HIGH:
+      case TILE.SILVER:
+      case TILE.GOLD:
+      case TILE.PLATINUM:
+      case TILE.DIAMOND:
+      case TILE.RUBY:
+      case TILE.RUBBER_BOOT:
+      case TILE.POCKET_WATCH:
+      case TILE.GLASSES:
       case TILE.SHOVEL:
       case TILE.PICK:
       case TILE.BAG:
-      case TILE.ELEVATOR:   // Elevator shaft – freely walkable; press E to interact
         return true;
       case TILE.BUILDING:
       case TILE.DIRT:
-      case TILE.STONE:    // impassable without a pick
-      case TILE.WATER:    // isPassable returns false; _enterWater in game.js handles all variants
-      case TILE.LAVA:     // isPassable returns false; _enterLava  in game.js handles all variants
+      case TILE.STONE:
+      case TILE.WATER:
+      case TILE.LAVA:
+      case TILE.ELEVATOR:   // Impassable – interact from adjacent tile (x = width-2)
         return false;
       default:
         return false;
     }
   }
 
-  /**
-   * Returns true if (x, y) is a water-spring source tile.
-   * The bucket cannot clear spring sources, only spread water.
-   */
   isSpringSource(x, y) {
     return this.springTiles.has(`${x},${y}`);
   }
 
-  /**
-   * Returns true if (x, y) is an original lava-source tile (not spread lava).
-   * Checks that the tile is still LAVA to handle cases where it was extinguished.
-   */
   isLavaSource(x, y) {
     return this.lavaSources.has(`${x},${y}`) && this.getTile(x, y) === TILE.LAVA;
   }
 
-  /**
-   * Trigger a BFS flood-fill spread of tileType from (x, y).
-   * Called by game.js when the player runs into a hazard source.
-   */
   spreadHazard(x, y, tileType) {
     this._spread(x, y, tileType);
   }

@@ -342,12 +342,15 @@ class Game {
 
   _handleInteract() {
     const p = this.player;
-    // Check both the tile the player stands on AND the facade tile directly above.
-    // Buildings are at y=0; the player walks the pavement at y=1 and interacts
-    // by standing below a door tile and pressing E.
     const checkTile = (type) =>
       this.world.getTile(p.x, p.y)     === type ||
       this.world.getTile(p.x, p.y - 1) === type;
+
+    if (checkTile(TILE.OUTHOUSE)) {
+      this.state = 'overlay';
+      this.ui.openOuthouse(() => { this.state = 'playing'; });
+      return;
+    }
 
     if (checkTile(TILE.SHOP)) {
       this.state = 'overlay';
@@ -380,16 +383,24 @@ class Game {
       return;
     }
 
-    // Elevator shaft: x = rightmost column, y >= 2 (inside the mine)
-    if (p.x === this.world.width - 1 && p.y >= 2) {
+    if (checkTile(TILE.BANK)) {
+      this.state = 'overlay';
+      this.ui.openBank(p, () => {
+        this.state = 'playing';
+        this.ui.updateHUD(p);
+      });
+      return;
+    }
+
+    // Elevator: player stands at x = rightmost-1 (adjacent to shaft) inside the mine
+    if (p.y >= 2 && p.x === this.world.width - 2) {
       this.state = 'overlay';
       this.ui.openElevator(p, () => {
         this.state = 'playing';
         this.ui.updateHUD(p);
-        // If the player rode the elevator, move them to surface pavement
         if (p._elevatorRode) {
           p._elevatorRode = false;
-          p.x = this.world.width - 1;
+          p.x = this.world.width - 2;  // x=23, pavement adjacent to mine entrance
           p.y = PLAYER_START_Y;
         }
       });

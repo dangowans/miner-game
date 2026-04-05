@@ -2,28 +2,18 @@
 
 /**
  * Renderer – draws the world and player onto the HTML5 Canvas.
- *
- * The visible viewport is VIEWPORT_COLS × VIEWPORT_ROWS tiles.
- * cameraY (world-tile units) is the topmost row drawn on screen.
- * The player is kept in the upper-third of the viewport so the miner
- * can see plenty of mine ahead of them.
  */
 class Renderer {
   constructor(canvas) {
-    this.canvas = canvas;
-    this.ctx    = canvas.getContext('2d');
-    this.cameraY = 0;   // World row shown at the top of the canvas
+    this.canvas  = canvas;
+    this.ctx     = canvas.getContext('2d');
+    this.cameraY = 0;
   }
 
   // -------------------------------------------------------------------------
   // Camera
   // -------------------------------------------------------------------------
 
-  /**
-   * Snap the camera so the player sits roughly one-third from the top
-   * (gives more visibility below while still showing some context above).
-   * Never scrolls above y=0.
-   */
   updateCamera(player) {
     const idealTop = player.y - Math.floor(VIEWPORT_ROWS / 3);
     this.cameraY   = Math.max(0, idealTop);
@@ -60,20 +50,18 @@ class Renderer {
         const tile = world.getTile(x, worldY);
         if (tile === null) continue;
 
-        const px = x       * ts;
+        const px = x         * ts;
         const py = screenRow * ts;
 
-        // Base fill
         ctx.fillStyle = TILE_COLOR[tile] ?? '#333';
         ctx.fillRect(px, py, ts, ts);
 
-        // Detail decoration
-        this._drawTileDetail(ctx, tile, px, py, ts, world, x, worldY);
+        this._drawTileDetail(ctx, tile, px, py, ts, world, x, worldY, player);
       }
     }
   }
 
-  _drawTileDetail(ctx, tile, px, py, ts, world, tx, ty) {
+  _drawTileDetail(ctx, tile, px, py, ts, world, tx, ty, player) {
     const hs = ts / 2;
     const cx = px + hs;
     const cy = py + hs;
@@ -91,18 +79,40 @@ class Renderer {
       }
 
       case TILE.BUILDING: {
-        // Brick rows
         ctx.fillStyle = '#4a2a0e';
         ctx.fillRect(px + 2, py + 3,  ts - 4, 5);
         ctx.fillRect(px + 2, py + 11, ts - 4, 5);
         ctx.fillRect(px + 2, py + 19, ts - 4, 5);
         ctx.fillRect(px + 2, py + 27, ts - 4, 5);
-        // Mortar lines
         ctx.fillStyle = '#8a6040';
         ctx.fillRect(px + ts / 2, py + 3,  1, 5);
         ctx.fillRect(px + 4,      py + 11, 1, 5);
         ctx.fillRect(px + ts / 2, py + 19, 1, 5);
         ctx.fillRect(px + 4,      py + 27, 1, 5);
+        break;
+      }
+
+      case TILE.OUTHOUSE: {
+        // Small wooden shack with a crescent moon window
+        ctx.fillStyle = '#5a3a18';
+        ctx.fillRect(px + 4, py + 6, ts - 8, ts - 6);
+        // Roof peak
+        ctx.fillStyle = '#3a2008';
+        ctx.beginPath();
+        ctx.moveTo(px + 2,      py + 6);
+        ctx.lineTo(cx,          py + 1);
+        ctx.lineTo(px + ts - 2, py + 6);
+        ctx.closePath();
+        ctx.fill();
+        // Crescent moon cutout (light outline)
+        ctx.strokeStyle = '#f0d080';
+        ctx.lineWidth   = 1.5;
+        ctx.beginPath();
+        ctx.arc(cx, cy - 2, 4, 0.3, Math.PI - 0.3);
+        ctx.stroke();
+        // Door handle
+        ctx.fillStyle = '#c08040';
+        ctx.fillRect(cx + 2, cy + 4, 2, 3);
         break;
       }
 
@@ -113,7 +123,6 @@ class Renderer {
         ctx.font      = 'bold 7px monospace';
         ctx.textAlign = 'center';
         ctx.fillText('SHOP', cx, cy + 2);
-        // Door handle
         ctx.fillStyle = '#c08000';
         ctx.fillRect(px + 10, py + 18, 3, 3);
         break;
@@ -134,7 +143,6 @@ class Renderer {
       case TILE.DOCTOR: {
         ctx.fillStyle = '#ddf4ff';
         ctx.fillRect(px + 7, py + 8, ts - 14, ts - 8);
-        // Red cross
         ctx.fillStyle = '#cc0000';
         ctx.fillRect(cx - 1, py + 10, 3, 10);
         ctx.fillRect(cx - 4, py + 13, 9, 3);
@@ -145,10 +153,28 @@ class Renderer {
         break;
       }
 
+      case TILE.BANK: {
+        // Green facade with "$" sign and column hints
+        ctx.fillStyle = '#d4edda';
+        ctx.fillRect(px + 4, py + 8, ts - 8, ts - 8);
+        // Columns
+        ctx.fillStyle = '#a0c8a8';
+        ctx.fillRect(px + 5,  py + 8, 4, ts - 8);
+        ctx.fillRect(px + ts - 9, py + 8, 4, ts - 8);
+        // "$" label
+        ctx.fillStyle = '#1a5c1a';
+        ctx.font      = 'bold 9px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('BANK', cx, cy + 2);
+        // Door handle
+        ctx.fillStyle = '#2a8a2a';
+        ctx.fillRect(cx - 2, py + 22, 3, 3);
+        break;
+      }
+
       case TILE.MINE_ENT: {
         ctx.fillStyle = '#000';
         ctx.fillRect(px + 5, py + 3, ts - 10, ts - 3);
-        // Arch hint
         ctx.strokeStyle = '#555';
         ctx.lineWidth   = 2;
         ctx.beginPath();
@@ -162,22 +188,18 @@ class Renderer {
       }
 
       case TILE.PAVEMENT: {
-        // Flat stone slabs with subtle seam lines
         ctx.fillStyle = '#7a7060';
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
-        // Horizontal seam every other tile row
         ctx.fillStyle = '#686050';
         if (ty % 2 === 0) {
           ctx.fillRect(px + 1, py + ts / 2, ts - 2, 2);
         }
-        // Vertical seam offset between rows
         const seamX = ty % 2 === 0 ? px + ts / 3 : px + (2 * ts / 3);
         ctx.fillRect(Math.floor(seamX), py + 1, 2, ts / 2 - 1);
         break;
       }
 
       case TILE.DIRT: {
-        // Layered earthy texture
         ctx.fillStyle = '#7a4028';
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         ctx.fillStyle = '#5a2818';
@@ -186,7 +208,6 @@ class Renderer {
           const oy = ((tx *  9 + ty * 13 + i * 11) % (ts - 8)) + 4;
           ctx.fillRect(px + ox, py + oy, 3, 2);
         }
-        // Reveal progress: glowing border that brightens as probes accumulate
         const d = world.getData(tx, ty);
         if (d && d.probes > 0) {
           const pct   = d.probes / d.threshold;
@@ -204,31 +225,68 @@ class Renderer {
         break;
       }
 
-      case TILE.GEM_LOW:  this._drawGem(ctx, cx, cy, hs, '#00c864', '#003820'); break;
-      case TILE.GEM_MED:  this._drawGem(ctx, cx, cy, hs, '#3a7aff', '#001040'); break;
-      case TILE.GEM_HIGH: this._drawGem(ctx, cx, cy, hs, '#ff3333', '#400000'); break;
+      // ── Ore tiles ──────────────────────────────────────────────────────────
+      case TILE.SILVER:   this._drawOre(ctx, cx, cy, hs, '#c8d8e0', '#606870', '🥈'); break;
+      case TILE.GOLD:     this._drawOre(ctx, cx, cy, hs, '#f0c000', '#604800', '🥇'); break;
+      case TILE.PLATINUM: this._drawOre(ctx, cx, cy, hs, '#d8eef8', '#485868', '⬜'); break;
+      case TILE.DIAMOND:  this._drawGem(ctx, cx, cy, hs, '#aaddff', '#002244');       break;
 
+      // ── Unique ore ─────────────────────────────────────────────────────────
+      case TILE.RUBY: {
+        this._drawGem(ctx, cx, cy, hs, '#ff3060', '#440010');
+        // Crown marker – show uniqueness
+        ctx.fillStyle = '#ffd700';
+        ctx.font      = '8px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('★', cx, py + 8);
+        break;
+      }
+
+      // ── Unique novelty items ───────────────────────────────────────────────
+      case TILE.RUBBER_BOOT: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🥾', cx, cy + 8);
+        break;
+      }
+
+      case TILE.POCKET_WATCH: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('⌚', cx, cy + 8);
+        break;
+      }
+
+      case TILE.GLASSES: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🕶️', cx, cy + 8);
+        break;
+      }
+
+      // ── Tool items ─────────────────────────────────────────────────────────
       case TILE.WATER: {
         const isSource = world.isSpringSource(tx, ty);
         if (isSource) {
-          // Spring source: teal background with upwelling bubbles and a bright centre dot
           ctx.fillStyle = '#007a6a';
           ctx.fillRect(px, py, ts, ts);
-          // Inner highlight ring to suggest a welling pool
           ctx.fillStyle = '#00b89a';
           ctx.fillRect(px + 3, py + 3, ts - 6, ts - 6);
-          // Upward-bubble symbol
           ctx.fillStyle = '#aaffee';
           ctx.font      = '16px monospace';
           ctx.textAlign = 'center';
           ctx.fillText('⬆', cx, cy + 6);
-          // Bright centre dot marking the source point
           ctx.fillStyle = '#ffffff';
           ctx.beginPath();
           ctx.arc(cx, cy + 8, 3, 0, Math.PI * 2);
           ctx.fill();
         } else {
-          // Spread water: dark blue with animated shimmer
           ctx.fillStyle = '#1040aa';
           ctx.fillRect(px, py, ts, ts);
           ctx.fillStyle = '#4488ff';
@@ -247,7 +305,6 @@ class Renderer {
         ctx.font      = '20px monospace';
         ctx.textAlign = 'center';
         ctx.fillText('≋', cx, cy + 7);
-        // Glow effect
         ctx.fillStyle = 'rgba(255,100,0,0.3)';
         ctx.fillRect(px, py, ts, ts);
         break;
@@ -281,17 +338,14 @@ class Renderer {
       }
 
       case TILE.STONE: {
-        // Grey rocky block with crack lines
         ctx.fillStyle = '#484848';
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
-        // Highlight edges (top-left lighter, bottom-right darker)
         ctx.fillStyle = '#686868';
         ctx.fillRect(px + 1, py + 1, ts - 2, 3);
         ctx.fillRect(px + 1, py + 1, 3,       ts - 2);
         ctx.fillStyle = '#282828';
         ctx.fillRect(px + 1, py + ts - 4, ts - 2, 3);
         ctx.fillRect(px + ts - 4, py + 1, 3,       ts - 2);
-        // Crack details (deterministic from tile position)
         ctx.strokeStyle = '#333';
         ctx.lineWidth   = 1;
         ctx.beginPath();
@@ -301,7 +355,6 @@ class Renderer {
         ctx.lineTo(cx1 + 6, cy1 + 4);
         ctx.lineTo(cx1 + 10, cy1 + 2);
         ctx.stroke();
-        // Label so it's obvious
         ctx.fillStyle = '#aaa';
         ctx.font      = 'bold 8px monospace';
         ctx.textAlign = 'center';
@@ -310,60 +363,103 @@ class Renderer {
       }
 
       case TILE.ELEVATOR: {
-        // Dark shaft with vertical cable and call-button marker
+        // Shaft background with vertical cables
         ctx.fillStyle = '#1e1e3a';
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
-        // Vertical cable lines
         ctx.fillStyle = '#4a4a7a';
         ctx.fillRect(cx - 3, py + 1, 2, ts - 2);
         ctx.fillRect(cx + 1, py + 1, 2, ts - 2);
-        // Horizontal guide rails at edges
+        // Guide rails
         ctx.fillStyle = '#383868';
-        ctx.fillRect(px + 2, py + 4,  4, 2);
-        ctx.fillRect(px + 2, py + ts - 6, 4, 2);
+        ctx.fillRect(px + 2,      py + 4,  4, 2);
+        ctx.fillRect(px + 2,      py + ts - 6, 4, 2);
         ctx.fillRect(px + ts - 6, py + 4,  4, 2);
         ctx.fillRect(px + ts - 6, py + ts - 6, 4, 2);
-        // 'E' hint glyph
-        ctx.fillStyle = '#6a6aaa';
-        ctx.font      = 'bold 9px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('[E]', cx, cy + 3);
+
+        // Elevator cab: shown when elevatorCalled is true
+        const cabHere = player && player.elevatorCalled;
+        if (cabHere) {
+          ctx.fillStyle = '#8888cc';
+          ctx.fillRect(px + 4, py + 6, ts - 8, ts - 12);
+          // Cab door line
+          ctx.fillStyle = '#5555aa';
+          ctx.fillRect(cx - 1, py + 6, 2, ts - 12);
+          // Arrow up indicator
+          ctx.fillStyle = '#ffffff';
+          ctx.font      = 'bold 9px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('▲', cx, py + ts - 8);
+        } else {
+          // Hint glyph when no cab present
+          ctx.fillStyle = '#6a6aaa';
+          ctx.font      = 'bold 9px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('[E]', cx, cy + 3);
+        }
         break;
       }
     }
   }
 
+  // -------------------------------------------------------------------------
+  // Gem / ore helper drawers
+  // -------------------------------------------------------------------------
+
   _drawGem(ctx, cx, cy, hs, color, shadow) {
     const s = hs * 0.52;
     ctx.fillStyle = '#111';
     ctx.fillRect(cx - hs + 2, cy - hs + 2, hs * 2 - 4, hs * 2 - 4);
-    // Shadow diamond
     ctx.beginPath();
     ctx.moveTo(cx,     cy - s);
-    ctx.lineTo(cx + s, cy    );
+    ctx.lineTo(cx + s, cy);
     ctx.lineTo(cx,     cy + s);
-    ctx.lineTo(cx - s, cy    );
+    ctx.lineTo(cx - s, cy);
     ctx.closePath();
     ctx.fillStyle = shadow;
     ctx.fill();
-    // Gem body
     ctx.beginPath();
     ctx.moveTo(cx,         cy - s + 2);
-    ctx.lineTo(cx + s - 2, cy        );
+    ctx.lineTo(cx + s - 2, cy);
     ctx.lineTo(cx,         cy + s - 2);
-    ctx.lineTo(cx - s + 2, cy        );
+    ctx.lineTo(cx - s + 2, cy);
     ctx.closePath();
     ctx.fillStyle = color;
     ctx.fill();
-    // Specular highlight
     ctx.beginPath();
     ctx.moveTo(cx,     cy - s + 4);
-    ctx.lineTo(cx + 4, cy - 2    );
-    ctx.lineTo(cx,     cy + 4    );
-    ctx.lineTo(cx - 4, cy - 2    );
+    ctx.lineTo(cx + 4, cy - 2);
+    ctx.lineTo(cx,     cy + 4);
+    ctx.lineTo(cx - 4, cy - 2);
     ctx.closePath();
     ctx.fillStyle = 'rgba(255,255,255,0.45)';
     ctx.fill();
+  }
+
+  /** Draw ore as a rounded nugget shape with an emoji label. */
+  _drawOre(ctx, cx, cy, hs, color, shadow, emoji) {
+    const r = hs * 0.55;
+    ctx.fillStyle = '#111';
+    ctx.fillRect(cx - hs + 2, cy - hs + 2, hs * 2 - 4, hs * 2 - 4);
+    // Shadow nugget
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = shadow;
+    ctx.fill();
+    // Main nugget
+    ctx.beginPath();
+    ctx.arc(cx - 1, cy - 1, r - 2, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    // Highlight
+    ctx.beginPath();
+    ctx.arc(cx - 2, cy - 2, r * 0.4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.fill();
+    // Small emoji label
+    ctx.font      = '9px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#fff';
+    ctx.fillText(emoji, cx, cy + hs - 4);
   }
 
   // -------------------------------------------------------------------------
@@ -377,15 +473,14 @@ class Renderer {
     const hs = ts / 2;
     const cx = px + hs;
 
-    // During invincibility frames, dim the sprite every other 6-frame window
-    // (draw at low alpha instead of disappearing so the player stays visible)
+    // During invincibility frames dim the sprite every other 6-frame window
     const blink = player.iFrames > 0 &&
                   Math.floor(player.iFrames / BLINK_INTERVAL) % 2 === 0;
     if (blink) this.ctx.globalAlpha = 0.35;
 
     // Legs
     this.ctx.fillStyle = '#2a1a08';
-    this.ctx.fillRect(px + 8,      py + ts - 10, 6, 10);
+    this.ctx.fillRect(px + 8,       py + ts - 10, 6, 10);
     this.ctx.fillRect(px + ts - 14, py + ts - 10, 6, 10);
 
     // Body
@@ -398,14 +493,14 @@ class Renderer {
 
     // Hard-hat brim
     this.ctx.fillStyle = '#f0c000';
-    this.ctx.fillRect(px + 6,  py + 2, ts - 12, 4);
+    this.ctx.fillRect(px + 6, py + 2, ts - 12, 4);
     // Hard-hat dome
     this.ctx.fillStyle = '#e8b800';
-    this.ctx.fillRect(px + 9,  py,     ts - 18, 4);
+    this.ctx.fillRect(px + 9, py,     ts - 18, 4);
 
     // Eyes
     this.ctx.fillStyle = '#222';
-    this.ctx.fillRect(px + 11, py + 5, 3, 3);
+    this.ctx.fillRect(px + 11,      py + 5, 3, 3);
     this.ctx.fillRect(px + ts - 14, py + 5, 3, 3);
 
     // Lamp on hat
@@ -417,24 +512,23 @@ class Renderer {
     this.ctx.arc(cx, py + 1, 10, 0, Math.PI * 2);
     this.ctx.fill();
 
-    // Reset alpha after dimmed-blink draw
     if (blink) this.ctx.globalAlpha = 1;
   }
 
   // -------------------------------------------------------------------------
-  // Depth indicator overlay (drawn on canvas, top-right)
+  // Depth indicator overlay
   // -------------------------------------------------------------------------
 
   _drawHeadsUpOverlay(player) {
     const ctx  = this.ctx;
-    const text = player.y === 0 ? 'Surface' : `Depth: ${player.y}m`;
+    const text = player.y <= 1 ? 'Surface' : `Depth: ${player.y - 1}m`;
 
     ctx.fillStyle = 'rgba(0,0,0,0.55)';
     ctx.fillRect(CANVAS_W - 130, 6, 124, 22);
-    ctx.fillStyle    = '#ddd';
-    ctx.font         = '13px monospace';
-    ctx.textAlign    = 'right';
+    ctx.fillStyle = '#ddd';
+    ctx.font      = '13px monospace';
+    ctx.textAlign = 'right';
     ctx.fillText(text, CANVAS_W - 10, 22);
-    ctx.textAlign    = 'left';  // Reset
+    ctx.textAlign = 'left';
   }
 }

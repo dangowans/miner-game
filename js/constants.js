@@ -16,58 +16,79 @@ const CANVAS_H       = VIEWPORT_ROWS * TILE_SIZE;  // 480
 
 // Chunk generation
 const CHUNK_SIZE     = 30;   // Mine rows generated per chunk
-const GEN_LOOKAHEAD  = 20;   // Generate a new chunk when player is within this many rows of the deepest generated row
+const GEN_LOOKAHEAD  = 20;   // Generate new chunk when within this many rows of deepest generated
 
 // ---------------------------------------------------------------------------
 // Tile type IDs
 // ---------------------------------------------------------------------------
 const TILE = Object.freeze({
-  GRASS:    0,   // Surface walkable ground (gaps between buildings at y=0)
-  BUILDING: 1,   // Impassable building wall/facade
-  SHOP:     2,   // Shop door at y=0 – interact from pavement (y=1) by pressing E
-  BAR:      3,   // Bar door at y=0  – interact from pavement (y=1) by pressing E
-  DOCTOR:   4,   // Doctor door at y=0 – interact from pavement (y=1) by pressing E
-  MINE_ENT: 5,   // Mine entrance (right side of pavement row, y=1; arch visible at y=0)
-  DIRT:     6,   // Unexcavated mine tile (hides content)
-  EMPTY:    7,   // Mined-out open space
-  GEM_LOW:  8,   // Revealed low-value gem  (Emerald)
-  GEM_MED:  9,   // Revealed medium-value gem (Sapphire)
-  GEM_HIGH: 10,  // Revealed high-value gem  (Ruby)
-  WATER:    11,  // Water – blocks movement (spring source: always blocked; spread: bucket clears it)
-  LAVA:     12,  // Lava — source: impassable, spreads on contact, deals 1 heart.
-                //        spread: player walks onto it, tile remains, deals 1 heart.
-                //        fire extinguisher converts either to STONE.
-  SHOVEL:   13,  // Revealed shovel item (also sold at shop)
-  PICK:     14,  // Revealed pick item   (also sold at shop) – breaks STONE
-  BAG:      15,  // Revealed large-bag item (also sold at shop)
-  STONE:    16,  // Solid stone block – impassable without a pick
-  PAVEMENT: 17,  // Surface pavement row (y=1) – walkable, separates buildings from mine
-  ELEVATOR: 18,  // Elevator shaft (rightmost column x=24 in the mine) – press E to call/ride
+  GRASS:        0,   // Surface ground (gaps between buildings)
+  BUILDING:     1,   // Impassable building wall/facade
+  SHOP:         2,   // Shop door at y=0 – interact from pavement by pressing E
+  BAR:          3,   // Bar door at y=0
+  DOCTOR:       4,   // Doctor door at y=0
+  MINE_ENT:     5,   // Mine entrance arch (pavement crossing, x=22-24)
+  DIRT:         6,   // Unexcavated mine tile (hides content)
+  EMPTY:        7,   // Mined-out open space
+  SILVER:       8,   // Revealed silver ore (common)
+  GOLD:         9,   // Revealed gold ore (medium)
+  PLATINUM:    10,   // Revealed platinum ore (uncommon)
+  WATER:       11,   // Water hazard
+  LAVA:        12,   // Lava hazard
+  SHOVEL:      13,   // Revealed shovel item
+  PICK:        14,   // Revealed pick item – breaks STONE
+  BAG:         15,   // Revealed large-bag item
+  STONE:       16,   // Solid stone block – impassable without a pick
+  PAVEMENT:    17,   // Surface pavement row (y=1) – walkable
+  ELEVATOR:    18,   // Elevator shaft (rightmost column) – impassable; interact from adjacent tile
+  BANK:        19,   // Town Bank facade – sell ore here
+  OUTHOUSE:    20,   // Outhouse facade – cosmetic only
+  DIAMOND:     21,   // Revealed diamond (rare)
+  RUBY:        22,   // Unique legendary ruby (sell for big money)
+  RUBBER_BOOT: 23,   // Unique novelty item
+  POCKET_WATCH:24,   // Unique novelty item
+  GLASSES:     25,   // Unique novelty item
 });
 
 // ---------------------------------------------------------------------------
 // Hidden content types (what lives inside a DIRT tile)
 // ---------------------------------------------------------------------------
 const HIDDEN = Object.freeze({
-  NOTHING:  'nothing',
-  GEM_LOW:  'gem_low',
-  GEM_MED:  'gem_med',
-  GEM_HIGH: 'gem_high',
-  WATER:    'water',
-  LAVA:     'lava',
-  STONE:    'stone',   // Solid stone block hidden inside dirt
-  SHOVEL:   'shovel',
-  PICK:     'pick',
-  BAG:      'bag',
+  NOTHING:      'nothing',
+  SILVER:       'silver',
+  GOLD:         'gold',
+  PLATINUM:     'platinum',
+  DIAMOND:      'diamond',
+  WATER:        'water',
+  LAVA:         'lava',
+  STONE:        'stone',
+  SHOVEL:       'shovel',
+  PICK:         'pick',
+  BAG:          'bag',
+  RUBY:         'ruby',         // Unique – one per entire mine
+  RUBBER_BOOT:  'rubber_boot',  // Unique – one per entire mine
+  POCKET_WATCH: 'pocket_watch', // Unique – one per entire mine
+  GLASSES:      'glasses',      // Unique – one per entire mine
 });
 
 // ---------------------------------------------------------------------------
-// Gem sell values (coins)
+// Ore sell values (coins) – used by bank sell screen and gem pickup messages
 // ---------------------------------------------------------------------------
 const GEM_VALUE = Object.freeze({
-  [HIDDEN.GEM_LOW]:  10,
-  [HIDDEN.GEM_MED]:  30,
-  [HIDDEN.GEM_HIGH]: 75,
+  [HIDDEN.SILVER]:   8,
+  [HIDDEN.GOLD]:    25,
+  [HIDDEN.PLATINUM]: 65,
+  [HIDDEN.DIAMOND]: 200,
+  [HIDDEN.RUBY]:    500,
+});
+
+// Ore display names and icons (for sell screen)
+const ORE_NAME = Object.freeze({
+  [HIDDEN.SILVER]:   '🥈 Silver',
+  [HIDDEN.GOLD]:     '🥇 Gold',
+  [HIDDEN.PLATINUM]: '⬜ Platinum',
+  [HIDDEN.DIAMOND]:  '💎 Diamond',
+  [HIDDEN.RUBY]:     '🔴 Ruby',
 });
 
 // ---------------------------------------------------------------------------
@@ -97,21 +118,21 @@ const SHOP_ITEMS = [
     id:      'bucket',
     name:    'Bucket',
     price:   80,
-    desc:    `Clear spread water by walking into it (cannot clear the spring source) — lasts ${TOOL_USES} uses`,
+    desc:    `Clear spread water by walking into it (cannot clear spring source) — lasts ${TOOL_USES} uses`,
     oneTime: false,
   },
   {
     id:      'extinguisher',
     name:    'Fire Extinguisher',
     price:   120,
-    desc:    `Walk into lava to turn it into stone instead of taking damage — lasts ${TOOL_USES} uses`,
+    desc:    `Walk into lava to turn it to stone instead of taking damage — lasts ${TOOL_USES} uses`,
     oneTime: false,
   },
   {
     id:      'bag',
     name:    'Large Bag',
     price:   75,
-    desc:    'Doubles gem carry capacity (10 → 20)',
+    desc:    'Doubles ore carry capacity (10 → 20)',
     oneTime: true,
   },
   {
@@ -126,8 +147,8 @@ const SHOP_ITEMS = [
 // ---------------------------------------------------------------------------
 // Doctor services
 // ---------------------------------------------------------------------------
-const HEAL_PRICE       = 40;   // Cost to restore 1 heart
-const EXTRA_HEART_PRICE = 150; // Cost to add +1 max heart (up to MAX_HEARTS)
+const HEAL_PRICE        = 40;   // Cost to restore 1 heart
+const EXTRA_HEART_PRICE = 150;  // Cost to add +1 max heart (up to MAX_HEARTS)
 const MAX_HEARTS        = 6;
 const START_HEARTS      = 3;
 
@@ -137,7 +158,6 @@ const START_HEARTS      = 3;
 const REVEAL_MIN        = 3;   // Minimum probe count to reveal a dirt tile
 const REVEAL_MAX        = 12;  // Maximum probe count to reveal a dirt tile
 const SHOVEL_REDUCTION  = 5;   // Shovel reduces dirt reveal threshold by this amount
-                                // (the pick has no effect on dirt - it only breaks stone)
 
 // ---------------------------------------------------------------------------
 // Hazard spread
@@ -151,14 +171,20 @@ const ELEVATOR_CALL_PRICE = 15;  // Cost to call the elevator to your floor
 const ELEVATOR_RIDE_PRICE = 25;  // Cost to board and ride up to the surface
 
 // ---------------------------------------------------------------------------
+// Surface building x-positions in the building facade row (y=0)
+// ---------------------------------------------------------------------------
+const OUTHOUSE_X = 1;   // Left-side outhouse
+const BANK_X     = 17;  // Town bank (between Doctor and mine entrance)
+
+// ---------------------------------------------------------------------------
 // Mine entrance x-range (right side of surface row)
 // ---------------------------------------------------------------------------
 const MINE_ENT_X_MIN         = 22;
 const MINE_ENT_X_MAX         = 24;
-const MINE_ENT_CLEARED_DEPTH = 3;   // Mine-entrance columns pre-cleared down to this row (y=2 & y=3)
+const MINE_ENT_CLEARED_DEPTH = 3;   // Mine-entrance columns pre-cleared to this row
 
 // ---------------------------------------------------------------------------
-// Player start position (pavement row, open area east of buildings)
+// Player start position (pavement row, open area)
 // ---------------------------------------------------------------------------
 const PLAYER_START_X = 16;
 const PLAYER_START_Y = 1;   // y=1 is the pavement row
@@ -175,23 +201,30 @@ const MAX_INPUT_QUEUE      = 12;   // Maximum queued input actions before droppi
 // Tile render colours (VGA-inspired palette)
 // ---------------------------------------------------------------------------
 const TILE_COLOR = {
-  [TILE.GRASS]:    '#4a7a28',
-  [TILE.BUILDING]: '#6e4c24',
-  [TILE.SHOP]:     '#e8c040',
-  [TILE.BAR]:      '#d45090',
-  [TILE.DOCTOR]:   '#40b8d4',
-  [TILE.MINE_ENT]: '#151520',
-  [TILE.DIRT]:     '#6b3822',
-  [TILE.EMPTY]:    '#1a1a1a',
-  [TILE.GEM_LOW]:  '#00c864',
-  [TILE.GEM_MED]:  '#3a7aff',
-  [TILE.GEM_HIGH]: '#ff2222',
-  [TILE.WATER]:    '#1555cc',
-  [TILE.LAVA]:     '#dd3300',
-  [TILE.SHOVEL]:   '#ccaa44',
-  [TILE.PICK]:     '#aabbcc',
-  [TILE.BAG]:      '#aa8833',
-  [TILE.STONE]:    '#5a5a5a',
-  [TILE.PAVEMENT]: '#888070',
-  [TILE.ELEVATOR]: '#2a2a50',
+  [TILE.GRASS]:        '#4a7a28',
+  [TILE.BUILDING]:     '#6e4c24',
+  [TILE.SHOP]:         '#e8c040',
+  [TILE.BAR]:          '#d45090',
+  [TILE.DOCTOR]:       '#40b8d4',
+  [TILE.MINE_ENT]:     '#151520',
+  [TILE.DIRT]:         '#6b3822',
+  [TILE.EMPTY]:        '#1a1a1a',
+  [TILE.SILVER]:       '#b0c0cc',
+  [TILE.GOLD]:         '#d4a800',
+  [TILE.PLATINUM]:     '#c8dde8',
+  [TILE.WATER]:        '#1555cc',
+  [TILE.LAVA]:         '#dd3300',
+  [TILE.SHOVEL]:       '#ccaa44',
+  [TILE.PICK]:         '#aabbcc',
+  [TILE.BAG]:          '#aa8833',
+  [TILE.STONE]:        '#5a5a5a',
+  [TILE.PAVEMENT]:     '#888070',
+  [TILE.ELEVATOR]:     '#2a2a50',
+  [TILE.BANK]:         '#2a5a2a',
+  [TILE.OUTHOUSE]:     '#7a5228',
+  [TILE.DIAMOND]:      '#88ddff',
+  [TILE.RUBY]:         '#cc0033',
+  [TILE.RUBBER_BOOT]:  '#223344',
+  [TILE.POCKET_WATCH]: '#332211',
+  [TILE.GLASSES]:      '#111122',
 };

@@ -41,6 +41,9 @@ class Player {
     this.elevatorCalled = false;  // True after paying the call fee
     this._elevatorRode  = false;  // Internal flag: set true when ride completed
 
+    // Unique novelty items found in the mine (rubber boot, pocket watch, glasses)
+    this.specialItems = new Set();
+
     // Health
     this.hearts    = START_HEARTS;
     this.maxHearts = START_HEARTS;
