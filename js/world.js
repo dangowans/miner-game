@@ -7,7 +7,6 @@
  *   y=0  Building facades – BUILDING/OUTHOUSE/SHOP/BAR/DOCTOR/BANK/MINE_ENT tiles.
  *   y=1  Pavement row – PAVEMENT; MINE_ENT at x=22-24 is the crossing point.
  *   y≥2  Mine – DIRT initially, generated in chunks, extends infinitely.
- *        x=24 (rightmost) is always ELEVATOR shaft (impassable; interact from x=23).
  *
  * Unique items (ruby, rubber boot, pocket watch, glasses) are pre-placed at
  * fixed random positions decided at construction time, so each appears exactly
@@ -57,7 +56,7 @@ class World {
 
   /**
    * Decide fixed positions for the four unique items using the shared RNG.
-   * Positions are restricted to columns 1-20 (avoiding mine entrance / elevator)
+   * Positions are restricted to columns 1-20 (avoiding the mine entrance area)
    * and to depths where the mine is fully generated as DIRT.
    */
   _computeUniqueItemPositions() {
@@ -150,19 +149,19 @@ class World {
     // Probability weights shift with depth (every 50 rows)
     const depthBonus = Math.floor(fromY / 50);
 
-    // Hazard weights scale up gradually from zero at the surface.
-    // Water starts appearing around y=20, lava around y=30.
-    const waterScale = Math.min(1, fromY / 60);
-    const lavaScale  = Math.min(1, fromY / 80);
-    const waterWeight = Math.max(0, Math.round(4 * waterScale));
-    const lavaWeight  = Math.max(0, Math.round((3 + Math.floor(depthBonus / 2)) * lavaScale));
+    // Hazard weights scale up quickly from zero at the surface.
+    // Water starts appearing around y=5, lava around y=8.
+    const waterScale = Math.min(1, fromY / 20);
+    const lavaScale  = Math.min(1, fromY / 25);
+    const waterWeight = Math.max(0, Math.round(5 * waterScale));
+    const lavaWeight  = Math.max(0, Math.round((4 + Math.floor(depthBonus / 2)) * lavaScale));
 
     const TABLE = [
       { content: HIDDEN.NOTHING,  weight: Math.max(15, 30 - depthBonus)        },
       { content: HIDDEN.SILVER,   weight: Math.max( 8, 22 - depthBonus * 2)    },
       { content: HIDDEN.GOLD,     weight: Math.max( 4, 14 - depthBonus)        },
-      { content: HIDDEN.PLATINUM, weight:  4 + depthBonus                      },
-      { content: HIDDEN.DIAMOND,  weight:  1 + Math.floor(depthBonus / 3)      },
+      { content: HIDDEN.PLATINUM, weight: Math.max(0, (depthBonus - 1) * 3)         },
+      { content: HIDDEN.DIAMOND,  weight: Math.max(0, depthBonus - 2)               },
       { content: HIDDEN.WATER,    weight: waterWeight                           },
       { content: HIDDEN.LAVA,     weight: lavaWeight                            },
       { content: HIDDEN.STONE,    weight: 10 + Math.floor(depthBonus * 1.5)    },
@@ -182,13 +181,6 @@ class World {
       for (let i = 0; i < this.width; i++) data[i] = null;
 
       for (let x = 0; x < this.width; x++) {
-        // Elevator shaft: rightmost column is always the elevator shaft (impassable)
-        if (x === this.width - 1) {
-          tiles[x] = TILE.ELEVATOR;
-          continue;
-        }
-
-        // Mine-entrance columns: pre-clear rows down to MINE_ENT_CLEARED_DEPTH
         if (x >= MINE_ENT_X_MIN && y <= MINE_ENT_CLEARED_DEPTH) {
           tiles[x] = TILE.EMPTY;
           continue;
@@ -346,7 +338,6 @@ class World {
    * DIRT is NOT passable – game handles dig-in before calling this.
    * STONE is NOT passable – game checks for pick before calling this.
    * WATER/LAVA are handled by _enterWater/_enterLava in game.js.
-   * ELEVATOR is NOT passable – player interacts from the adjacent tile.
    */
   isPassable(x, y) {
     const t = this.getTile(x, y);
@@ -378,7 +369,6 @@ class World {
       case TILE.STONE:
       case TILE.WATER:
       case TILE.LAVA:
-      case TILE.ELEVATOR:   // Impassable – interact from adjacent tile (x = width-2)
         return false;
       default:
         return false;

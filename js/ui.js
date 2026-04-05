@@ -8,7 +8,8 @@ class UI {
   constructor() {
     this.overlay     = document.getElementById('overlay');
     this.overlayOpen = false;
-    this._onCloseCallback = null;
+    this._onCloseCallback  = null;
+    this._overlayNavHandler = null;
 
     // HUD elements
     this._hudHearts = document.getElementById('hud-hearts');
@@ -125,14 +126,14 @@ class UI {
     let html;
     if (unlockedByDrinks && player.hasRing) {
       html = `
-        <div style="text-align:center;padding-top:20px">
-          <p style="font-size:1.1em">You walk up to her with the ring in your hand…</p>
-          <p style="font-size:1.4em;margin-top:18px">💍 <em>"Will you marry me?"</em></p>
-          <p style="font-size:1.5em;color:#f5c842;margin-top:14px">💛 <em>"Yes! A thousand times yes!"</em></p>
-          <p style="font-size:1.3em;margin-top:22px">🎉 <strong>YOU WIN!</strong></p>
-          <p style="color:#aaa;margin-top:8px">Congratulations, you lucky miner!</p>
-          <button class="close-btn" id="overlay-close" style="margin-top:28px">
-            🎊 Play Again
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                    height:100%;gap:14px;padding:20px;text-align:center">
+          <p style="font-size:2em;line-height:1">💍</p>
+          <p style="font-size:1.1em;margin:0">You kneel down with the ring in your hand…</p>
+          <p style="font-size:1.4em;margin:0"><em>"Will you marry me?"</em></p>
+          <p style="font-size:1.5em;color:#f5c842;margin:0">💛 <em>"Yes! A thousand times yes!"</em></p>
+          <button class="close-btn" id="overlay-close" style="margin-top:8px">
+            Continue →
           </button>
         </div>`;
     } else if (!unlockedByDrinks) {
@@ -141,6 +142,12 @@ class UI {
         `"Slow down, cowboy. A few more rounds first."`,
         `"You seem nice. Keep the drinks coming and we'll see…"`,
         `"I appreciate the company. Another round?"`,
+        `"A miner, huh? Buy me a drink and tell me about it."`,
+        `"You've got kind eyes. And an empty glass."`,
+        `"I like a man who knows how to spend his money wisely."`,
+        `"The night's young. You buying?"`,
+        `"Another drink wouldn't hurt. For either of us."`,
+        `"What's a girl got to do to get a drink around here?"`,
       ];
       const line = drinkLines[Math.floor(Math.random() * drinkLines.length)];
       const canAfford = player.money >= DRINK_PRICE;
@@ -161,6 +168,11 @@ class UI {
         `"Come back when you have something special for me."`,
         `"You smell like dirt. I like it. But I need a ring first."`,
         `"I'm not going anywhere. The mines will still be there tomorrow."`,
+        `"You've been so sweet lately. A ring would seal the deal."`,
+        `"I keep thinking about us. All I need is a little… sparkle."`,
+        `"Six drinks in and I think I'm falling for you. Got a ring?"`,
+        `"My heart's open, miner. Is your wallet?"`,
+        `"You've done everything right. One last thing — a ring."`,
       ];
       const line = lines[Math.floor(Math.random() * lines.length)];
       html = `
@@ -298,80 +310,6 @@ class UI {
   }
 
   // -------------------------------------------------------------------------
-  // Elevator overlay
-  // -------------------------------------------------------------------------
-
-  openElevator(player, onClose) {
-    const callPrice = ELEVATOR_CALL_PRICE;
-    const ridePrice = ELEVATOR_RIDE_PRICE;
-
-    const canCall    = !player.elevatorCalled && player.money >= callPrice;
-    const canRide    = player.elevatorCalled  && player.money >= ridePrice;
-    const calledNote = player.elevatorCalled
-      ? ' <em style="color:#88ff88">(elevator is here)</em>'
-      : '';
-
-    const callHtml = player.elevatorCalled
-      ? `<div class="shop-item disabled">📞 Elevator already called${calledNote}</div>`
-      : canCall
-        ? `<div class="shop-item buyable" id="elevator-call-btn">
-             📞 Call elevator — <span class="price">$${callPrice}</span>
-             <br><small>Brings the lift to your floor</small>
-           </div>`
-        : `<div class="shop-item disabled">📞 Call elevator — $${callPrice}
-             <em class="short">(need $${callPrice - player.money} more)</em>
-           </div>`;
-
-    const rideHtml = !player.elevatorCalled
-      ? `<div class="shop-item disabled">🛗 Board &amp; ride to surface — $${ridePrice}
-           <br><small>Call the elevator first</small>
-         </div>`
-      : canRide
-        ? `<div class="shop-item buyable" id="elevator-ride-btn">
-             🛗 Board &amp; ride to surface — <span class="price">$${ridePrice}</span>
-             <br><small>Instantly returns you to the surface</small>
-           </div>`
-        : `<div class="shop-item disabled">🛗 Board &amp; ride to surface — $${ridePrice}
-             <em class="short">(need $${ridePrice - player.money} more)</em>
-           </div>`;
-
-    this.overlay.innerHTML = `
-      <h2>🛗 Mine Elevator</h2>
-      <p class="shop-balance">Your money: <strong>$${player.money}</strong></p>
-      <p class="shop-balance" style="color:#aaa;font-size:0.85em">
-        Depth: ${player.y}m below surface
-      </p>
-      <div class="section-label">STEP 1 — CALL</div>
-      ${callHtml}
-      <div class="section-label">STEP 2 — BOARD</div>
-      ${rideHtml}
-      <button class="close-btn" id="overlay-close">✕ Close &nbsp;<kbd>Esc</kbd></button>
-    `;
-    this._openOverlay(onClose);
-
-    const callBtn = document.getElementById('elevator-call-btn');
-    if (callBtn) {
-      callBtn.addEventListener('click', () => {
-        player.money -= callPrice;
-        player.elevatorCalled = true;
-        player.setMessage(`📞 Elevator called! Board it to ride up. ($${ridePrice} to ride)`);
-        this._closeOverlay();
-      });
-    }
-
-    const rideBtn = document.getElementById('elevator-ride-btn');
-    if (rideBtn) {
-      rideBtn.addEventListener('click', () => {
-        player.money -= ridePrice;
-        player.elevatorCalled = false;
-        player._elevatorRode  = true;
-        player.setMessage('🛗 Elevator ride to the surface!');
-        this._closeOverlay();
-      });
-    }
-  }
-
-  // -------------------------------------------------------------------------
   // Bank overlay
   // -------------------------------------------------------------------------
 
@@ -470,14 +408,56 @@ class UI {
     if (closeBtn) {
       closeBtn.addEventListener('click', () => this._closeOverlay());
     }
+
+    this._setupOverlayKeyNav();
   }
 
   _closeOverlay() {
     this.overlay.classList.remove('active');
     this.overlay.innerHTML = '';
     this.overlayOpen       = false;
+    if (this._overlayNavHandler) {
+      document.removeEventListener('keydown', this._overlayNavHandler);
+      this._overlayNavHandler = null;
+    }
     const cb = this._onCloseCallback;
     this._onCloseCallback  = null;
     if (cb) cb();
+  }
+
+  /**
+   * Set up arrow-key + Enter navigation for the currently open overlay.
+   * Collects all buyable items and the close button as navigable targets.
+   * ArrowUp / ArrowDown cycle through them; Enter activates the focused one.
+   */
+  _setupOverlayKeyNav() {
+    const items = Array.from(
+      this.overlay.querySelectorAll('.shop-item.buyable, .close-btn')
+    );
+    if (items.length === 0) return;
+
+    let focusIdx = 0;
+    const setFocus = (i) => {
+      items.forEach((el, j) => el.classList.toggle('focused', j === i));
+    };
+    setFocus(focusIdx);
+
+    const handler = (e) => {
+      if (!this.overlayOpen) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        focusIdx = (focusIdx + 1) % items.length;
+        setFocus(focusIdx);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        focusIdx = (focusIdx + items.length - 1) % items.length;
+        setFocus(focusIdx);
+      } else if (e.key === 'Enter') {
+        items[focusIdx].click();
+      }
+    };
+
+    document.addEventListener('keydown', handler);
+    this._overlayNavHandler = handler;
   }
 }

@@ -113,7 +113,9 @@
       font-family: inherit;
       font-size: 0.9em;
     }
-    #overlay .close-btn:hover { background: #383838; }
+    #overlay .close-btn:hover,
+    #overlay .close-btn.focused { background: #383838; }
+    #overlay .close-btn.focused { border-color: #f5c842; outline: none; }
     #overlay kbd {
       background: #333;
       border: 1px solid #666;

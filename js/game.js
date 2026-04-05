@@ -13,7 +13,6 @@
  *   4-directional grid movement (up/down/left/right).
  *
  *   Surface ↔ mine crossing ONLY at x ∈ [MINE_ENT_X_MIN, MINE_ENT_X_MAX].
- *
  *   DIRT   → "dig-in": reveal hidden content; move there if resulting tile
  *             is passable (gems, empty, items).  If stone is revealed the
  *             player still needs a pick to enter on the next move.
@@ -99,10 +98,16 @@ class Game {
     if (nx < 0) {
       // Walking off the left edge
       this.state = 'overlay';
-      this.ui.openDragons(() => { this.state = 'playing'; });
+      this.ui.openDragons(() => { this.state = 'playing'; this.input.clear(); });
       return;
     }
-    if (nx >= this.world.width || ny < 1) return;
+    if (nx >= this.world.width) {
+      // Walking off the right edge
+      this.state = 'overlay';
+      this.ui.openDragons(() => { this.state = 'playing'; this.input.clear(); });
+      return;
+    }
+    if (ny < 1) return;
 
     // Pavement (y=1) ↔ mine (y=2) boundary: only crossable at mine-entrance columns
     if ((p.y === 1 && ny === 2) || (p.y === 2 && ny === 1)) {
@@ -398,7 +403,7 @@ class Game {
 
     if (checkTile(TILE.OUTHOUSE)) {
       this.state = 'overlay';
-      this.ui.openOuthouse(() => { this.state = 'playing'; });
+      this.ui.openOuthouse(() => { this.state = 'playing'; this.input.clear(); });
       return;
     }
 
@@ -406,6 +411,7 @@ class Game {
       this.state = 'overlay';
       this.ui.openShop(p, () => {
         this.state = 'playing';
+        this.input.clear();
         this.ui.updateHUD(p);
       });
       return;
@@ -419,6 +425,7 @@ class Game {
           this.ui.showWin();
         } else {
           this.state = 'playing';
+          this.input.clear();
         }
       });
       return;
@@ -428,6 +435,7 @@ class Game {
       this.state = 'overlay';
       this.ui.openDoctor(p, () => {
         this.state = 'playing';
+        this.input.clear();
         this.ui.updateHUD(p);
       });
       return;
@@ -437,22 +445,8 @@ class Game {
       this.state = 'overlay';
       this.ui.openBank(p, () => {
         this.state = 'playing';
+        this.input.clear();
         this.ui.updateHUD(p);
-      });
-      return;
-    }
-
-    // Elevator: player stands at x = rightmost-1 (adjacent to shaft) inside the mine
-    if (p.y >= 2 && p.x === this.world.width - 2) {
-      this.state = 'overlay';
-      this.ui.openElevator(p, () => {
-        this.state = 'playing';
-        this.ui.updateHUD(p);
-        if (p._elevatorRode) {
-          p._elevatorRode = false;
-          p.x = this.world.width - 2;  // x=23, pavement adjacent to mine entrance
-          p.y = PLAYER_START_Y;
-        }
       });
       return;
     }

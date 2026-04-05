@@ -369,43 +369,6 @@ class Renderer {
         ctx.stroke();
         break;
       }
-
-      case TILE.ELEVATOR: {
-        // Shaft background with vertical cables
-        ctx.fillStyle = '#1e1e3a';
-        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
-        ctx.fillStyle = '#4a4a7a';
-        ctx.fillRect(cx - 3, py + 1, 2, ts - 2);
-        ctx.fillRect(cx + 1, py + 1, 2, ts - 2);
-        // Guide rails
-        ctx.fillStyle = '#383868';
-        ctx.fillRect(px + 2,      py + 4,  4, 2);
-        ctx.fillRect(px + 2,      py + ts - 6, 4, 2);
-        ctx.fillRect(px + ts - 6, py + 4,  4, 2);
-        ctx.fillRect(px + ts - 6, py + ts - 6, 4, 2);
-
-        // Elevator cab: shown when elevatorCalled is true
-        const cabHere = player && player.elevatorCalled;
-        if (cabHere) {
-          ctx.fillStyle = '#8888cc';
-          ctx.fillRect(px + 4, py + 6, ts - 8, ts - 12);
-          // Cab door line
-          ctx.fillStyle = '#5555aa';
-          ctx.fillRect(cx - 1, py + 6, 2, ts - 12);
-          // Arrow up indicator
-          ctx.fillStyle = '#ffffff';
-          ctx.font      = 'bold 9px monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText('▲', cx, py + ts - 8);
-        } else {
-          // Hint glyph when no cab present
-          ctx.fillStyle = '#6a6aaa';
-          ctx.font      = 'bold 9px monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText('[E]', cx, cy + 3);
-        }
-        break;
-      }
     }
   }
 

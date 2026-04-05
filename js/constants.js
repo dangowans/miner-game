@@ -40,7 +40,6 @@ const TILE = Object.freeze({
   BAG:         15,   // Revealed large-bag item
   STONE:       16,   // Solid stone block – impassable without a pick
   PAVEMENT:    17,   // Surface pavement row (y=1) – walkable
-  ELEVATOR:    18,   // Elevator shaft (rightmost column) – impassable; interact from adjacent tile
   BANK:        19,   // Town Bank facade – sell ore here
   OUTHOUSE:    20,   // Outhouse facade – cosmetic only
   DIAMOND:     21,   // Revealed diamond (rare)
@@ -138,7 +137,7 @@ const SHOP_ITEMS = [
   {
     id:      'ring',
     name:    'Ring 💍',
-    price:   500,
+    price:   1000,
     desc:    'For the girl at the bar…',
     oneTime: true,
   },
@@ -173,8 +172,6 @@ const HAZARD_SPREAD = 12;  // Max EMPTY tiles a water/lava spring floods when tr
 // ---------------------------------------------------------------------------
 // Elevator
 // ---------------------------------------------------------------------------
-const ELEVATOR_CALL_PRICE = 15;  // Cost to call the elevator to your floor
-const ELEVATOR_RIDE_PRICE = 25;  // Cost to board and ride up to the surface
 
 // ---------------------------------------------------------------------------
 // Surface building x-positions in the building facade row (y=0)
@@ -225,7 +222,6 @@ const TILE_COLOR = {
   [TILE.BAG]:          '#aa8833',
   [TILE.STONE]:        '#5a5a5a',
   [TILE.PAVEMENT]:     '#888070',
-  [TILE.ELEVATOR]:     '#2a2a50',
   [TILE.BANK]:         '#2a5a2a',
   [TILE.OUTHOUSE]:     '#7a5228',
   [TILE.DIAMOND]:      '#88ddff',
