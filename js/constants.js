@@ -3,16 +3,16 @@
 // ---------------------------------------------------------------------------
 // Map geometry
 // ---------------------------------------------------------------------------
-const TILE_SIZE      = 32;
-const MAP_WIDTH      = 25;   // Fixed horizontal width (tiles)
+const TILE_SIZE      = 34;
+const MAP_WIDTH      = 24;   // Fixed horizontal width (tiles)
 
 // Viewport – what the canvas shows at any one time
-const VIEWPORT_COLS  = 25;   // Must equal MAP_WIDTH
+const VIEWPORT_COLS  = 24;   // Must equal MAP_WIDTH
 const VIEWPORT_ROWS  = 15;   // Rows visible on screen
 
 // Canvas pixel dimensions
-const CANVAS_W       = VIEWPORT_COLS * TILE_SIZE;  // 800
-const CANVAS_H       = VIEWPORT_ROWS * TILE_SIZE;  // 480
+const CANVAS_W       = VIEWPORT_COLS * TILE_SIZE;  // 816
+const CANVAS_H       = VIEWPORT_ROWS * TILE_SIZE;  // 510
 
 // Chunk generation
 const CHUNK_SIZE     = 30;   // Mine rows generated per chunk
@@ -47,6 +47,9 @@ const TILE = Object.freeze({
   RUBBER_BOOT: 23,   // Unique novelty item
   POCKET_WATCH:24,   // Unique novelty item
   GLASSES:     25,   // Unique novelty item
+  JEWELER:     26,   // Jeweler building – craft a ring from 3 diamonds + $1000
+  SKY:         27,   // Open sky between surface buildings (decorative, y=0)
+  DYNAMITE:    28,   // Lit dynamite placed by the player – explodes after fuse
 });
 
 // ---------------------------------------------------------------------------
@@ -144,19 +147,33 @@ const SHOP_ITEMS = [
     oneTime: true,
   },
   {
-    id:      'ring',
-    name:    'Ring 💍',
-    price:   1000,
-    desc:    'For the girl at the bar…',
-    oneTime: true,
+    id:      'dynamite',
+    name:    'Dynamite',
+    price:   75,
+    desc:    'Press 💣 to enter placement mode, then move in any direction to place. 5-second fuse — get clear!',
+    oneTime: false,
   },
 ];
+
+// ---------------------------------------------------------------------------
+// Dynamite
+// ---------------------------------------------------------------------------
+const DYNAMITE_FUSE_FRAMES           = 300;  // ~5 seconds at 60 fps before detonation
+const DYNAMITE_RADIUS                = 3;    // Blast radius in tiles (Euclidean)
+const DYNAMITE_CRITICAL_RADIUS       = 2;    // Within this many tiles: 2 hearts of damage
+const DYNAMITE_URGENT_SECS           = 2;    // Fuse seconds remaining when urgent warning starts
 
 // ---------------------------------------------------------------------------
 // Bar
 // ---------------------------------------------------------------------------
 const DRINK_PRICE       = 10;   // Cost of one drink at the bar
 const DRINKS_TO_UNLOCK  = 6;    // Drinks required before the girl accepts a proposal
+
+// ---------------------------------------------------------------------------
+// Jeweler
+// ---------------------------------------------------------------------------
+const JEWELER_DIAMOND_COST = 1;     // Diamonds required to commission a ring
+const JEWELER_MONEY_COST   = 1000;  // Cash required alongside the diamonds
 
 // ---------------------------------------------------------------------------
 // Doctor services
@@ -185,14 +202,15 @@ const HAZARD_SPREAD = 12;  // Max EMPTY tiles a water/lava spring floods when tr
 // ---------------------------------------------------------------------------
 // Surface building x-positions in the building facade row (y=0)
 // ---------------------------------------------------------------------------
-const OUTHOUSE_X = 1;   // Left-side outhouse
-const BANK_X     = 17;  // Town bank (between Doctor and mine entrance)
+const OUTHOUSE_X  = 1;   // Left-side outhouse
+const JEWELER_X   = 19;  // Jeweler (between Bank and mine entrance)
+const BANK_X      = 17;  // Town bank (between Doctor and mine entrance)
 
 // ---------------------------------------------------------------------------
 // Mine entrance x-range (right side of surface row)
 // ---------------------------------------------------------------------------
 const MINE_ENT_X_MIN         = 22;
-const MINE_ENT_X_MAX         = 24;
+const MINE_ENT_X_MAX         = 23;
 const MINE_ENT_CLEARED_DEPTH = 3;   // Mine-entrance columns pre-cleared to this row
 
 // ---------------------------------------------------------------------------
@@ -206,7 +224,7 @@ const PLAYER_START_Y = 1;   // y=1 is the pavement row
 // ---------------------------------------------------------------------------
 const INVINCIBILITY_FRAMES = 60;   // Blink-animation frames after taking damage (~1 s at 60 fps)
 const BLINK_INTERVAL       = 6;    // Every N frames the player sprite dims during invincibility
-const COLLECT_FLASH_FRAMES = 14;   // Duration (ticks) of the ore-collect flash behind the player
+const COLLECT_FLASH_FRAMES = 5;    // Duration (ticks) of the ore-collect flash behind the player
 const MAX_DELTA_TIME_MS    = 100;  // Cap on per-frame dt to avoid spiral-of-death after tab switch
 const MAX_INPUT_QUEUE      = 12;   // Maximum queued input actions before dropping new ones
 
@@ -239,6 +257,9 @@ const TILE_COLOR = {
   [TILE.RUBBER_BOOT]:  '#223344',
   [TILE.POCKET_WATCH]: '#332211',
   [TILE.GLASSES]:      '#111122',
+  [TILE.JEWELER]:      '#8844aa',
+  [TILE.SKY]:          '#7ab8e8',
+  [TILE.DYNAMITE]:     '#cc2200',
 };
 
 // Ore tile types that can be destroyed when a hazard spreads over them

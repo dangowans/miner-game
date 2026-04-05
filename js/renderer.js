@@ -350,6 +350,43 @@ class Renderer {
         break;
       }
 
+      case TILE.JEWELER: {
+        ctx.fillStyle = '#f0e8ff';
+        ctx.fillRect(px + 7, py + 8, ts - 14, ts - 8);
+        // Faceted gem in the window
+        ctx.fillStyle = '#aa44cc';
+        ctx.beginPath();
+        ctx.moveTo(cx,          py + 10);
+        ctx.lineTo(cx + 5,      py + 14);
+        ctx.lineTo(cx,          py + 18);
+        ctx.lineTo(cx - 5,      py + 14);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#cc88ff';
+        ctx.beginPath();
+        ctx.moveTo(cx,     py + 10);
+        ctx.lineTo(cx + 5, py + 14);
+        ctx.lineTo(cx,     py + 14);
+        ctx.closePath();
+        ctx.fill();
+        // Label
+        ctx.fillStyle = '#5500aa';
+        ctx.font      = 'bold 5px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('JEWELER', cx, py + ts - 4);
+        break;
+      }
+
+      case TILE.SKY: {
+        // Full sky-blue tile — rendered via the base fillStyle (#7ab8e8).
+        // Add a soft cloud wisp using deterministic offsets.
+        ctx.fillStyle = 'rgba(255,255,255,0.30)';
+        const cx1 = px + ((tx * 7 + 4) % (ts - 12)) + 6;
+        ctx.fillRect(cx1, py + 10, 12, 4);
+        ctx.fillRect(cx1 - 3, py + 12, 18, 3);
+        break;
+      }
+
       case TILE.STONE: {
         ctx.fillStyle = '#484848';
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
@@ -370,12 +407,37 @@ class Renderer {
         ctx.stroke();
         break;
       }
+
+      case TILE.DYNAMITE: {
+        // Dark tile with bomb emoji and a countdown label
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '18px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('💣', cx, cy + 6);
+        const d = world.getData(tx, ty);
+        if (d) {
+          const secs = Math.ceil(d.frames / 60);
+          ctx.fillStyle = secs <= DYNAMITE_URGENT_SECS ? '#ff4400' : '#ffdd00';
+          ctx.font      = `bold ${secs <= DYNAMITE_URGENT_SECS ? 9 : 8}px monospace`;
+          ctx.fillText(`${secs}s`, cx, py + ts - 3);
+        }
+        // Pulsing red border when fuse is in the urgent window
+        if (d && d.frames <= DYNAMITE_URGENT_SECS * 60) {
+          const pulse = Math.sin(d.frames * 0.20) * 0.5 + 0.5;
+          ctx.strokeStyle = `rgba(255,80,0,${0.4 + pulse * 0.6})`;
+          ctx.lineWidth   = 2;
+          ctx.strokeRect(px + 2, py + 2, ts - 4, ts - 4);
+        }
+        break;
+      }
     }
 
     // ── Sky horizon for the building-facade row ───────────────────────────────
-    // Draw a sky-blue strip across the top of every y=0 tile (except mine-entrance
-    // arch tiles, which sit in solid rock and should stay dark).
-    if (ty === 0 && tile !== TILE.MINE_ENT) {
+    // Draw a sky-blue strip across the top of every y=0 building tile (SHOP,
+    // BAR, DOCTOR, BANK, JEWELER, OUTHOUSE).  SKY tiles already show full sky,
+    // and MINE_ENT sits in solid rock — both are excluded.
+    if (ty === 0 && tile !== TILE.MINE_ENT && tile !== TILE.SKY) {
       ctx.fillStyle = '#7ab8e8';
       ctx.fillRect(px, py, ts, 8);
     }

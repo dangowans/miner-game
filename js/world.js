@@ -115,13 +115,14 @@ class World {
   _buildSurface() {
     // ── y=0: Building facades ──────────────────────────────────────────────
     const { tiles: top } = this._getOrCreateRow(0);
-    top.fill(TILE.BUILDING);
+    top.fill(TILE.SKY);   // Open sky between buildings
 
     top[OUTHOUSE_X] = TILE.OUTHOUSE;   // Left-side outhouse (x=1)
     top[5]          = TILE.SHOP;        // General store
     top[9]          = TILE.BAR;         // Bar
     top[13]         = TILE.DOCTOR;      // Doctor
     top[BANK_X]     = TILE.BANK;        // Town bank (x=17)
+    top[JEWELER_X]  = TILE.JEWELER;     // Jeweler (x=19)
 
     // Mine entrance arch at x=22-24 (decorative upper; actual entrance at y=1)
     for (let x = MINE_ENT_X_MIN; x <= MINE_ENT_X_MAX; x++) {
@@ -149,6 +150,10 @@ class World {
     // Probability weights shift with depth (every 50 rows)
     const depthBonus = Math.floor(fromY / 50);
 
+    // Ore is slightly less common near the top of the mine.
+    // Scale rises from ~0.35 at the first chunk to 1.0 around depth 20.
+    const surfaceOreScale = Math.min(1.0, 0.35 + fromY / 28);
+
     // Hazard weights scale up quickly from zero at the surface.
     // Water starts appearing around y=5, lava around y=8.
     const waterScale = Math.min(1, fromY / 20);
@@ -157,17 +162,17 @@ class World {
     const lavaWeight  = Math.max(0, Math.round((4 + Math.floor(depthBonus / 2)) * lavaScale));
 
     const TABLE = [
-      { content: HIDDEN.NOTHING,  weight: Math.max(15, 30 - depthBonus)        },
-      { content: HIDDEN.SILVER,   weight: Math.max( 8, 22 - depthBonus * 2)    },
-      { content: HIDDEN.GOLD,     weight: Math.max( 4, 14 - depthBonus)        },
-      { content: HIDDEN.PLATINUM, weight: Math.max(0, (depthBonus - 1) * 3)         },
-      { content: HIDDEN.DIAMOND,  weight: Math.max(0, depthBonus - 2)               },
-      { content: HIDDEN.WATER,    weight: waterWeight                           },
-      { content: HIDDEN.LAVA,     weight: lavaWeight                            },
-      { content: HIDDEN.STONE,    weight: 10 + Math.floor(depthBonus * 1.5)    },
-      { content: HIDDEN.SHOVEL,   weight:  2                                    },
-      { content: HIDDEN.PICK,     weight:  2                                    },
-      { content: HIDDEN.BAG,      weight:  1                                    },
+      { content: HIDDEN.NOTHING,  weight: Math.max(15, 30 - depthBonus)                                          },
+      { content: HIDDEN.SILVER,   weight: Math.max( 2, Math.round((22 - depthBonus * 2) * surfaceOreScale))      },
+      { content: HIDDEN.GOLD,     weight: Math.max( 1, Math.round((14 - depthBonus)     * surfaceOreScale))      },
+      { content: HIDDEN.PLATINUM, weight: Math.max(0, (depthBonus - 1) * 3)                                       },
+      { content: HIDDEN.DIAMOND,  weight: Math.max(0, depthBonus - 2)                                             },
+      { content: HIDDEN.WATER,    weight: waterWeight                                                              },
+      { content: HIDDEN.LAVA,     weight: lavaWeight                                                               },
+      { content: HIDDEN.STONE,    weight: 10 + Math.floor(depthBonus * 1.5)                                       },
+      { content: HIDDEN.SHOVEL,   weight:  2                                                                       },
+      { content: HIDDEN.PICK,     weight:  2                                                                       },
+      { content: HIDDEN.BAG,      weight:  1                                                                       },
     ].filter(e => e.weight > 0);   // Drop zero-weight entries
     const totalWeight = TABLE.reduce((s, e) => s + e.weight, 0);
 
@@ -352,6 +357,9 @@ class World {
       case TILE.DOCTOR:
       case TILE.BANK:
       case TILE.OUTHOUSE:
+      case TILE.JEWELER:
+      case TILE.SKY:
+      case TILE.DYNAMITE:
       case TILE.MINE_ENT:
       case TILE.EMPTY:
       case TILE.SILVER:

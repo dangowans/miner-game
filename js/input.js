@@ -24,6 +24,7 @@ class Input {
         case 'ArrowLeft':  case 'a': case 'A': this._push('left');     break;
         case 'ArrowRight': case 'd': case 'D': this._push('right');    break;
         case 'e': case 'E': case 'Enter':       this._push('interact'); break;
+        case 'x': case 'X':                     this._push('dynamite'); break;
         default: return;
       }
       // Prevent page scrolling on arrow keys
@@ -37,11 +38,11 @@ class Input {
 
   _setupButtons() {
     const MAP = {
-      'btn-up':    'up',
-      'btn-down':  'down',
-      'btn-left':  'left',
-      'btn-right': 'right',
-      'btn-act':   'interact',
+      'btn-up':       'up',
+      'btn-down':     'down',
+      'btn-left':     'left',
+      'btn-right':    'right',
+      'btn-dynamite': 'dynamite',
     };
     for (const [id, action] of Object.entries(MAP)) {
       const btn = document.getElementById(id);

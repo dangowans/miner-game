@@ -106,6 +106,37 @@ class SoundSystem {
     this._tone('sawtooth', 400, 100, 0.18, 0.30);
     this._tone('square',   250,  80, 0.15, 0.20, 0.06);
   }
+
+  /** Short metallic tink when the player walks into a stone without a pick. */
+  playTinkStone() {
+    this._resume();
+    this._tone('triangle', 1800, 1300, 0.06, 0.18);
+    this._tone('triangle', 1300,  900, 0.05, 0.10, 0.05);
+  }
+
+  /** Low rumbling crumble when a stone block is broken with the pick. */
+  playCrumbleStone() {
+    this._resume();
+    this._tone('sawtooth', 200,  60, 0.22, 0.28);
+    this._tone('square',   130,  40, 0.18, 0.22, 0.06);
+    this._tone('sawtooth',  80,  30, 0.14, 0.15, 0.12);
+  }
+
+  /** Dull thud when dynamite is placed (fuse lit). */
+  playDynamitePlace() {
+    this._resume();
+    this._tone('square',   120, 60, 0.12, 0.25);
+    this._tone('sawtooth', 80,  40, 0.10, 0.18, 0.05);
+  }
+
+  /** Deep percussive bang when dynamite detonates. */
+  playDynamiteExplode() {
+    this._resume();
+    this._tone('sawtooth', 300, 30,  0.40, 0.50);
+    this._tone('square',   180, 20,  0.35, 0.45, 0.04);
+    this._tone('sawtooth',  80, 10,  0.30, 0.40, 0.10);
+    this._tone('sine',     600, 100, 0.20, 0.30, 0.02);
+  }
 }
 
 // Global singleton – referenced directly in game.js and ui.js

@@ -12,12 +12,12 @@ class UI {
     this._overlayNavHandler = null;
 
     // HUD elements
-    this._hudHearts = document.getElementById('hud-hearts');
-    this._hudMoney  = document.getElementById('hud-money');
-    this._hudGems   = document.getElementById('hud-gems');
-    this._hudCap    = document.getElementById('hud-cap');
-    this._hudTools  = document.getElementById('hud-tools');
-    this._hudMsg    = document.getElementById('hud-msg');
+    this._hudHearts     = document.getElementById('hud-hearts');
+    this._hudMoney      = document.getElementById('hud-money');
+    this._hudGemsDetail = document.getElementById('hud-gems-detail');
+    this._hudTools      = document.getElementById('hud-tools');
+    this._hudMsg        = document.getElementById('hud-msg');
+    this._btnDynamite   = document.getElementById('btn-dynamite');
 
     // Close on Escape key
     document.addEventListener('keydown', (e) => {
@@ -39,8 +39,22 @@ class UI {
     this._hudHearts.style.color = player.hearts <= 1 ? '#ff4444' : '#ff8888';
 
     this._hudMoney.textContent = player.money;
-    this._hudGems.textContent  = player.gemCount;
-    this._hudCap.textContent   = player.maxGems;
+
+    // Ore breakdown: count each type then build "🥈×2 🥇×1 (3/10)" string
+    const oreCounts = {};
+    for (const g of player.gems) oreCounts[g] = (oreCounts[g] || 0) + 1;
+    const ORE_ICON = {
+      [HIDDEN.SILVER]:   '🥈',
+      [HIDDEN.GOLD]:     '🥇',
+      [HIDDEN.PLATINUM]: '⬜',
+      [HIDDEN.DIAMOND]:  '💎',
+      [HIDDEN.RUBY]:     '🔴',
+    };
+    const parts = Object.entries(ORE_ICON)
+      .filter(([t]) => (oreCounts[t] || 0) > 0)
+      .map(([t, icon]) => `${icon}×${oreCounts[t]}`);
+    const breakdown = parts.length ? parts.join(' ') : '—';
+    this._hudGemsDetail.textContent = `${breakdown} (${player.gemCount}/${player.maxGems})`;
 
     const tools = [];
     if (player.hasShovel)       tools.push('⛏');
@@ -49,7 +63,19 @@ class UI {
     if (player.hasExtinguisher) tools.push(`🧯×${player.extinguisherUses}`);
     if (player.hasBag)          tools.push('🎒×2');
     if (player.hasRing)         tools.push('💍');
+    if (player.dynamiteCount > 0) {
+      tools.push(player.placingDynamite
+        ? `💣×${player.dynamiteCount} [PLACING]`
+        : `💣×${player.dynamiteCount}`);
+    }
     this._hudTools.textContent = tools.join(' ');
+
+    // Dynamite button: enabled only when the player has dynamite
+    if (this._btnDynamite) {
+      this._btnDynamite.disabled = player.dynamiteCount === 0 && !player.placingDynamite;
+      this._btnDynamite.textContent = player.placingDynamite ? '✕💣' : '💣';
+      this._btnDynamite.style.borderColor = player.placingDynamite ? '#ff6600' : '';
+    }
 
     this._hudMsg.textContent = player.message;
   }
@@ -64,13 +90,19 @@ class UI {
                     (item.id === 'pick'          && player.hasPick)        ||
                     (item.id === 'bucket'        && player.hasBucket)      ||
                     (item.id === 'extinguisher'  && player.hasExtinguisher)||
-                    (item.id === 'bag'           && player.hasBag)         ||
-                    (item.id === 'ring'          && player.hasRing);
+                    (item.id === 'bag'           && player.hasBag);
+      const dynamiteCount = item.id === 'dynamite' ? player.dynamiteCount : null;
       const affordable = player.money >= item.price;
-      const buyable    = !owned && affordable;
+      // Dynamite is never "owned once" — can always buy more if affordable
+      const buyable    = item.id === 'dynamite' ? affordable : (!owned && affordable);
       const cls        = buyable ? 'shop-item buyable' : 'shop-item disabled';
       let note;
-      if (owned) {
+      if (item.id === 'dynamite') {
+        note = dynamiteCount > 0
+          ? ` <em>(×${dynamiteCount} in stock)</em>`
+          : '';
+        if (!affordable) note += ` <em class="short">(need $${item.price - player.money} more)</em>`;
+      } else if (owned) {
         const usesMap = { pick: player.pickUses, bucket: player.bucketUses, extinguisher: player.extinguisherUses };
         const uses    = usesMap[item.id] ?? null;
         note = uses !== null
@@ -108,7 +140,7 @@ class UI {
         else if (id === 'bucket')      { player.hasBucket = true; player.bucketUses = TOOL_USES; }
         else if (id === 'extinguisher'){ player.hasExtinguisher = true; player.extinguisherUses = TOOL_USES; }
         else if (id === 'bag')         { player.hasBag = true; player.maxGems = 20; }
-        else if (id === 'ring')        { player.hasRing = true; }
+        else if (id === 'dynamite')    { player.dynamiteCount++; }
         player.setMessage(`Bought: ${id}!`);
         sounds.playTransaction();
         this._closeOverlay();
@@ -179,7 +211,7 @@ class UI {
       html = `
         <h2>🍺 The Bar</h2>
         <p class="bar-girl">👱‍♀️ <em>${line}</em></p>
-        <p class="hint">Hint: buy a ring at the Shop for $${SHOP_ITEMS.find(i => i.id === 'ring').price}.</p>
+        <p class="hint">Hint: bring ${JEWELER_DIAMOND_COST} diamonds and $${JEWELER_MONEY_COST} to the Jeweler 💎 to have a ring made.</p>
         <button class="close-btn" id="overlay-close">Close &nbsp;<kbd>Esc</kbd></button>`;
     }
 
@@ -212,7 +244,11 @@ class UI {
   openDoctor(player, onClose) {
     const missing    = player.maxHearts - player.hearts;
     const healCost   = HEAL_PRICE;
-    const canHeal    = missing > 0 && player.money >= healCost;
+    // Compute how many hearts will actually be restored (mirrors player.heal() logic)
+    const affordable = Math.floor(player.money / healCost);
+    const toHeal     = Math.min(missing, affordable);
+    const canHeal    = toHeal > 0;
+    const totalCost  = toHeal * healCost;
     const canExpand  = player.maxHearts < MAX_HEARTS && player.money >= EXTRA_HEART_PRICE;
 
     const heartsDisplay = () => {
@@ -223,7 +259,7 @@ class UI {
 
     const healHtml = canHeal
       ? `<div class="shop-item buyable" id="heal-btn">
-           ❤️ Restore 1 heart — <span class="price">$${healCost}</span>
+           ❤️ Restore ${toHeal} heart${toHeal !== 1 ? 's' : ''} — <span class="price">$${totalCost}</span>
          </div>`
       : missing === 0
         ? `<div class="shop-item disabled">❤️ You are already at full health</div>`
@@ -369,7 +405,73 @@ class UI {
   }
 
   // -------------------------------------------------------------------------
-  // Left-edge "Thar be dragons!" overlay
+  // Jeweler overlay
+  // -------------------------------------------------------------------------
+
+  openJeweler(player, onClose) {
+    const diamondCount = player.gems.filter(g => g === HIDDEN.DIAMOND).length;
+    const hasEnoughDiamonds = diamondCount >= JEWELER_DIAMOND_COST;
+    const hasEnoughMoney    = player.money  >= JEWELER_MONEY_COST;
+    const canCraft = !player.hasRing && hasEnoughDiamonds && hasEnoughMoney;
+
+    let craftHtml;
+    if (player.hasRing) {
+      craftHtml = `<div class="shop-item disabled">💍 Ring already crafted!</div>`;
+    } else if (canCraft) {
+      craftHtml = `
+        <div class="shop-item buyable" id="craft-ring-btn">
+          💍 Craft a Ring —
+          <span class="price">${JEWELER_DIAMOND_COST}💎 + $${JEWELER_MONEY_COST}</span>
+        </div>`;
+    } else {
+      const diamondsNeeded = JEWELER_DIAMOND_COST - diamondCount;
+      const needDiamondsMsg = hasEnoughDiamonds
+        ? ''
+        : ` <em class="short">(need ${diamondsNeeded} more diamond${diamondsNeeded !== 1 ? 's' : ''})</em>`;
+      const needMoneyMsg = hasEnoughMoney
+        ? ''
+        : ` <em class="short">(need $${JEWELER_MONEY_COST - player.money} more)</em>`;
+      craftHtml = `
+        <div class="shop-item disabled">
+          💍 Craft a Ring — <span class="price">${JEWELER_DIAMOND_COST}💎 + $${JEWELER_MONEY_COST}</span>
+          ${needDiamondsMsg}${needMoneyMsg}
+        </div>`;
+    }
+
+    this.overlay.innerHTML = `
+      <h2>💎 Jeweler</h2>
+      <p class="shop-balance">Your money: <strong>$${player.money}</strong></p>
+      <p class="shop-balance">Diamonds carried: <strong>${diamondCount}</strong></p>
+      <p class="hint">Bring ${JEWELER_DIAMOND_COST} diamonds and $${JEWELER_MONEY_COST} to have a ring made for the girl at the bar.</p>
+      <div class="section-label">COMMISSION</div>
+      ${craftHtml}
+      <button class="close-btn" id="overlay-close">✕ Close &nbsp;<kbd>Esc</kbd></button>
+    `;
+    this._openOverlay(onClose);
+
+    const craftBtn = document.getElementById('craft-ring-btn');
+    if (craftBtn) {
+      craftBtn.addEventListener('click', () => {
+        if (player.money < JEWELER_MONEY_COST) return;
+        // Remove JEWELER_DIAMOND_COST diamonds from carried gems
+        let removed = 0;
+        player.gems = player.gems.filter(g => {
+          if (g === HIDDEN.DIAMOND && removed < JEWELER_DIAMOND_COST) {
+            removed++;
+            return false;
+          }
+          return true;
+        });
+        player.money   -= JEWELER_MONEY_COST;
+        player.hasRing  = true;
+        player.setMessage('💍 Ring crafted! Take it to the girl at the Bar.');
+        sounds.playTransaction();
+        this._closeOverlay();
+      });
+    }
+  }
+
+  // -------------------------------------------------------------------------
   // -------------------------------------------------------------------------
 
   openDragons(onClose) {
