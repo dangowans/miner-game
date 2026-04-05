@@ -15,7 +15,7 @@ class World {
     this.width         = MAP_WIDTH;
     this.rowTiles      = new Map();   // y → Uint8Array[MAP_WIDTH]
     this.rowData       = new Map();   // y → Array[MAP_WIDTH] of null|object
-    this.deepestGenY   = 1;           // Mine starts at y=2; pavement at y=1 is not a mine row
+    this.deepestGenY   = 1;           // Tracks the deepest generated row; first mine chunk starts at y=2
     this._rng          = this._makeRng(Date.now()); // New seed each page load → different mine every game
 
     // Track spring-source water tiles (these cannot be cleared by the bucket).

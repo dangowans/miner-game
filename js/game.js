@@ -119,7 +119,7 @@ class Game {
       if (newTile === TILE.STONE) return;
 
       // Hazard tiles revealed by digging are entered via their own helpers
-      if (newTile === TILE.LAVA)  { this._enterLava(p, nx, ny);  return; }
+      if (newTile === TILE.LAVA)  { this._enterLava(p, nx, ny); return; }
       if (newTile === TILE.WATER) { this._enterWater(p, nx, ny); return; }
 
       if (this.world.isPassable(nx, ny)) {
