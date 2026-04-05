@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Miner</title>
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #111;
+      color: #ddd;
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 8px 4px 16px;
+      gap: 0;
+    }
+
+    h1 {
+      font-size: 1.3em;
+      color: #f5c842;
+      letter-spacing: 2px;
+      margin-bottom: 6px;
+      text-shadow: 0 0 8px #a08000;
+    }
+
+    /* ── Game wrapper ── */
+    #game-wrap {
+      position: relative;
+      border: 2px solid #444;
+      line-height: 0;   /* Remove inline-block gap under canvas */
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      max-width: 800px;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    /* ── Overlay (shop / bar / doctor / win / death) ── */
+    #overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(5, 5, 15, 0.88);
+      color: #eee;
+      font-family: 'Courier New', Courier, monospace;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    #overlay.active { display: block; }
+
+    #overlay h2 {
+      color: #f5c842;
+      font-size: 1.3em;
+      margin-bottom: 10px;
+    }
+    #overlay .shop-balance {
+      margin-bottom: 10px;
+      font-size: 0.95em;
+    }
+    #overlay .section-label {
+      font-size: 0.72em;
+      color: #888;
+      letter-spacing: 2px;
+      margin: 10px 0 4px;
+      border-bottom: 1px solid #333;
+      padding-bottom: 2px;
+    }
+    #overlay .shop-item {
+      margin: 5px 0;
+      padding: 8px 10px;
+      border-radius: 4px;
+      font-size: 0.88em;
+      line-height: 1.5;
+    }
+    #overlay .shop-item.buyable {
+      background: #1e2a1e;
+      border: 1px solid #2e5a2e;
+      cursor: pointer;
+    }
+    #overlay .shop-item.buyable:hover,
+    #overlay .shop-item.focused       { background: #243024; border-color: #4a8a4a; }
+    #overlay .shop-item.focused       { border-color: #f5c842; outline: none; }
+    #overlay .shop-item.disabled {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      opacity: 0.55;
+      cursor: default;
+    }
+    #overlay .shop-item.sell-btn { background: #1a2a1a; border-color: #f5c842; }
+    #overlay .shop-item.sell-btn:hover { background: #222a18; }
+    #overlay .price  { color: #f5c842; }
+    #overlay .short  { color: #ff8888; font-size: 0.85em; }
+    #overlay .bar-girl { font-size: 1.05em; margin: 14px 0; line-height: 1.6; }
+    #overlay .hint  { color: #aaa; font-size: 0.85em; margin-top: 8px; }
+
+    #overlay .close-btn {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 8px 18px;
+      background: #2a2a2a;
+      border: 1px solid #555;
+      border-radius: 4px;
+      color: #ccc;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.9em;
+    }
+    #overlay .close-btn:hover,
+    #overlay .close-btn.focused { background: #383838; }
+    #overlay .close-btn.focused { border-color: #f5c842; outline: none; }
+    #overlay kbd {
+      background: #333;
+      border: 1px solid #666;
+      border-radius: 3px;
+      padding: 1px 4px;
+      font-size: 0.8em;
+    }
+
+    /* ── HUD bar ── */
+    #hud {
+      width: 100%;
+      max-width: 800px;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-top: none;
+      padding: 5px 10px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+      font-size: 0.82em;
+      min-height: 34px;
+    }
+    #hud-hearts { font-size: 1.05em; letter-spacing: 1px; color: #ff8888; }
+    .hud-sep { color: #444; }
+    #hud-msg {
+      flex: 1;
+      color: #aad4ff;
+      font-size: 0.85em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ── D-pad controls ── */
+    #controls {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(3, 52px);
+      grid-template-rows:    repeat(3, 52px);
+      gap: 4px;
+    }
+    #controls button {
+      width: 52px;
+      height: 52px;
+      background: #252525;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #ccc;
+      font-size: 1.5em;
+      cursor: pointer;
+      user-select: none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #controls button:active { background: #3a3a3a; }
+
+    #btn-up    { grid-column: 2; grid-row: 1; }
+    #btn-left  { grid-column: 1; grid-row: 2; }
+    #btn-act   { grid-column: 2; grid-row: 2; font-size: 1.1em; }
+    #btn-right { grid-column: 3; grid-row: 2; }
+    #btn-down  { grid-column: 2; grid-row: 3; }
+
+    #controls-label {
+      margin-top: 6px;
+      font-size: 0.72em;
+      color: #555;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>⛏ MINER</h1>
+
+  <div id="game-wrap">
+    <canvas id="canvas" width="800" height="480"></canvas>
+    <div id="overlay"></div>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud">
+    <span id="hud-hearts">♥♥♥</span>
+    <span class="hud-sep">|</span>
+    <span>💰&nbsp;<span id="hud-money">0</span></span>
+    <span class="hud-sep">|</span>
+    <span>💎&nbsp;<span id="hud-gems">0</span>/<span id="hud-cap">10</span></span>
+    <span id="hud-tools"></span>
+    <span id="hud-msg"></span>
+  </div>
+
+  <!-- Mobile D-pad -->
+  <div id="controls" aria-label="Game controls">
+    <button id="btn-up"    title="Move up (W / ↑)"   aria-label="Up">▲</button>
+    <button id="btn-left"  title="Move left (A / ←)" aria-label="Left">◀</button>
+    <button id="btn-act"   title="Interact (E / Enter)" aria-label="Interact">USE</button>
+    <button id="btn-right" title="Move right (D / →)" aria-label="Right">▶</button>
+    <button id="btn-down"  title="Move down (S / ↓)" aria-label="Down">▼</button>
+  </div>
+  <div id="controls-label">Arrow keys / WASD to move &nbsp;·&nbsp; E / Enter to interact</div>
+
+  <!-- Game scripts (order matters – constants first) -->
+  <script src="js/constants.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/game.js"></script>
+
+</body>
+</html>
