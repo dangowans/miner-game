@@ -33,11 +33,12 @@ const TILE = Object.freeze({
   GEM_LOW:  8,   // Revealed low-value gem  (Emerald)
   GEM_MED:  9,   // Revealed medium-value gem (Sapphire)
   GEM_HIGH: 10,  // Revealed high-value gem  (Ruby)
-  WATER:    11,  // Water – blocks movement
-  LAVA:     12,  // Lava  – deals 1 heart damage on contact
-  SHOVEL:   13,  // Revealed shovel item
-  PICK:     14,  // Revealed pick item
-  BAG:      15,  // Revealed large-bag item
+  WATER:    11,  // Water – blocks movement (spring source: always blocked; spread: bucket clears it)
+  LAVA:     12,  // Lava  – deals 1 heart damage; fire extinguisher converts to STONE
+  SHOVEL:   13,  // Revealed shovel item (also sold at shop)
+  PICK:     14,  // Revealed pick item   (also sold at shop) – breaks STONE
+  BAG:      15,  // Revealed large-bag item (also sold at shop)
+  STONE:    16,  // Solid stone block – impassable without a pick
 });
 
 // ---------------------------------------------------------------------------
@@ -50,6 +51,7 @@ const HIDDEN = Object.freeze({
   GEM_HIGH: 'gem_high',
   WATER:    'water',
   LAVA:     'lava',
+  STONE:    'stone',   // Solid stone block hidden inside dirt
   SHOVEL:   'shovel',
   PICK:     'pick',
   BAG:      'bag',
@@ -72,14 +74,28 @@ const SHOP_ITEMS = [
     id:      'shovel',
     name:    'Shovel',
     price:   50,
-    desc:    'Reduces digging effort (-8 probes per tile)',
+    desc:    'Reduces effort to reveal dirt tiles',
     oneTime: true,
   },
   {
     id:      'pick',
     name:    'Pick',
     price:   100,
-    desc:    'Further reduces digging effort (-8 probes per tile)',
+    desc:    'Break stone blocks found in the mine (walk into them)',
+    oneTime: true,
+  },
+  {
+    id:      'bucket',
+    name:    'Bucket',
+    price:   80,
+    desc:    'Clear spread water by walking into it (cannot clear the spring source)',
+    oneTime: true,
+  },
+  {
+    id:      'extinguisher',
+    name:    'Fire Extinguisher',
+    price:   120,
+    desc:    'Walk into lava to turn it into stone instead of taking damage',
     oneTime: true,
   },
   {
@@ -109,9 +125,10 @@ const START_HEARTS      = 3;
 // ---------------------------------------------------------------------------
 // Reveal thresholds
 // ---------------------------------------------------------------------------
-const REVEAL_MIN      = 18;   // Minimum probe count to reveal a dirt tile
-const REVEAL_MAX      = 60;   // Maximum probe count to reveal a dirt tile
-const TOOL_REDUCTION  = 8;    // Each tool (shovel / pick) reduces threshold by this
+const REVEAL_MIN        = 18;   // Minimum probe count to reveal a dirt tile
+const REVEAL_MAX        = 60;   // Maximum probe count to reveal a dirt tile
+const SHOVEL_REDUCTION  = 12;   // Shovel reduces dirt reveal threshold by this amount
+                                // (the pick has no effect on dirt – it only breaks stone)
 
 // ---------------------------------------------------------------------------
 // Hazard spread
@@ -150,4 +167,5 @@ const TILE_COLOR = {
   [TILE.SHOVEL]:   '#ccaa44',
   [TILE.PICK]:     '#aabbcc',
   [TILE.BAG]:      '#aa8833',
+  [TILE.STONE]:    '#5a5a5a',
 };

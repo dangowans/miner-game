@@ -244,6 +244,35 @@ class Renderer {
         ctx.fillText('🎒', cx, cy + 8);
         break;
       }
+
+      case TILE.STONE: {
+        // Grey rocky block with crack lines
+        ctx.fillStyle = '#484848';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        // Highlight edges (top-left lighter, bottom-right darker)
+        ctx.fillStyle = '#686868';
+        ctx.fillRect(px + 1, py + 1, ts - 2, 3);
+        ctx.fillRect(px + 1, py + 1, 3,       ts - 2);
+        ctx.fillStyle = '#282828';
+        ctx.fillRect(px + 1, py + ts - 4, ts - 2, 3);
+        ctx.fillRect(px + ts - 4, py + 1, 3,       ts - 2);
+        // Crack details (deterministic from tile position)
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth   = 1;
+        ctx.beginPath();
+        const cx1 = px + ((tx * 7 + ty * 11) % (ts - 10)) + 5;
+        const cy1 = py + ((tx * 13 + ty * 5) % (ts - 10)) + 5;
+        ctx.moveTo(cx1, cy1);
+        ctx.lineTo(cx1 + 6, cy1 + 4);
+        ctx.lineTo(cx1 + 10, cy1 + 2);
+        ctx.stroke();
+        // Label so it's obvious
+        ctx.fillStyle = '#aaa';
+        ctx.font      = 'bold 8px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('STONE', cx, cy + 3);
+        break;
+      }
     }
   }
 

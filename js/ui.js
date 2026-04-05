@@ -42,10 +42,12 @@ class UI {
     this._hudCap.textContent   = player.maxGems;
 
     const tools = [];
-    if (player.hasShovel) tools.push('⛏');
-    if (player.hasPick)   tools.push('⚒');
-    if (player.hasBag)    tools.push('🎒×2');
-    if (player.hasRing)   tools.push('💍');
+    if (player.hasShovel)       tools.push('⛏');
+    if (player.hasPick)         tools.push('⚒');
+    if (player.hasBucket)       tools.push('🪣');
+    if (player.hasExtinguisher) tools.push('🧯');
+    if (player.hasBag)          tools.push('🎒×2');
+    if (player.hasRing)         tools.push('💍');
     this._hudTools.textContent = tools.join(' ');
 
     this._hudMsg.textContent = player.message;
@@ -60,10 +62,12 @@ class UI {
     const hasSomethingToSell = player.gemCount > 0;
 
     const itemsHtml = SHOP_ITEMS.map(item => {
-      const owned = (item.id === 'shovel' && player.hasShovel) ||
-                    (item.id === 'pick'   && player.hasPick)   ||
-                    (item.id === 'bag'    && player.hasBag)    ||
-                    (item.id === 'ring'   && player.hasRing);
+      const owned = (item.id === 'shovel'       && player.hasShovel)      ||
+                    (item.id === 'pick'          && player.hasPick)        ||
+                    (item.id === 'bucket'        && player.hasBucket)      ||
+                    (item.id === 'extinguisher'  && player.hasExtinguisher)||
+                    (item.id === 'bag'           && player.hasBag)         ||
+                    (item.id === 'ring'          && player.hasRing);
       const affordable = player.money >= item.price;
       const buyable    = !owned && affordable;
       const cls        = buyable ? 'shop-item buyable' : 'shop-item disabled';
@@ -108,10 +112,12 @@ class UI {
         const price = parseInt(el.dataset.price, 10);
         if (player.money < price) return;
         player.money -= price;
-        if      (id === 'shovel') { player.hasShovel = true; }
-        else if (id === 'pick')   { player.hasPick   = true; }
-        else if (id === 'bag')    { player.hasBag = true; player.maxGems = 20; }
-        else if (id === 'ring')   { player.hasRing = true; }
+        if      (id === 'shovel')      { player.hasShovel = true; }
+        else if (id === 'pick')        { player.hasPick   = true; }
+        else if (id === 'bucket')      { player.hasBucket = true; }
+        else if (id === 'extinguisher'){ player.hasExtinguisher = true; }
+        else if (id === 'bag')         { player.hasBag = true; player.maxGems = 20; }
+        else if (id === 'ring')        { player.hasRing = true; }
         player.setMessage(`Bought: ${id}!`);
         this._closeOverlay();
       });
