@@ -391,9 +391,24 @@ class UI {
   }
 
   // -------------------------------------------------------------------------
-  // Outhouse overlay
+  // Left-edge "Thar be dragons!" overlay
   // -------------------------------------------------------------------------
 
+  openDragons(onClose) {
+    this.overlay.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                  height:100%;gap:14px;padding:20px;text-align:center">
+        <p style="font-size:3em;line-height:1">🐉</p>
+        <p style="font-size:1.3em;margin:0"><em>"Thar be dragons!"</em></p>
+        <button class="close-btn" id="overlay-close" style="margin-top:8px">
+          Turn Back
+        </button>
+      </div>`;
+    this._openOverlay(onClose);
+  }
+
+  // -------------------------------------------------------------------------
+  // Outhouse overlay
   openOuthouse(onClose) {
     this.overlay.innerHTML = `
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;

@@ -96,7 +96,13 @@ class Game {
     const ny = p.y + dy;
 
     // World boundary (left / right / top of pavement)
-    if (nx < 0 || nx >= this.world.width || ny < 1) return;
+    if (nx < 0) {
+      // Walking off the left edge
+      this.state = 'overlay';
+      this.ui.openDragons(() => { this.state = 'playing'; });
+      return;
+    }
+    if (nx >= this.world.width || ny < 1) return;
 
     // Pavement (y=1) ↔ mine (y=2) boundary: only crossable at mine-entrance columns
     if ((p.y === 1 && ny === 2) || (p.y === 2 && ny === 1)) {
