@@ -149,6 +149,7 @@ class Game {
         this.world.setTile(nx, ny, TILE.EMPTY);
         p.x = nx; p.y = ny;
         p.pickUses--;
+        sounds.playCrumbleStone();
         if (p.pickUses <= 0) {
           p.hasPick   = false;
           p.pickUses  = 0;
@@ -160,6 +161,7 @@ class Game {
         this._afterMove(nx, ny);
       } else {
         p.setMessage('🪨 You need a Pick to break stone.');
+        sounds.playTinkStone();
       }
       return;
     }

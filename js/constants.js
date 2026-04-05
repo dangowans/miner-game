@@ -3,16 +3,16 @@
 // ---------------------------------------------------------------------------
 // Map geometry
 // ---------------------------------------------------------------------------
-const TILE_SIZE      = 32;
-const MAP_WIDTH      = 25;   // Fixed horizontal width (tiles)
+const TILE_SIZE      = 34;
+const MAP_WIDTH      = 24;   // Fixed horizontal width (tiles)
 
 // Viewport – what the canvas shows at any one time
-const VIEWPORT_COLS  = 25;   // Must equal MAP_WIDTH
+const VIEWPORT_COLS  = 24;   // Must equal MAP_WIDTH
 const VIEWPORT_ROWS  = 15;   // Rows visible on screen
 
 // Canvas pixel dimensions
-const CANVAS_W       = VIEWPORT_COLS * TILE_SIZE;  // 800
-const CANVAS_H       = VIEWPORT_ROWS * TILE_SIZE;  // 480
+const CANVAS_W       = VIEWPORT_COLS * TILE_SIZE;  // 816
+const CANVAS_H       = VIEWPORT_ROWS * TILE_SIZE;  // 510
 
 // Chunk generation
 const CHUNK_SIZE     = 30;   // Mine rows generated per chunk
@@ -156,7 +156,7 @@ const DRINKS_TO_UNLOCK  = 6;    // Drinks required before the girl accepts a pro
 // ---------------------------------------------------------------------------
 // Jeweler
 // ---------------------------------------------------------------------------
-const JEWELER_DIAMOND_COST = 3;     // Diamonds required to commission a ring
+const JEWELER_DIAMOND_COST = 1;     // Diamonds required to commission a ring
 const JEWELER_MONEY_COST   = 1000;  // Cash required alongside the diamonds
 
 // ---------------------------------------------------------------------------
@@ -194,7 +194,7 @@ const BANK_X      = 17;  // Town bank (between Doctor and mine entrance)
 // Mine entrance x-range (right side of surface row)
 // ---------------------------------------------------------------------------
 const MINE_ENT_X_MIN         = 22;
-const MINE_ENT_X_MAX         = 24;
+const MINE_ENT_X_MAX         = 23;
 const MINE_ENT_CLEARED_DEPTH = 3;   // Mine-entrance columns pre-cleared to this row
 
 // ---------------------------------------------------------------------------

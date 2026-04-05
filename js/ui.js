@@ -12,12 +12,11 @@ class UI {
     this._overlayNavHandler = null;
 
     // HUD elements
-    this._hudHearts = document.getElementById('hud-hearts');
-    this._hudMoney  = document.getElementById('hud-money');
-    this._hudGems   = document.getElementById('hud-gems');
-    this._hudCap    = document.getElementById('hud-cap');
-    this._hudTools  = document.getElementById('hud-tools');
-    this._hudMsg    = document.getElementById('hud-msg');
+    this._hudHearts     = document.getElementById('hud-hearts');
+    this._hudMoney      = document.getElementById('hud-money');
+    this._hudGemsDetail = document.getElementById('hud-gems-detail');
+    this._hudTools      = document.getElementById('hud-tools');
+    this._hudMsg        = document.getElementById('hud-msg');
 
     // Close on Escape key
     document.addEventListener('keydown', (e) => {
@@ -39,8 +38,22 @@ class UI {
     this._hudHearts.style.color = player.hearts <= 1 ? '#ff4444' : '#ff8888';
 
     this._hudMoney.textContent = player.money;
-    this._hudGems.textContent  = player.gemCount;
-    this._hudCap.textContent   = player.maxGems;
+
+    // Ore breakdown: count each type then build "🥈×2 🥇×1 (3/10)" string
+    const oreCounts = {};
+    for (const g of player.gems) oreCounts[g] = (oreCounts[g] || 0) + 1;
+    const ORE_ICON = {
+      [HIDDEN.SILVER]:   '🥈',
+      [HIDDEN.GOLD]:     '🥇',
+      [HIDDEN.PLATINUM]: '⬜',
+      [HIDDEN.DIAMOND]:  '💎',
+      [HIDDEN.RUBY]:     '🔴',
+    };
+    const parts = Object.entries(ORE_ICON)
+      .filter(([t]) => (oreCounts[t] || 0) > 0)
+      .map(([t, icon]) => `${icon}×${oreCounts[t]}`);
+    const breakdown = parts.length ? parts.join(' ') : '—';
+    this._hudGemsDetail.textContent = `${breakdown} (${player.gemCount}/${player.maxGems})`;
 
     const tools = [];
     if (player.hasShovel)       tools.push('⛏');
