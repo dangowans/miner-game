@@ -436,7 +436,8 @@ class Renderer {
     ctx.fillStyle = '#1a1a1a';
     ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
 
-    // Seed deterministic layout from tile position
+    // Seed deterministic layout from tile position using small coprime multipliers
+    // so adjacent tiles produce visually distinct vein patterns.
     const s1 = (tx * 7 + ty * 13) % 8;
     const s2 = (tx * 11 + ty * 5) % 6;
     const s3 = (tx * 3 + ty * 17) % 7;
