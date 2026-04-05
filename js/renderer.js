@@ -209,14 +209,34 @@ class Renderer {
       case TILE.GEM_HIGH: this._drawGem(ctx, cx, cy, hs, '#ff3333', '#400000'); break;
 
       case TILE.WATER: {
-        ctx.fillStyle = '#1040aa';
-        ctx.fillRect(px, py, ts, ts);
-        ctx.fillStyle = '#4488ff';
-        // Animated-ish shimmer using tile position as phase
-        const phase = ((tx + ty) % 3);
-        ctx.font      = '20px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(phase === 0 ? '≈' : '≋', cx, cy + 7);
+        const isSource = world.isSpringSource(tx, ty);
+        if (isSource) {
+          // Spring source: teal background with upwelling bubbles and a bright centre dot
+          ctx.fillStyle = '#007a6a';
+          ctx.fillRect(px, py, ts, ts);
+          // Inner highlight ring to suggest a welling pool
+          ctx.fillStyle = '#00b89a';
+          ctx.fillRect(px + 3, py + 3, ts - 6, ts - 6);
+          // Upward-bubble symbol
+          ctx.fillStyle = '#aaffee';
+          ctx.font      = '16px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('⬆', cx, cy + 6);
+          // Bright centre dot marking the source point
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(cx, cy + 8, 3, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          // Spread water: dark blue with animated shimmer
+          ctx.fillStyle = '#1040aa';
+          ctx.fillRect(px, py, ts, ts);
+          ctx.fillStyle = '#4488ff';
+          const phase = ((tx + ty) % 3);
+          ctx.font      = '20px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(phase === 0 ? '≈' : '≋', cx, cy + 7);
+        }
         break;
       }
 
