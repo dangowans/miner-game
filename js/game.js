@@ -157,11 +157,7 @@ class Game {
     // ── 5. Normal passable tile ───────────────────────────────────────────
     if (this.world.isPassable(nx, ny)) {
       p.x = nx; p.y = ny;
-      const revealed = this.world.probeAdjacent(nx, ny, p.toolReduction);
-      for (const { x, y, content } of revealed) {
-        this._onContentRevealed(content, x, y);
-      }
-      this._checkPickup(nx, ny);
+      this._afterMove(nx, ny);
     }
   }
 
@@ -209,9 +205,13 @@ class Game {
 
   /** Shared post-move logic: probe neighbours + pickup. */
   _afterMove(x, y) {
-    const revealed = this.world.probeAdjacent(x, y, this.player.toolReduction);
-    for (const { x: rx, y: ry, content } of revealed) {
-      this._onContentRevealed(content, rx, ry);
+    // Only probe adjacent dirt tiles when the player is inside the mine (y≥2).
+    // Pavement movement (y=1) must not reveal hidden content in the top mine row.
+    if (y >= 2) {
+      const revealed = this.world.probeAdjacent(x, y, this.player.toolReduction);
+      for (const { x: rx, y: ry, content } of revealed) {
+        this._onContentRevealed(content, rx, ry);
+      }
     }
     this._checkPickup(x, y);
   }
