@@ -367,10 +367,6 @@ class Renderer {
         ctx.lineTo(cx1 + 6, cy1 + 4);
         ctx.lineTo(cx1 + 10, cy1 + 2);
         ctx.stroke();
-        ctx.fillStyle = '#aaa';
-        ctx.font      = 'bold 8px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('STONE', cx, cy + 3);
         break;
       }
 
