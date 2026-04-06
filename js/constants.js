@@ -8,11 +8,11 @@ const MAP_WIDTH      = 24;   // Fixed horizontal width (tiles)
 
 // Viewport – what the canvas shows at any one time
 const VIEWPORT_COLS  = 24;   // Must equal MAP_WIDTH
-const VIEWPORT_ROWS  = 15;   // Rows visible on screen
+const VIEWPORT_ROWS  = 14;   // Rows visible on screen
 
 // Canvas pixel dimensions
 const CANVAS_W       = VIEWPORT_COLS * TILE_SIZE;  // 816
-const CANVAS_H       = VIEWPORT_ROWS * TILE_SIZE;  // 510
+const CANVAS_H       = VIEWPORT_ROWS * TILE_SIZE;  // 476
 
 // Chunk generation
 const CHUNK_SIZE     = 30;   // Mine rows generated per chunk
@@ -127,6 +127,7 @@ const SHOP_ITEMS = [
   {
     id:      'shovel',
     name:    'Shovel',
+    icon:    '⛏',
     price:   50,
     desc:    'Reduces effort to reveal dirt tiles',
     oneTime: true,
@@ -134,6 +135,7 @@ const SHOP_ITEMS = [
   {
     id:      'pick',
     name:    'Pick',
+    icon:    '⚒',
     price:   100,
     desc:    `Break stone blocks found in the mine (walk into them) — lasts ${TOOL_USES} uses`,
     oneTime: false,
@@ -141,6 +143,7 @@ const SHOP_ITEMS = [
   {
     id:      'bucket',
     name:    'Bucket',
+    icon:    '🪣',
     price:   80,
     desc:    `Clear spread water by walking into it (cannot clear spring source) — lasts ${TOOL_USES} uses`,
     oneTime: false,
@@ -148,6 +151,7 @@ const SHOP_ITEMS = [
   {
     id:      'extinguisher',
     name:    'Fire Extinguisher',
+    icon:    '🧯',
     price:   120,
     desc:    `Walk into lava to turn it to stone instead of taking damage — lasts ${TOOL_USES} uses`,
     oneTime: false,
@@ -155,6 +159,7 @@ const SHOP_ITEMS = [
   {
     id:      'bag',
     name:    'Large Bag',
+    icon:    '🎒',
     price:   75,
     desc:    'Doubles ore carry capacity (10 → 20)',
     oneTime: true,
@@ -162,6 +167,7 @@ const SHOP_ITEMS = [
   {
     id:      'dynamite',
     name:    'Dynamite',
+    icon:    '💣',
     price:   75,
     desc:    'Press 💣 to enter placement mode, then move in any direction to place. 5-second fuse — get clear!',
     oneTime: false,
@@ -169,6 +175,7 @@ const SHOP_ITEMS = [
   {
     id:      'firstaid',
     name:    'First Aid Kit',
+    icon:    '🩹',
     price:   65,
     desc:    'Use from inventory to restore health to full.',
     oneTime: false,

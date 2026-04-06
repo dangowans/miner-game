@@ -47,6 +47,7 @@ class Game {
     this._lastTime  = 0;
     this._startTime = performance.now();
     this._dynamites = [];   // Array of { x, y, frames } for lit dynamite placements
+    this._dragonWarnings = 0;  // Count of times the player has been warned about dragons
     requestAnimationFrame((t) => this._loop(t));
   }
 
@@ -108,6 +109,22 @@ class Game {
   // Movement
   // -------------------------------------------------------------------------
 
+  /**
+   * Show the dragons warning overlay. After 10 warnings, show the game-over
+   * "You were warned" screen instead.
+   */
+  _warnDragons() {
+    this.input.clear();
+    this._dragonWarnings++;
+    if (this._dragonWarnings >= 10) {
+      this.state = 'dead';
+      this.ui.showWarned(this._elapsedTimeLabel());
+    } else {
+      this.state = 'overlay';
+      this.ui.openDragons(() => { this.state = 'playing'; this.input.clear(); });
+    }
+  }
+
   _tryMove(dx, dy) {
     const p  = this.player;
     const nx = p.x + dx;
@@ -122,16 +139,12 @@ class Game {
     // World boundary (left / right / top of pavement)
     if (nx < 0) {
       // Walking off the left edge
-      this.input.clear();
-      this.state = 'overlay';
-      this.ui.openDragons(() => { this.state = 'playing'; this.input.clear(); });
+      this._warnDragons();
       return;
     }
     if (nx >= this.world.width) {
       // Walking off the right edge
-      this.input.clear();
-      this.state = 'overlay';
-      this.ui.openDragons(() => { this.state = 'playing'; this.input.clear(); });
+      this._warnDragons();
       return;
     }
     if (ny < 1) {
@@ -143,9 +156,7 @@ class Game {
     // ── Max mine depth ────────────────────────────────────────────────────
     // depth in metres = ny - 1; block movement beyond MAX_MINE_DEPTH
     if (ny - 1 > MAX_MINE_DEPTH) {
-      this.input.clear();
-      this.state = 'overlay';
-      this.ui.openDragons(() => { this.state = 'playing'; this.input.clear(); });
+      this._warnDragons();
       return;
     }
 
@@ -501,6 +512,19 @@ class Game {
   // Pickup / tile interactions on arrival
   // -------------------------------------------------------------------------
 
+  /**
+   * Show a full-screen overlay when a non-ore item is picked up from the mine.
+   * Pauses the game until the player dismisses it.
+   */
+  _showItemPickupOverlay(emoji, message) {
+    this.input.clear();
+    this.state = 'overlay';
+    this.ui.showItemPickup(emoji, message, () => {
+      this.state = 'playing';
+      this.input.clear();
+    });
+  }
+
   _checkPickup(x, y) {
     const p    = this.player;
     const tile = this.world.getTile(x, y);
@@ -546,8 +570,8 @@ class Game {
         if (!p.specialItems.has('rubber_boot')) {
           p.specialItems.add('rubber_boot');
           this.world.setTile(x, y, TILE.EMPTY);
-          p.setMessage('🥾 Rubber boots! Walk through water without taking damage.');
           sounds.playItemPickup();
+          this._showItemPickupOverlay('🥾', 'Rubber boots! Walk through water without taking damage.');
         }
         break;
       }
@@ -556,8 +580,8 @@ class Game {
         if (!p.specialItems.has('pocket_watch')) {
           p.specialItems.add('pocket_watch');
           this.world.setTile(x, y, TILE.EMPTY);
-          p.setMessage('⌚ A pocket watch! Still ticking after all these years.');
           sounds.playItemPickup();
+          this._showItemPickupOverlay('⌚', 'A pocket watch! Still ticking after all these years.');
         }
         break;
       }
@@ -566,8 +590,8 @@ class Game {
         if (!p.specialItems.has('glasses')) {
           p.specialItems.add('glasses');
           this.world.setTile(x, y, TILE.EMPTY);
-          p.setMessage('🕶️ A pair of glasses? What else lies beneath the loo?');
           sounds.playItemPickup();
+          this._showItemPickupOverlay('🕶️', 'A pair of glasses? What else lies beneath the loo?');
         }
         break;
       }
@@ -577,8 +601,8 @@ class Game {
         if (!p.hasLantern) {
           p.hasLantern = true;
           this.world.setTile(x, y, TILE.EMPTY);
-          p.setMessage('🔦 Lantern found! Move back and forth next to dirt to reveal what\'s inside.');
           sounds.playItemPickup();
+          this._showItemPickupOverlay('🔦', 'Lantern found! Move back and forth next to dirt to reveal what\'s inside.');
         }
         break;
       }
@@ -588,8 +612,8 @@ class Game {
         if (!p.hasRadio) {
           p.hasRadio = true;
           this.world.setTile(x, y, TILE.EMPTY);
-          p.setMessage('📻 Old radio found! Use the 📻 button to call for a ride to the mine entrance.');
           sounds.playItemPickup();
+          this._showItemPickupOverlay('📻', 'Old radio found! Use the 📻 button to call for a ride to the mine entrance.');
         }
         break;
       }
@@ -599,8 +623,8 @@ class Game {
         if (!p.specialItems.has('skull')) {
           p.specialItems.add('skull');
           this.world.setTile(x, y, TILE.EMPTY);
-          p.setMessage('💀 A skull. Someone didn\'t make it back.');
           sounds.playItemPickup();
+          this._showItemPickupOverlay('💀', 'A skull. Someone didn\'t make it back.');
         }
         break;
       }
@@ -609,8 +633,8 @@ class Game {
         if (!p.specialItems.has('canteen')) {
           p.specialItems.add('canteen');
           this.world.setTile(x, y, TILE.EMPTY);
-          p.setMessage('🧴 A dusty canteen. Still has a drop of water in it.');
           sounds.playItemPickup();
+          this._showItemPickupOverlay('🧴', 'A dusty canteen. Still has a drop of water in it.');
         }
         break;
       }
@@ -619,8 +643,8 @@ class Game {
         if (!p.specialItems.has('lunchbox')) {
           p.specialItems.add('lunchbox');
           this.world.setTile(x, y, TILE.EMPTY);
-          p.setMessage('🍱 A lunch box. The sandwich inside is ancient but tempting.');
           sounds.playItemPickup();
+          this._showItemPickupOverlay('🍱', 'A lunch box. The sandwich inside is ancient but tempting.');
         }
         break;
       }
@@ -630,8 +654,8 @@ class Game {
         if (!p.hasRing) {
           p.hasRing = true;
           this.world.setTile(x, y, TILE.EMPTY);
-          p.setMessage('💍 You found a ring!');
           sounds.playItemPickup();
+          this._showItemPickupOverlay('💍', 'You found a ring! Bring it to the bar…');
         }
         break;
       }
@@ -641,8 +665,8 @@ class Game {
         if (!p.hasShovel) {
           p.hasShovel = true;
           this.world.setTile(x, y, TILE.EMPTY);
-          p.setMessage('⛏ Found a Shovel! Digging dirt is easier now.');
           sounds.playItemPickup();
+          this._showItemPickupOverlay('⛏', 'Found a Shovel! Digging dirt is easier now.');
         }
         break;
       }
@@ -652,8 +676,8 @@ class Game {
           p.hasPick  = true;
           p.pickUses = TOOL_USES;
           this.world.setTile(x, y, TILE.EMPTY);
-          p.setMessage(`⚒ Found a Pick! Walk into stone to break it. (${TOOL_USES} uses)`);
           sounds.playItemPickup();
+          this._showItemPickupOverlay('⚒', `Found a Pick! Walk into stone to break it. (${TOOL_USES} uses)`);
         }
         break;
       }
@@ -663,8 +687,8 @@ class Game {
           p.hasBag  = true;
           p.maxGems = 20;
           this.world.setTile(x, y, TILE.EMPTY);
-          p.setMessage('🎒 Found a Large Bag! Carry capacity doubled.');
           sounds.playItemPickup();
+          this._showItemPickupOverlay('🎒', 'Found a Large Bag! Carry capacity doubled.');
         }
         break;
       }
