@@ -446,9 +446,7 @@ class Renderer {
       }
 
       case TILE.FLOWER: {
-        // Surface flower tile – drawn in the building facade row
-        ctx.fillStyle = '#3a8010';
-        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        // Surface flower tile – drawn in the building facade row (no background)
         ctx.font      = '18px monospace';
         ctx.textAlign = 'center';
         ctx.fillText('🌸', cx, cy + 8);
