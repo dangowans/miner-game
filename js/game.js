@@ -48,6 +48,16 @@ class Game {
     this._startTime = performance.now();
     this._dynamites = [];   // Array of { x, y, frames } for lit dynamite placements
     this._dragonWarnings = 0;  // Count of times the player has been warned about dragons
+
+    // Restore a previous session if one was saved
+    const saved = Storage.load();
+    if (saved) {
+      Storage.restorePlayer(this.player, saved.player);
+      Storage.restoreWorld(this.world, saved.world);
+      Storage.restoreGame(this, saved.game);
+      this.ui.updateHUD(this.player);
+    }
+
     requestAnimationFrame((t) => this._loop(t));
   }
 
@@ -103,6 +113,7 @@ class Game {
 
     this.player.tick();
     this.ui.updateHUD(this.player);
+    Storage.save(this.player, this.world, this);
   }
 
   // -------------------------------------------------------------------------
@@ -117,6 +128,7 @@ class Game {
     this.input.clear();
     this._dragonWarnings++;
     if (this._dragonWarnings >= 10) {
+      Storage.clear();
       this.state = 'dead';
       this.ui.showWarned(this._elapsedTimeLabel());
     } else {
@@ -327,6 +339,7 @@ class Game {
     const died = p.takeDamage();
     sounds.playHazardHit();
     if (died) {
+      Storage.clear();
       this.state = 'dead';
       this.ui.showDead(this._elapsedTimeLabel());
     } else {
@@ -475,6 +488,7 @@ class Game {
       const died = p.takeDamageMultiple(2);
       sounds.playHazardHit();
       if (died) {
+        Storage.clear();
         this.state = 'dead';
         this.ui.showDead(this._elapsedTimeLabel());
         return;
@@ -484,6 +498,7 @@ class Game {
       const died = p.takeDamage();
       sounds.playHazardHit();
       if (died) {
+        Storage.clear();
         this.state = 'dead';
         this.ui.showDead(this._elapsedTimeLabel());
         return;
@@ -740,6 +755,7 @@ class Game {
       this.state = 'overlay';
       this.ui.openBar(p, (won) => {
         if (won) {
+          Storage.clear();
           this.state = 'won';
           this.ui.showWin(this._elapsedTimeLabel());
         } else {
