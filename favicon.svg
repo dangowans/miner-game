@@ -1,20 +1,128 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 34" width="32" height="32">
-  <!-- Background -->
-  <rect width="34" height="34" rx="4" fill="#1a1a2e"/>
-  <!-- Legs -->
-  <rect x="8" y="24" width="6" height="10" fill="#2a1a08"/>
-  <rect x="20" y="24" width="6" height="10" fill="#2a1a08"/>
-  <!-- Body -->
-  <rect x="7" y="11" width="20" height="15" fill="#d06010"/>
-  <!-- Head -->
-  <rect x="9" y="3" width="16" height="10" fill="#e8a860"/>
-  <!-- Hard hat brim -->
-  <rect x="6" y="2" width="22" height="4" fill="#f0c000"/>
-  <!-- Hard hat dome -->
-  <rect x="9" y="0" width="16" height="4" fill="#e8b800"/>
-  <!-- Eyes -->
-  <rect x="11" y="5" width="3" height="3" fill="#222222"/>
-  <rect x="20" y="5" width="3" height="3" fill="#222222"/>
-  <!-- Lamp on hat -->
-  <rect x="15" y="0" width="4" height="3" fill="#fff8a0"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- White/transparent background -->
+  <!-- Shadow under feet -->
+  <ellipse cx="210" cy="490" rx="120" ry="18" fill="rgba(0,0,0,0.15)"/>
+
+  <!-- === ORE BAG (behind character) === -->
+  <!-- Bag body -->
+  <ellipse cx="360" cy="310" rx="110" ry="125" fill="#7a4a1a" stroke="#1a0a00" stroke-width="8"/>
+  <!-- Bag highlight -->
+  <ellipse cx="330" cy="280" rx="55" ry="60" fill="#96601f" opacity="0.5"/>
+  <!-- Bag darker areas -->
+  <ellipse cx="390" cy="360" rx="45" ry="55" fill="#5a3410" opacity="0.4"/>
+  <!-- Gold nuggets sticking out -->
+  <!-- Nugget 1 -->
+  <ellipse cx="310" cy="195" rx="32" ry="26" fill="#f5c200" stroke="#1a0a00" stroke-width="6"/>
+  <ellipse cx="310" cy="192" rx="22" ry="17" fill="#ffd700"/>
+  <!-- Nugget 2 -->
+  <ellipse cx="355" cy="178" rx="30" ry="24" fill="#f5c200" stroke="#1a0a00" stroke-width="6"/>
+  <ellipse cx="355" cy="175" rx="20" ry="16" fill="#ffd700"/>
+  <!-- Nugget 3 -->
+  <ellipse cx="398" cy="185" rx="28" ry="22" fill="#f5c200" stroke="#1a0a00" stroke-width="6"/>
+  <ellipse cx="398" cy="182" rx="18" ry="14" fill="#ffd700"/>
+  <!-- Nugget 4 (smaller) -->
+  <ellipse cx="340" cy="162" rx="22" ry="18" fill="#e8b800" stroke="#1a0a00" stroke-width="5"/>
+  <!-- Nugget 5 (smaller) -->
+  <ellipse cx="378" cy="158" rx="20" ry="16" fill="#e8b800" stroke="#1a0a00" stroke-width="5"/>
+  <!-- Bag tie / top -->
+  <path d="M270 215 Q310 195 355 192 Q395 190 430 210 Q440 230 435 245 Q395 228 355 225 Q315 222 278 238 Z" fill="#8b5a20" stroke="#1a0a00" stroke-width="6"/>
+
+  <!-- === LEGS === -->
+  <!-- Left leg -->
+  <rect x="148" y="360" width="75" height="115" rx="12" fill="#5a3010" stroke="#1a0a00" stroke-width="8"/>
+  <!-- Right leg -->
+  <rect x="233" y="360" width="75" height="115" rx="12" fill="#5a3010" stroke="#1a0a00" stroke-width="8"/>
+
+  <!-- === BOOTS === -->
+  <!-- Left boot -->
+  <path d="M140 450 Q145 480 155 490 Q175 502 215 498 Q235 495 238 478 Q238 462 223 455 L148 452 Z" fill="#3d1f08" stroke="#1a0a00" stroke-width="8"/>
+  <!-- Right boot -->
+  <path d="M228 452 L308 455 Q308 462 308 475 Q305 495 285 500 Q255 505 242 498 Q233 490 228 475 Z" fill="#3d1f08" stroke="#1a0a00" stroke-width="8"/>
+  <!-- Boot highlights -->
+  <path d="M155 462 Q165 468 195 468" fill="none" stroke="#5a3010" stroke-width="4" opacity="0.5"/>
+  <path d="M243 462 Q253 468 283 468" fill="none" stroke="#5a3010" stroke-width="4" opacity="0.5"/>
+
+  <!-- === BODY (orange shirt) === -->
+  <rect x="115" y="240" width="215" height="145" rx="25" fill="#cc4a18" stroke="#1a0a00" stroke-width="9"/>
+  <!-- V-neck detail -->
+  <path d="M195 242 L223 285 L250 242" fill="none" stroke="#1a0a00" stroke-width="8"/>
+  <!-- Shirt highlight -->
+  <ellipse cx="185" cy="280" rx="35" ry="40" fill="#dd5522" opacity="0.35"/>
+
+  <!-- === LEFT ARM === -->
+  <ellipse cx="100" cy="305" rx="36" ry="55" fill="#cc4a18" stroke="#1a0a00" stroke-width="8"/>
+  <!-- Left hand -->
+  <ellipse cx="98" cy="360" rx="30" ry="28" fill="#d4935a" stroke="#1a0a00" stroke-width="7"/>
+  <!-- Finger details -->
+  <path d="M78 352 Q88 345 98 348" fill="none" stroke="#a06030" stroke-width="4"/>
+  <path d="M78 362 Q88 357 100 360" fill="none" stroke="#a06030" stroke-width="4"/>
+
+  <!-- === RIGHT ARM (holding bag) === -->
+  <ellipse cx="345" cy="295" rx="32" ry="48" fill="#cc4a18" stroke="#1a0a00" stroke-width="8"/>
+  <!-- Right hand/arm -->
+  <ellipse cx="346" cy="345" rx="28" ry="26" fill="#d4935a" stroke="#1a0a00" stroke-width="7"/>
+
+  <!-- === NECK === -->
+  <rect x="196" y="195" width="55" height="55" rx="10" fill="#d4935a" stroke="#1a0a00" stroke-width="7"/>
+
+  <!-- === HEAD === -->
+  <ellipse cx="223" cy="160" rx="105" ry="100" fill="#e8a860" stroke="#1a0a00" stroke-width="9"/>
+  <!-- Ear -->
+  <ellipse cx="118" cy="170" rx="22" ry="28" fill="#d4935a" stroke="#1a0a00" stroke-width="7"/>
+  <ellipse cx="118" cy="170" rx="12" ry="18" fill="#c07840" opacity="0.5"/>
+  <!-- Freckles -->
+  <circle cx="175" cy="175" r="5" fill="#c07840" opacity="0.6"/>
+  <circle cx="190" cy="185" r="4" fill="#c07840" opacity="0.6"/>
+  <circle cx="165" cy="185" r="3.5" fill="#c07840" opacity="0.6"/>
+  <circle cx="205" cy="178" r="3" fill="#c07840" opacity="0.5"/>
+  <circle cx="178" cy="162" r="3" fill="#c07840" opacity="0.5"/>
+  <!-- Freckles right side -->
+  <circle cx="248" cy="175" r="4" fill="#c07840" opacity="0.6"/>
+  <circle cx="260" cy="185" r="4.5" fill="#c07840" opacity="0.6"/>
+  <circle cx="240" cy="185" r="3" fill="#c07840" opacity="0.5"/>
+
+  <!-- === EYES === -->
+  <!-- Left eyebrow -->
+  <path d="M152 120 Q172 110 192 118" fill="none" stroke="#2a1a08" stroke-width="7" stroke-linecap="round"/>
+  <!-- Right eyebrow -->
+  <path d="M220 116 Q245 108 262 118" fill="none" stroke="#2a1a08" stroke-width="7" stroke-linecap="round"/>
+  <!-- Left eye -->
+  <ellipse cx="172" cy="138" rx="14" ry="12" fill="#1a1a1a"/>
+  <circle cx="168" cy="134" r="4" fill="white"/>
+  <!-- Right eye -->
+  <ellipse cx="248" cy="136" rx="14" ry="12" fill="#1a1a1a"/>
+  <circle cx="244" cy="132" r="4" fill="white"/>
+
+  <!-- === NOSE & MOUTH === -->
+  <!-- Nose hint -->
+  <path d="M210 168 Q218 180 225 168" fill="none" stroke="#b07040" stroke-width="5" stroke-linecap="round"/>
+  <!-- Smile -->
+  <path d="M168 198 Q200 222 248 200" fill="none" stroke="#2a1a08" stroke-width="7" stroke-linecap="round"/>
+  <!-- Teeth hint -->
+  <path d="M175 200 Q200 215 240 202" fill="white" opacity="0.5"/>
+
+  <!-- === HARD HAT === -->
+  <!-- Hat brim -->
+  <path d="M85 118 Q155 100 240 95 Q300 92 340 100 Q360 106 345 120 Q300 112 240 112 Q180 112 120 122 Z" 
+        fill="#e8b800" stroke="#1a0a00" stroke-width="9"/>
+  <!-- Hat dome -->
+  <path d="M120 118 Q155 60 223 50 Q290 42 330 80 Q350 98 345 120 Q300 108 240 106 Q180 106 120 118 Z"
+        fill="#f5c840" stroke="#1a0a00" stroke-width="9"/>
+  <!-- Hat highlight -->
+  <path d="M150 75 Q175 55 220 52 Q265 50 295 70" fill="none" stroke="#ffe060" stroke-width="12" stroke-linecap="round" opacity="0.6"/>
+  <!-- Hat band/stripe -->
+  <path d="M120 108 Q180 100 240 99 Q295 99 338 108" fill="none" stroke="#c8980a" stroke-width="6"/>
+
+  <!-- === HEADLAMP === -->
+  <!-- Lamp base / strap -->
+  <path d="M122 100 Q140 92 158 96" fill="none" stroke="#3a2a18" stroke-width="10" stroke-linecap="round"/>
+  <!-- Lamp housing -->
+  <circle cx="138" cy="96" r="26" fill="#3a2a18" stroke="#1a0a00" stroke-width="7"/>
+  <!-- Lamp glass -->
+  <circle cx="138" cy="96" r="18" fill="#f0f0e8"/>
+  <!-- Lamp glow inner -->
+  <circle cx="138" cy="96" r="13" fill="#fffff0"/>
+  <circle cx="133" cy="91" r="5" fill="white" opacity="0.8"/>
+  <!-- Lamp rim detail -->
+  <circle cx="138" cy="96" r="18" fill="none" stroke="#666" stroke-width="3"/>
 </svg>
