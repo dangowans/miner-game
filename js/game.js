@@ -45,6 +45,7 @@ class Game {
     this.state    = 'playing';
 
     this._lastTime  = 0;
+    this._startTime = performance.now();
     this._dynamites = [];   // Array of { x, y, frames } for lit dynamite placements
     requestAnimationFrame((t) => this._loop(t));
   }
@@ -59,6 +60,16 @@ class Game {
     this._update(dt);
     this._render();
     requestAnimationFrame((t) => this._loop(t));
+  }
+
+  /** Returns a human-readable string of elapsed time since the game started. */
+  _elapsedTimeLabel() {
+    const totalSec = Math.floor((performance.now() - this._startTime) / 1000);
+    const mins = Math.floor(totalSec / 60);
+    const secs = totalSec % 60;
+    return mins > 0
+      ? `${mins}m ${secs}s`
+      : `${secs}s`;
   }
 
   // -------------------------------------------------------------------------
@@ -306,7 +317,7 @@ class Game {
     sounds.playHazardHit();
     if (died) {
       this.state = 'dead';
-      this.ui.showDead();
+      this.ui.showDead(this._elapsedTimeLabel());
     } else {
       const what = hazardType === 'lava'         ? '🔥 Lava burn'
                  : hazardType === 'lava_source'  ? '🔥 Lava source — can\'t pass'
@@ -454,7 +465,7 @@ class Game {
       sounds.playHazardHit();
       if (died) {
         this.state = 'dead';
-        this.ui.showDead();
+        this.ui.showDead(this._elapsedTimeLabel());
         return;
       }
       p.setMessage(`💥 Too close to the blast! 2 damage (${p.hearts}/${p.maxHearts} ♥)`);
@@ -463,7 +474,7 @@ class Game {
       sounds.playHazardHit();
       if (died) {
         this.state = 'dead';
-        this.ui.showDead();
+        this.ui.showDead(this._elapsedTimeLabel());
         return;
       }
       p.setMessage(`💥 Caught in the blast! 1 damage (${p.hearts}/${p.maxHearts} ♥)`);
@@ -706,7 +717,7 @@ class Game {
       this.ui.openBar(p, (won) => {
         if (won) {
           this.state = 'won';
-          this.ui.showWin();
+          this.ui.showWin(this._elapsedTimeLabel());
         } else {
           this.state = 'playing';
           this.input.clear();

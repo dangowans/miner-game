@@ -377,13 +377,17 @@ class UI {
   // Death / win screens
   // -------------------------------------------------------------------------
 
-  showDead() {
+  showDead(elapsedTime) {
+    const timeHtml = elapsedTime
+      ? `<p class="overlay-time">Time: ${elapsedTime}</p>`
+      : '';
     this.overlay.innerHTML = `
       <div class="overlay-centered">
         <p class="overlay-emoji">💀</p>
         <h2 class="overlay-title" style="color:#ff4444">YOU DIED</h2>
         <p>The mine claimed another victim.</p>
-        <p style="color:#aaa;font-size:0.85em">
+        ${timeHtml}
+        <p class="overlay-tip">
           Tip: visit the Doctor to increase your max hearts.
         </p>
         <button class="close-btn" onclick="location.reload()">
@@ -393,12 +397,16 @@ class UI {
     this._openOverlay(() => {});
   }
 
-  showWin() {
+  showWin(elapsedTime) {
+    const timeHtml = elapsedTime
+      ? `<p class="overlay-time">Time: ${elapsedTime}</p>`
+      : '';
     this.overlay.innerHTML = `
       <div class="overlay-centered">
         <p class="overlay-emoji">💍🎉</p>
         <h2 class="overlay-title" style="color:#f5c842">YOU WIN!</h2>
         <p>You found the ring and won her heart!</p>
+        ${timeHtml}
         <p style="color:#aaa;font-size:0.85em">Thanks for playing Mini Miner.</p>
         <button class="close-btn" onclick="location.reload()">
           🎊 Play Again
