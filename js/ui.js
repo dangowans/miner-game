@@ -120,17 +120,13 @@ class UI {
       // Same for first aid kits
       const buyable    = (item.id === 'dynamite' || item.id === 'firstaid') ? affordable : (!owned && affordable);
       const cls        = buyable ? 'shop-item buyable' : 'shop-item disabled';
+      const stockNote  = (count) => count > 0 ? ` <em>(×${count} in stock)</em>` : '';
+      const needNote   = !affordable ? ` <em class="short">(need $${item.price - player.money} more)</em>` : '';
       let note;
       if (item.id === 'dynamite') {
-        note = dynamiteCount > 0
-          ? ` <em>(×${dynamiteCount} in stock)</em>`
-          : '';
-        if (!affordable) note += ` <em class="short">(need $${item.price - player.money} more)</em>`;
+        note = stockNote(dynamiteCount) + needNote;
       } else if (item.id === 'firstaid') {
-        note = firstAidCount > 0
-          ? ` <em>(×${firstAidCount} in stock)</em>`
-          : '';
-        if (!affordable) note += ` <em class="short">(need $${item.price - player.money} more)</em>`;
+        note = stockNote(firstAidCount) + needNote;
       } else if (owned) {
         const usesMap = { pick: player.pickUses, bucket: player.bucketUses, extinguisher: player.extinguisherUses };
         const uses    = usesMap[item.id] ?? null;
