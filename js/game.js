@@ -46,6 +46,7 @@ class Game {
 
     this._lastTime  = 0;
     this._startTime = performance.now();
+    this._lastSaveTime = 0;   // Throttle: track when the last save was written
     this._dynamites = [];   // Array of { x, y, frames } for lit dynamite placements
     this._dragonWarnings = 0;  // Count of times the player has been warned about dragons
 
@@ -113,6 +114,17 @@ class Game {
 
     this.player.tick();
     this.ui.updateHUD(this.player);
+    this._saveThrottled();
+  }
+
+  /**
+   * Write a save snapshot at most once every 500 ms to avoid hammering
+   * localStorage on rapid repeated key-presses.
+   */
+  _saveThrottled() {
+    const now = performance.now();
+    if (now - this._lastSaveTime < 500) return;
+    this._lastSaveTime = now;
     Storage.save(this.player, this.world, this);
   }
 

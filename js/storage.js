@@ -44,7 +44,10 @@ const Storage = {
       const raw = localStorage.getItem(SAVE_KEY);
       if (!raw) return null;
       const data = JSON.parse(raw);
-      if (!data || data.version !== SAVE_VERSION) { this.clear(); return null; }
+      if (!data || data.version !== SAVE_VERSION) {
+        this.clear();
+        return null;
+      }
       return data;
     } catch (_e) {
       this.clear();
