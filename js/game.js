@@ -29,9 +29,10 @@
  *
  * ── Reveal mechanic ─────────────────────────────────────────────────────────
  *   After each valid move world.probeAdjacent() increments the probe counter
- *   of all neighbouring DIRT tiles.  When a tile's probes reach its
- *   (threshold − SHOVEL_REDUCTION) it auto-reveals (shovel only; pick has no
- *   effect on dirt).
+ *   of all neighbouring DIRT tiles.  Impenetrable tiles require the lantern to
+ *   be probed from adjacent; otherwise the player must walk directly into them.
+ *   When a tile's probes reach its (threshold − SHOVEL_REDUCTION) it
+ *   auto-reveals (shovel only; pick has no effect on dirt).
  */
 class Game {
   constructor() {
@@ -123,6 +124,15 @@ class Game {
     if (ny < 1) {
       // Walking into the building row — treat as interact if player is on pavement
       if (p.y === 1) this._handleInteract();
+      return;
+    }
+
+    // ── Max mine depth ────────────────────────────────────────────────────
+    // depth in metres = ny - 1; block movement beyond MAX_MINE_DEPTH
+    if (ny - 1 > MAX_MINE_DEPTH) {
+      this.input.clear();
+      this.state = 'overlay';
+      this.ui.openDragons(() => { this.state = 'playing'; this.input.clear(); });
       return;
     }
 
@@ -232,8 +242,9 @@ class Game {
    * Handle player entering a water tile.
    *
    * - Spring source (always): impassable; re-spreads and deals 1 heart.
+   * - Spread water + rubber boot: player walks through freely, no damage.
    * - Spread water + bucket: clears tile to EMPTY, free passage, uses 1 bucket charge.
-   * - Spread water (no bucket): player moves onto it, tile stays, deals 1 heart.
+   * - Spread water (no boot/bucket): player moves onto it, tile stays, deals 1 heart.
    */
   _enterWater(p, nx, ny) {
     const isSource = this.world.isSpringSource(nx, ny);
@@ -242,6 +253,11 @@ class Game {
       // Spring source: always impassable; re-spread and deal damage
       this.world.spreadHazard(nx, ny, TILE.WATER);
       this._applyHazardDamage('water_source');
+    } else if (p.specialItems.has('rubber_boot')) {
+      // Rubber boots: walk through spread water freely, no damage
+      p.x = nx; p.y = ny;
+      p.setMessage('🥾 Rubber boots keep your feet dry!');
+      this._afterMove(nx, ny);
     } else if (p.hasBucket) {
       // Bucket clears spread water – free passage, no damage, uses 1 charge
       this.world.setTile(nx, ny, TILE.EMPTY);
@@ -257,7 +273,7 @@ class Game {
       }
       this._afterMove(nx, ny);
     } else {
-      // Spread water, no bucket: player moves onto it, tile stays, deal damage
+      // Spread water, no boot/bucket: player moves onto it, tile stays, deal damage
       p.x = nx; p.y = ny;
       const died = this._applyHazardDamage('water');
       if (!died) this._afterMove(nx, ny);
@@ -269,7 +285,7 @@ class Game {
     // Only probe adjacent dirt tiles when the player is inside the mine (y≥2).
     // Pavement movement (y=1) must not reveal hidden content in the top mine row.
     if (y >= 2) {
-      const revealed = this.world.probeAdjacent(x, y, this.player.toolReduction);
+      const revealed = this.world.probeAdjacent(x, y, this.player.toolReduction, this.player.hasLantern);
       for (const { x: rx, y: ry, content } of revealed) {
         this._onContentRevealed(content, rx, ry);
       }
@@ -364,14 +380,15 @@ class Game {
 
   /**
    * Detonate a dynamite charge.
-   * Clears DIRT and STONE in a circular blast radius; damages the player
-   * based on distance (2 hearts within 2 tiles, 1 heart within full radius).
+   * DIRT tiles in the blast radius have their hidden content revealed (not destroyed).
+   * Ore, stone and hazard tiles are left untouched — dynamite only reveals, not destroys.
+   * Damages the player based on distance (2 hearts within 2 tiles, 1 heart within full radius).
    */
   _explodeDynamite(dyn) {
     const { x: bx, y: by } = dyn;
     sounds.playDynamiteExplode();
 
-    // Clear tiles in blast radius (mine rows only)
+    // Reveal / clear tiles in blast radius (mine rows only)
     for (let dx = -DYNAMITE_RADIUS; dx <= DYNAMITE_RADIUS; dx++) {
       for (let dy = -DYNAMITE_RADIUS; dy <= DYNAMITE_RADIUS; dy++) {
         if (dx * dx + dy * dy > DYNAMITE_RADIUS * DYNAMITE_RADIUS) continue;
@@ -379,12 +396,19 @@ class Game {
         const ty = by + dy;
         if (ty < 2) continue;  // Don't blast the surface
         const t = this.world.getTile(tx, ty);
-        if (t === TILE.DIRT || t === TILE.STONE || t === TILE.DYNAMITE) {
+        if (t === TILE.DIRT) {
+          // Reveal the hidden content rather than destroying it
+          const content = this.world.digInto(tx, ty);
+          this._onContentRevealed(content, tx, ty);
+          // Remove any chained dynamite entries that got blasted
+          this._dynamites = this._dynamites.filter(d => d.x !== tx || d.y !== ty);
+        } else if (t === TILE.DYNAMITE) {
+          // Chain-detonate other dynamite tiles
           this.world.setTile(tx, ty, TILE.EMPTY);
           this.world.setData(tx, ty, null);
-          // Also remove any chained dynamite entries that got blasted
           this._dynamites = this._dynamites.filter(d => d.x !== tx || d.y !== ty);
         }
+        // Ore, stone, water and lava tiles are left intact — dynamite just reveals
       }
     }
 
@@ -477,7 +501,7 @@ class Game {
         if (!p.specialItems.has('rubber_boot')) {
           p.specialItems.add('rubber_boot');
           this.world.setTile(x, y, TILE.EMPTY);
-          p.setMessage('🥾 You found a rubber boot. One of a kind!');
+          p.setMessage('🥾 Rubber boots! Walk through water without taking damage.');
           sounds.playItemPickup();
         }
         break;
@@ -498,6 +522,28 @@ class Game {
           p.specialItems.add('glasses');
           this.world.setTile(x, y, TILE.EMPTY);
           p.setMessage('🕶️ Stylish glasses. You look great down here.');
+          sounds.playItemPickup();
+        }
+        break;
+      }
+
+      // ── Lantern – enables adjacent dirt probing ────────────────────────
+      case TILE.LANTERN: {
+        if (!p.hasLantern) {
+          p.hasLantern = true;
+          this.world.setTile(x, y, TILE.EMPTY);
+          p.setMessage('🔦 Lantern found! Move back and forth next to dirt to reveal what\'s inside.');
+          sounds.playItemPickup();
+        }
+        break;
+      }
+
+      // ── Ring – the proposal item ───────────────────────────────────────
+      case TILE.RING: {
+        if (!p.hasRing) {
+          p.hasRing = true;
+          this.world.setTile(x, y, TILE.EMPTY);
+          p.setMessage('💍 You found a ring! Take it to the girl at the Bar (with $1000).');
           sounds.playItemPickup();
         }
         break;
@@ -548,6 +594,21 @@ class Game {
       this.world.getTile(p.x, p.y)     === type ||
       this.world.getTile(p.x, p.y - 1) === type;
 
+    // ── Flower pickup (to the left of the outhouse at y=0) ────────────────
+    if (checkTile(TILE.FLOWER)) {
+      if (!p.hasFlower) {
+        p.hasFlower = true;
+        // Remove the flower tile from the surface
+        this.world.setTile(p.x, 0, TILE.SKY);
+        p.setMessage('🌸 You found a flower.');
+        sounds.playItemPickup();
+        this.ui.updateHUD(p);
+      } else {
+        p.setMessage('🌸 (You already have the flower.)');
+      }
+      return;
+    }
+
     if (checkTile(TILE.OUTHOUSE)) {
       this.state = 'overlay';
       this.ui.openOuthouse(() => { this.state = 'playing'; this.input.clear(); });
@@ -574,6 +635,7 @@ class Game {
           this.state = 'playing';
           this.input.clear();
         }
+        this.ui.updateHUD(p);
       });
       return;
     }
@@ -591,16 +653,6 @@ class Game {
     if (checkTile(TILE.BANK)) {
       this.state = 'overlay';
       this.ui.openBank(p, () => {
-        this.state = 'playing';
-        this.input.clear();
-        this.ui.updateHUD(p);
-      });
-      return;
-    }
-
-    if (checkTile(TILE.JEWELER)) {
-      this.state = 'overlay';
-      this.ui.openJeweler(p, () => {
         this.state = 'playing';
         this.input.clear();
         this.ui.updateHUD(p);

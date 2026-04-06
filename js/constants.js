@@ -42,14 +42,17 @@ const TILE = Object.freeze({
   PAVEMENT:    17,   // Surface pavement row (y=1) – walkable
   BANK:        19,   // Town Bank facade – sell ore here
   OUTHOUSE:    20,   // Outhouse facade – cosmetic only
-  DIAMOND:     21,   // Revealed diamond (rare)
+  DIAMOND:     21,   // Revealed diamond (rare, deeper mine)
   RUBY:        22,   // Unique legendary ruby (sell for big money)
-  RUBBER_BOOT: 23,   // Unique novelty item
+  RUBBER_BOOT: 23,   // Unique item – walk through spread water without damage
   POCKET_WATCH:24,   // Unique novelty item
   GLASSES:     25,   // Unique novelty item
-  JEWELER:     26,   // Jeweler building – craft a ring from 3 diamonds + $1000
+  JEWELER:     26,   // (unused) Jeweler building
   SKY:         27,   // Open sky between surface buildings (decorative, y=0)
   DYNAMITE:    28,   // Lit dynamite placed by the player – explodes after fuse
+  RING:        29,   // Hidden ring – found 67m below the outhouse in the mine
+  FLOWER:      30,   // Surface flower – collectible, to the left of the outhouse
+  LANTERN:     31,   // Hidden lantern – enables adjacent dirt probing when found
 });
 
 // ---------------------------------------------------------------------------
@@ -71,6 +74,8 @@ const HIDDEN = Object.freeze({
   RUBBER_BOOT:  'rubber_boot',  // Unique – one per entire mine
   POCKET_WATCH: 'pocket_watch', // Unique – one per entire mine
   GLASSES:      'glasses',      // Unique – one per entire mine
+  RING:         'ring',         // Unique – fixed position 67m below outhouse
+  LANTERN:      'lantern',      // Unique – enables adjacent dirt probing when found
 });
 
 // ---------------------------------------------------------------------------
@@ -167,13 +172,18 @@ const DYNAMITE_URGENT_SECS           = 2;    // Fuse seconds remaining when urge
 // Bar
 // ---------------------------------------------------------------------------
 const DRINK_PRICE       = 10;   // Cost of one drink at the bar
-const DRINKS_TO_UNLOCK  = 6;    // Drinks required before the girl accepts a proposal
+const DRINKS_TO_UNLOCK  = 3;    // Drinks required before the girl accepts a proposal
 
 // ---------------------------------------------------------------------------
-// Jeweler
+// Mine depth limit
 // ---------------------------------------------------------------------------
-const JEWELER_DIAMOND_COST = 1;     // Diamonds required to commission a ring
-const JEWELER_MONEY_COST   = 1000;  // Cash required alongside the diamonds
+const MAX_MINE_DEPTH = 100;  // Maximum mine depth in metres; dragon beyond this
+
+// ---------------------------------------------------------------------------
+// Jeweler (constants kept for renderer compatibility)
+// ---------------------------------------------------------------------------
+const JEWELER_DIAMOND_COST = 1;     // (unused – jeweler removed)
+const JEWELER_MONEY_COST   = 1000;  // Cash required alongside the ring for proposal
 
 // ---------------------------------------------------------------------------
 // Doctor services
@@ -205,6 +215,12 @@ const HAZARD_SPREAD = 12;  // Max EMPTY tiles a water/lava spring floods when tr
 const OUTHOUSE_X  = 1;   // Left-side outhouse
 const JEWELER_X   = 19;  // Jeweler (between Bank and mine entrance)
 const BANK_X      = 17;  // Town bank (between Doctor and mine entrance)
+
+// ---------------------------------------------------------------------------
+// Ring location – hidden in the mine 67 m below the outhouse
+// ---------------------------------------------------------------------------
+const RING_DEPTH = 67;          // Mine depth (m) where the ring is hidden
+const RING_X     = OUTHOUSE_X;  // Same x-column as the outhouse (x=1)
 
 // ---------------------------------------------------------------------------
 // Mine entrance x-range (right side of surface row)
@@ -260,6 +276,9 @@ const TILE_COLOR = {
   [TILE.JEWELER]:      '#8844aa',
   [TILE.SKY]:          '#7ab8e8',
   [TILE.DYNAMITE]:     '#cc2200',
+  [TILE.RING]:         '#ffe0a0',
+  [TILE.FLOWER]:       '#ff88cc',
+  [TILE.LANTERN]:      '#ffdd44',
 };
 
 // Ore tile types that can be destroyed when a hazard spreads over them

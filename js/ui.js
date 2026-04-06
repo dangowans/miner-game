@@ -62,7 +62,12 @@ class UI {
     if (player.hasBucket)       tools.push(`🪣×${player.bucketUses}`);
     if (player.hasExtinguisher) tools.push(`🧯×${player.extinguisherUses}`);
     if (player.hasBag)          tools.push('🎒×2');
+    if (player.hasLantern)      tools.push('🔦');
+    if (player.hasFlower)       tools.push('🌸');
     if (player.hasRing)         tools.push('💍');
+    if (player.specialItems.has('rubber_boot'))  tools.push('🥾');
+    if (player.specialItems.has('pocket_watch')) tools.push('⌚');
+    if (player.specialItems.has('glasses'))      tools.push('🕶️');
     if (player.dynamiteCount > 0) {
       tools.push(player.placingDynamite
         ? `💣×${player.dynamiteCount} [PLACING]`
@@ -153,49 +158,57 @@ class UI {
   // -------------------------------------------------------------------------
 
   openBar(player, onClose) {
-    const drinksLeft = Math.max(0, DRINKS_TO_UNLOCK - player.drinksBought);
+    // ── Step 0: Give the flower if not yet done ───────────────────────────
+    if (player.hasFlower && !player.hasGivenFlower) {
+      player.hasFlower     = false;
+      player.hasGivenFlower = true;
+      sounds.playTransaction();
+    }
+
+    const drinksLeft      = Math.max(0, DRINKS_TO_UNLOCK - player.drinksBought);
     const unlockedByDrinks = player.drinksBought >= DRINKS_TO_UNLOCK;
+    const hasRingAndMoney  = player.hasRing && player.money >= JEWELER_MONEY_COST;
 
     let html;
-    if (unlockedByDrinks && player.hasRing) {
-      html = `
-        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-                    height:100%;gap:14px;padding:20px;text-align:center">
-          <p style="font-size:2em;line-height:1">💍</p>
-          <p style="font-size:1.1em;margin:0">You kneel down with the ring in your hand…</p>
-          <p style="font-size:1.4em;margin:0"><em>"Will you marry me?"</em></p>
-          <p style="font-size:1.5em;color:#f5c842;margin:0">💛 <em>"Yes! A thousand times yes!"</em></p>
-          <button class="close-btn" id="overlay-close" style="margin-top:8px">
-            Continue →
-          </button>
-        </div>`;
-    } else if (!unlockedByDrinks) {
-      const drinkLines = [
-        `"I don't know you well enough yet. Buy me a drink?"`,
-        `"Slow down, cowboy. A few more rounds first."`,
-        `"You seem nice. Keep the drinks coming and we'll see…"`,
-        `"I appreciate the company. Another round?"`,
-        `"A miner, huh? Buy me a drink and tell me about it."`,
-        `"You've got kind eyes. And an empty glass."`,
-        `"I like a man who knows how to spend his money wisely."`,
-        `"The night's young. You buying?"`,
-        `"Another drink wouldn't hurt. For either of us."`,
-        `"What's a girl got to do to get a drink around here?"`,
+
+    // ── Step 0: Needs the flower first ───────────────────────────────────
+    if (!player.hasGivenFlower) {
+      const flowerLines = [
+        `"Oh, how sweet! But you didn't bring me a flower…"`,
+        `"A miner? That's interesting. Do you know what I'd really love? A flower."`,
+        `"You seem nice. Bring me a flower and maybe we can talk."`,
+        `"I appreciate the visit, but a flower would make my day."`,
       ];
-      const line = drinkLines[Math.floor(Math.random() * drinkLines.length)];
-      const canAfford = player.money >= DRINK_PRICE;
-      const drinkBtnCls = canAfford ? 'shop-item buyable' : 'shop-item disabled';
-      const drinkNote = canAfford ? '' : ` <em class="short">(need $${DRINK_PRICE - player.money} more)</em>`;
+      const line = flowerLines[Math.floor(Math.random() * flowerLines.length)];
       html = `
         <h2>🍺 The Bar</h2>
         <p class="bar-girl">👱‍♀️ <em>${line}</em></p>
-        <p class="hint">Buy her ${drinksLeft} more drink${drinksLeft !== 1 ? 's' : ''} to win her over. (${player.drinksBought}/${DRINKS_TO_UNLOCK} bought)</p>
-        <div class="${drinkBtnCls}" id="buy-drink-btn">
-          <strong>🍺 Buy a Drink</strong> — <span class="price">$${DRINK_PRICE}</span>${drinkNote}
-        </div>
+        <p class="hint">Pick the 🌸 flower to the left of the outhouse and bring it to her.</p>
         <button class="close-btn" id="overlay-close">Close &nbsp;<kbd>Esc</kbd></button>`;
-    } else {
-      // Drinks done, just need the ring
+
+    // ── Proposal: drinks done, ring in hand, $1000 available ─────────────
+    } else if (unlockedByDrinks && hasRingAndMoney) {
+      html = `
+        <div class="overlay-centered">
+          <p class="overlay-emoji">💍</p>
+          <p class="overlay-title" style="color:#f5c842">You kneel down…</p>
+          <p><em>"Will you marry me?"</em></p>
+          <p style="color:#f5c842"><em>💛 "Yes! A thousand times yes!"</em></p>
+          <button class="close-btn" id="overlay-close">
+            Continue →
+          </button>
+        </div>`;
+
+    // ── Ring in hand but not enough money ─────────────────────────────────
+    } else if (unlockedByDrinks && player.hasRing && player.money < JEWELER_MONEY_COST) {
+      html = `
+        <h2>🍺 The Bar</h2>
+        <p class="bar-girl">👱‍♀️ <em>"That ring is beautiful… but a girl needs security. Come back with $${JEWELER_MONEY_COST}."</em></p>
+        <p class="hint">You need $${JEWELER_MONEY_COST - player.money} more to propose.</p>
+        <button class="close-btn" id="overlay-close">Close &nbsp;<kbd>Esc</kbd></button>`;
+
+    // ── Drinks done, waiting for the ring ─────────────────────────────────
+    } else if (unlockedByDrinks) {
       const lines = [
         `"Hey there, miner. A girl needs security — and maybe a ring…"`,
         `"Come back when you have something special for me."`,
@@ -203,7 +216,7 @@ class UI {
         `"I'm not going anywhere. The mines will still be there tomorrow."`,
         `"You've been so sweet lately. A ring would seal the deal."`,
         `"I keep thinking about us. All I need is a little… sparkle."`,
-        `"Six drinks in and I think I'm falling for you. Got a ring?"`,
+        `"Three drinks in and I think I'm falling for you. Got a ring?"`,
         `"My heart's open, miner. Is your wallet?"`,
         `"You've done everything right. One last thing — a ring."`,
       ];
@@ -211,7 +224,35 @@ class UI {
       html = `
         <h2>🍺 The Bar</h2>
         <p class="bar-girl">👱‍♀️ <em>${line}</em></p>
-        <p class="hint">Hint: bring ${JEWELER_DIAMOND_COST} diamonds and $${JEWELER_MONEY_COST} to the Jeweler 💎 to have a ring made.</p>
+        <p class="hint">Hint: find the ring hidden in the mine at 67m depth (directly below the outhouse) and come back with $${JEWELER_MONEY_COST}.</p>
+        <button class="close-btn" id="overlay-close">Close &nbsp;<kbd>Esc</kbd></button>`;
+
+    // ── Step 1: Flower given; buy drinks ─────────────────────────────────
+    } else {
+      const drinkLines = player.drinksBought === 0
+        ? [
+          `"Oh! Thank you for the flower, it's gorgeous! 🌸 Can I offer you a drink?"`,
+          `"A flower! How thoughtful! Let me get you something. And maybe another round for me?"`,
+        ]
+        : [
+          `"Slow down, cowboy. A few more rounds first."`,
+          `"You seem nice. Keep the drinks coming and we'll see…"`,
+          `"I appreciate the company. Another round?"`,
+          `"A miner, huh? Buy me a drink and tell me about it."`,
+          `"You've got kind eyes. And an empty glass."`,
+          `"Another drink wouldn't hurt. For either of us."`,
+        ];
+      const line = drinkLines[Math.floor(Math.random() * drinkLines.length)];
+      const canAfford    = player.money >= DRINK_PRICE;
+      const drinkBtnCls  = canAfford ? 'shop-item buyable' : 'shop-item disabled';
+      const drinkNote    = canAfford ? '' : ` <em class="short">(need $${DRINK_PRICE - player.money} more)</em>`;
+      html = `
+        <h2>🍺 The Bar</h2>
+        <p class="bar-girl">👱‍♀️ <em>${line}</em></p>
+        <p class="hint">Buy her ${drinksLeft} more drink${drinksLeft !== 1 ? 's' : ''} to win her over. (${player.drinksBought}/${DRINKS_TO_UNLOCK} bought)</p>
+        <div class="${drinkBtnCls}" id="buy-drink-btn">
+          <strong>🍺 Buy a Drink</strong> — <span class="price">$${DRINK_PRICE}</span>${drinkNote}
+        </div>
         <button class="close-btn" id="overlay-close">Close &nbsp;<kbd>Esc</kbd></button>`;
     }
 
@@ -231,7 +272,7 @@ class UI {
     }
 
     document.getElementById('overlay-close').addEventListener('click', () => {
-      const isWin = unlockedByDrinks && player.hasRing;
+      const isWin = unlockedByDrinks && hasRingAndMoney;
       this._closeOverlay();
       onClose(isWin);
     });
@@ -317,15 +358,14 @@ class UI {
 
   showDead() {
     this.overlay.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-                  height:100%;gap:14px;padding:20px;text-align:center">
-        <p style="font-size:3em;line-height:1">💀</p>
-        <h2 style="color:#ff4444;font-size:1.8em;margin:0">YOU DIED</h2>
-        <p style="margin:0">The mine claimed another victim.</p>
-        <p style="color:#aaa;font-size:0.9em;margin:0">
+      <div class="overlay-centered">
+        <p class="overlay-emoji">💀</p>
+        <h2 class="overlay-title" style="color:#ff4444">YOU DIED</h2>
+        <p>The mine claimed another victim.</p>
+        <p style="color:#aaa;font-size:0.85em">
           Tip: visit the Doctor to increase your max hearts.
         </p>
-        <button class="close-btn" style="margin-top:8px" onclick="location.reload()">
+        <button class="close-btn" onclick="location.reload()">
           🔄 Try Again
         </button>
       </div>`;
@@ -334,15 +374,12 @@ class UI {
 
   showWin() {
     this.overlay.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-                  height:100%;gap:14px;padding:20px;text-align:center">
-        <p style="font-size:2.5em;line-height:1">💍🎉</p>
-        <h2 style="color:#f5c842;font-size:1.8em;margin:0">YOU WIN!</h2>
-        <p style="font-size:1.1em;margin:0">You bought the ring and won her heart!</p>
-        <p style="color:#aaa;font-size:0.9em;margin:0">
-          Thanks for playing Miner.
-        </p>
-        <button class="close-btn" style="margin-top:8px" onclick="location.reload()">
+      <div class="overlay-centered">
+        <p class="overlay-emoji">💍🎉</p>
+        <h2 class="overlay-title" style="color:#f5c842">YOU WIN!</h2>
+        <p>You found the ring and won her heart!</p>
+        <p style="color:#aaa;font-size:0.85em">Thanks for playing Miner.</p>
+        <button class="close-btn" onclick="location.reload()">
           🎊 Play Again
         </button>
       </div>`;
@@ -405,82 +442,14 @@ class UI {
   }
 
   // -------------------------------------------------------------------------
-  // Jeweler overlay
-  // -------------------------------------------------------------------------
-
-  openJeweler(player, onClose) {
-    const diamondCount = player.gems.filter(g => g === HIDDEN.DIAMOND).length;
-    const hasEnoughDiamonds = diamondCount >= JEWELER_DIAMOND_COST;
-    const hasEnoughMoney    = player.money  >= JEWELER_MONEY_COST;
-    const canCraft = !player.hasRing && hasEnoughDiamonds && hasEnoughMoney;
-
-    let craftHtml;
-    if (player.hasRing) {
-      craftHtml = `<div class="shop-item disabled">💍 Ring already crafted!</div>`;
-    } else if (canCraft) {
-      craftHtml = `
-        <div class="shop-item buyable" id="craft-ring-btn">
-          💍 Craft a Ring —
-          <span class="price">${JEWELER_DIAMOND_COST}💎 + $${JEWELER_MONEY_COST}</span>
-        </div>`;
-    } else {
-      const diamondsNeeded = JEWELER_DIAMOND_COST - diamondCount;
-      const needDiamondsMsg = hasEnoughDiamonds
-        ? ''
-        : ` <em class="short">(need ${diamondsNeeded} more diamond${diamondsNeeded !== 1 ? 's' : ''})</em>`;
-      const needMoneyMsg = hasEnoughMoney
-        ? ''
-        : ` <em class="short">(need $${JEWELER_MONEY_COST - player.money} more)</em>`;
-      craftHtml = `
-        <div class="shop-item disabled">
-          💍 Craft a Ring — <span class="price">${JEWELER_DIAMOND_COST}💎 + $${JEWELER_MONEY_COST}</span>
-          ${needDiamondsMsg}${needMoneyMsg}
-        </div>`;
-    }
-
-    this.overlay.innerHTML = `
-      <h2>💎 Jeweler</h2>
-      <p class="shop-balance">Your money: <strong>$${player.money}</strong></p>
-      <p class="shop-balance">Diamonds carried: <strong>${diamondCount}</strong></p>
-      <p class="hint">Bring ${JEWELER_DIAMOND_COST} diamonds and $${JEWELER_MONEY_COST} to have a ring made for the girl at the bar.</p>
-      <div class="section-label">COMMISSION</div>
-      ${craftHtml}
-      <button class="close-btn" id="overlay-close">✕ Close &nbsp;<kbd>Esc</kbd></button>
-    `;
-    this._openOverlay(onClose);
-
-    const craftBtn = document.getElementById('craft-ring-btn');
-    if (craftBtn) {
-      craftBtn.addEventListener('click', () => {
-        if (player.money < JEWELER_MONEY_COST) return;
-        // Remove JEWELER_DIAMOND_COST diamonds from carried gems
-        let removed = 0;
-        player.gems = player.gems.filter(g => {
-          if (g === HIDDEN.DIAMOND && removed < JEWELER_DIAMOND_COST) {
-            removed++;
-            return false;
-          }
-          return true;
-        });
-        player.money   -= JEWELER_MONEY_COST;
-        player.hasRing  = true;
-        player.setMessage('💍 Ring crafted! Take it to the girl at the Bar.');
-        sounds.playTransaction();
-        this._closeOverlay();
-      });
-    }
-  }
-
-  // -------------------------------------------------------------------------
   // -------------------------------------------------------------------------
 
   openDragons(onClose) {
     this.overlay.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-                  height:100%;gap:14px;padding:20px;text-align:center">
-        <p style="font-size:3em;line-height:1">🐉</p>
-        <p style="font-size:1.3em;margin:0"><em>"Thar be dragons!"</em></p>
-        <button class="close-btn" id="overlay-close" style="margin-top:8px">
+      <div class="overlay-centered">
+        <p class="overlay-emoji">🐉</p>
+        <p class="overlay-title"><em>"Thar be dragons!"</em></p>
+        <button class="close-btn" id="overlay-close">
           Turn Back
         </button>
       </div>`;
@@ -491,11 +460,10 @@ class UI {
   // Outhouse overlay
   openOuthouse(onClose) {
     this.overlay.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-                  height:100%;gap:14px;padding:20px;text-align:center">
-        <p style="font-size:3em;line-height:1">🚽</p>
-        <p style="font-size:1.3em;margin:0"><em>"You feel relieved."</em></p>
-        <button class="close-btn" id="overlay-close" style="margin-top:8px">
+      <div class="overlay-centered">
+        <p class="overlay-emoji">🚽</p>
+        <p class="overlay-title"><em>"You feel relieved."</em></p>
+        <button class="close-btn" id="overlay-close">
           Leave
         </button>
       </div>`;
