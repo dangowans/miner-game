@@ -70,6 +70,10 @@ class World {
       { content: HIDDEN.POCKET_WATCH, y: 12 + Math.floor(rng() * 60),  x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.GLASSES,      y:  5 + Math.floor(rng() * 35),  x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.LANTERN,      y: 10 + Math.floor(rng() * 20),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.SKULL,        y:  3 + Math.floor(rng() * 22),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.CANTEEN,      y:  5 + Math.floor(rng() * 25),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.LUNCHBOX,     y:  7 + Math.floor(rng() * 28),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.RADIO,        y: 15 + Math.floor(rng() * 35),  x: 1 + Math.floor(rng() * xRange) },
       // Ring at fixed depth: RING_DEPTH+1 (depth display = y-1 = RING_DEPTH m)
       { content: HIDDEN.RING,         y: RING_DEPTH + 1,                x: RING_X },
     ];
@@ -313,6 +317,10 @@ class World {
       case HIDDEN.GLASSES:      this.setTile(x, y, TILE.GLASSES);      break;
       case HIDDEN.RING:         this.setTile(x, y, TILE.RING);         break;
       case HIDDEN.LANTERN:      this.setTile(x, y, TILE.LANTERN);      break;
+      case HIDDEN.RADIO:        this.setTile(x, y, TILE.RADIO);        break;
+      case HIDDEN.SKULL:        this.setTile(x, y, TILE.SKULL);        break;
+      case HIDDEN.CANTEEN:      this.setTile(x, y, TILE.CANTEEN);      break;
+      case HIDDEN.LUNCHBOX:     this.setTile(x, y, TILE.LUNCHBOX);     break;
       default:                  this.setTile(x, y, TILE.EMPTY);        break;
     }
     return hidden;
@@ -384,6 +392,10 @@ class World {
       case TILE.BAG:
       case TILE.RING:
       case TILE.LANTERN:
+      case TILE.RADIO:
+      case TILE.SKULL:
+      case TILE.CANTEEN:
+      case TILE.LUNCHBOX:
         return true;
       case TILE.BUILDING:
       case TILE.DIRT:

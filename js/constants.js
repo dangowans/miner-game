@@ -53,6 +53,10 @@ const TILE = Object.freeze({
   RING:        29,   // Hidden ring – found 67m below the outhouse in the mine
   FLOWER:      30,   // Surface flower – collectible, to the left of the outhouse
   LANTERN:     31,   // Hidden lantern – enables adjacent dirt probing when found
+  RADIO:       32,   // Hidden radio – teleports player to mine entrance when used
+  SKULL:       33,   // Hidden skull – novelty collectible
+  CANTEEN:     34,   // Hidden canteen – novelty collectible
+  LUNCHBOX:    35,   // Hidden lunch box – novelty collectible
 });
 
 // ---------------------------------------------------------------------------
@@ -76,6 +80,10 @@ const HIDDEN = Object.freeze({
   GLASSES:      'glasses',      // Unique – one per entire mine
   RING:         'ring',         // Unique – fixed position 67m below outhouse
   LANTERN:      'lantern',      // Unique – enables adjacent dirt probing when found
+  RADIO:        'radio',        // Unique – teleports player to mine entrance
+  SKULL:        'skull',        // Unique – novelty collectible
+  CANTEEN:      'canteen',      // Unique – novelty collectible
+  LUNCHBOX:     'lunchbox',     // Unique – novelty collectible
 });
 
 // ---------------------------------------------------------------------------
@@ -156,6 +164,13 @@ const SHOP_ITEMS = [
     name:    'Dynamite',
     price:   75,
     desc:    'Press 💣 to enter placement mode, then move in any direction to place. 5-second fuse — get clear!',
+    oneTime: false,
+  },
+  {
+    id:      'firstaid',
+    name:    'First Aid Kit',
+    price:   60,
+    desc:    'Use from inventory to restore health to full.',
     oneTime: false,
   },
 ];
@@ -277,8 +292,12 @@ const TILE_COLOR = {
   [TILE.SKY]:          '#7ab8e8',
   [TILE.DYNAMITE]:     '#cc2200',
   [TILE.RING]:         '#ffe0a0',
-  [TILE.FLOWER]:       '#ff88cc',
+  [TILE.FLOWER]:       '#7ab8e8',
   [TILE.LANTERN]:      '#ffdd44',
+  [TILE.RADIO]:        '#225588',
+  [TILE.SKULL]:        '#aaaaaa',
+  [TILE.CANTEEN]:      '#556644',
+  [TILE.LUNCHBOX]:     '#884422',
 };
 
 // Ore tile types that can be destroyed when a hazard spreads over them
