@@ -122,6 +122,7 @@ class Game {
    * localStorage on rapid repeated key-presses.
    */
   _saveThrottled() {
+    if (this.state !== 'playing') return;
     const now = performance.now();
     if (now - this._lastSaveTime < 500) return;
     this._lastSaveTime = now;
