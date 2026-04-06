@@ -29,9 +29,10 @@
  *
  * ── Reveal mechanic ─────────────────────────────────────────────────────────
  *   After each valid move world.probeAdjacent() increments the probe counter
- *   of all neighbouring DIRT tiles.  When a tile's probes reach its
- *   (threshold − SHOVEL_REDUCTION) it auto-reveals (shovel only; pick has no
- *   effect on dirt).
+ *   of all neighbouring DIRT tiles.  Impenetrable tiles require the lantern to
+ *   be probed from adjacent; otherwise the player must walk directly into them.
+ *   When a tile's probes reach its (threshold − SHOVEL_REDUCTION) it
+ *   auto-reveals (shovel only; pick has no effect on dirt).
  */
 class Game {
   constructor() {

@@ -252,10 +252,6 @@ class World {
   // -------------------------------------------------------------------------
 
   probeAdjacent(px, py, toolReduction, hasLantern) {
-    // Without the lantern, adjacent probing is not possible.
-    // The player must walk directly into dirt tiles to reveal them.
-    if (!hasLantern) return [];
-
     const revealed = [];
     const DIRS = [
       { dx: 1, dy: 0 }, { dx: -1, dy: 0 },
@@ -266,10 +262,11 @@ class World {
       if (this.getTile(nx, ny) !== TILE.DIRT) continue;
       const d = this.getData(nx, ny);
       if (!d) continue;
-      // With lantern all dirt tiles (including formerly-impenetrable ones) can be
-      // revealed by moving back and forth. A single touch never reveals (min 2 probes).
+      // Impenetrable tiles can only be probed from adjacent with the lantern;
+      // otherwise the player must walk directly into them to reveal them.
+      if (d.impenetrable && !hasLantern) continue;
       d.probes++;
-      const effective = Math.max(2, d.threshold - toolReduction);
+      const effective = Math.max(1, d.threshold - toolReduction);
       if (d.probes >= effective) {
         const content = this._revealTile(nx, ny);
         if (content !== null) revealed.push({ x: nx, y: ny, content });
