@@ -406,5 +406,25 @@
   <script src="js/storage.js"></script>
   <script src="js/game.js"></script>
 
+  <!-- Service-worker registration + periodic update check -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      // Re-check for an updated service worker every hour so that new script
+      // versions are picked up even while the game is running continuously.
+      const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000;
+
+      navigator.serviceWorker.register('./sw.js').then(registration => {
+        const updateIntervalId = setInterval(() => registration.update(), UPDATE_CHECK_INTERVAL_MS);
+
+        // When a new service worker takes control, clear the interval and
+        // reload the page so the latest scripts are used immediately.
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          clearInterval(updateIntervalId);
+          window.location.reload();
+        });
+      });
+    }
+  </script>
+
 </body>
 </html>
