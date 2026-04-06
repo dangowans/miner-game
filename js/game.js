@@ -46,6 +46,7 @@ class Game {
 
     this._lastTime  = 0;
     this._startTime = performance.now();
+    this._previousPlayTimeMs = 0;  // Accumulated play time from prior saved sessions
     this._lastSaveTime = 0;   // Throttle: track when the last save was written
     this._dynamites = [];   // Array of { x, y, frames } for lit dynamite placements
     this._dragonWarnings = 0;  // Count of times the player has been warned about dragons
@@ -76,7 +77,8 @@ class Game {
 
   /** Returns a human-readable string of elapsed time since the game started. */
   _elapsedTimeLabel() {
-    const totalSec = Math.floor((performance.now() - this._startTime) / 1000);
+    const totalMs = this._previousPlayTimeMs + (performance.now() - this._startTime);
+    const totalSec = Math.floor(totalMs / 1000);
     const mins = Math.floor(totalSec / 60);
     const secs = totalSec % 60;
     return mins > 0
