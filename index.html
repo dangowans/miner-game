@@ -302,7 +302,15 @@
       width: 100%;
     }
 
-    /* ── Landscape mode: buttons beside the game screen ── */
+    /* ── Side panel: HUD + controls (portrait: full-width column) ── */
+    #side-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    /* ── Landscape mode: buttons + HUD beside the game screen ── */
     @media (orientation: landscape) and (max-height: 520px) {
       body {
         padding: 4px 8px 8px;
@@ -322,9 +330,17 @@
         font-size: 1em;
         margin-bottom: 4px;
       }
+      #side-panel {
+        flex-shrink: 0;
+        width: auto;
+        gap: 8px;
+      }
+      #hud {
+        width: 100%;
+        border-top: 1px solid #333;
+      }
       #controls-wrap {
         margin-top: 0;
-        flex-shrink: 0;
       }
     }
   </style>
@@ -339,7 +355,10 @@
         <canvas id="canvas" width="816" height="510"></canvas>
         <div id="overlay"></div>
       </div>
+    </div>
 
+    <!-- Side panel: HUD + controls (HUD moves above buttons in landscape) -->
+    <div id="side-panel">
       <!-- HUD -->
       <div id="hud">
         <div id="hud-stats">
@@ -352,20 +371,20 @@
         </div>
         <span id="hud-msg"></span>
       </div>
-    </div>
 
-    <!-- Mobile D-pad + Inventory -->
-    <div id="controls-wrap">
-      <div id="controls" aria-label="Game controls">
-        <button id="btn-up"    title="Move up (W / ↑)"    aria-label="Up">▲</button>
-        <button id="btn-left"  title="Move left (A / ←)"  aria-label="Left">◀</button>
-        <button id="btn-right" title="Move right (D / →)" aria-label="Right">▶</button>
-        <button id="btn-down"  title="Move down (S / ↓)"  aria-label="Down">▼</button>
-      </div>
-      <div id="inventory-btns" aria-label="Inventory">
-        <button id="btn-dynamite" title="Place dynamite (X)"             aria-label="Dynamite" disabled>💣</button>
-        <button id="btn-firstaid" title="Use First Aid Kit"              aria-label="First Aid Kit" disabled>🩹</button>
-        <button id="btn-radio"    title="Use radio — teleport to entrance" aria-label="Radio" style="display:none">📻</button>
+      <!-- Mobile D-pad + Inventory -->
+      <div id="controls-wrap">
+        <div id="controls" aria-label="Game controls">
+          <button id="btn-up"    title="Move up (W / ↑)"    aria-label="Up">▲</button>
+          <button id="btn-left"  title="Move left (A / ←)"  aria-label="Left">◀</button>
+          <button id="btn-right" title="Move right (D / →)" aria-label="Right">▶</button>
+          <button id="btn-down"  title="Move down (S / ↓)"  aria-label="Down">▼</button>
+        </div>
+        <div id="inventory-btns" aria-label="Inventory">
+          <button id="btn-dynamite" title="Place dynamite (X)"             aria-label="Dynamite" disabled>💣</button>
+          <button id="btn-firstaid" title="Use First Aid Kit"              aria-label="First Aid Kit" disabled>🩹</button>
+          <button id="btn-radio"    title="Use radio — teleport to entrance" aria-label="Radio" style="display:none">📻</button>
+        </div>
       </div>
     </div>
   </div>
