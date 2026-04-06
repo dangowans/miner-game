@@ -59,7 +59,7 @@ class World {
    * Positions are restricted to columns 1-20 (avoiding the mine entrance area)
    * and to depths where the mine is fully generated as DIRT.
    * The ring is always at a fixed position (RING_X, RING_DEPTH+1) so it is
-   * reliably "67 m below the outhouse".
+   * reliably "50 m below the outhouse".
    */
   _computeUniqueItemPositions() {
     const rng    = this._rng;
@@ -68,14 +68,15 @@ class World {
       { content: HIDDEN.RUBY,         y: 20 + Math.floor(rng() * 80),  x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.RUBBER_BOOT,  y:  8 + Math.floor(rng() * 40),  x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.POCKET_WATCH, y: 12 + Math.floor(rng() * 60),  x: 1 + Math.floor(rng() * xRange) },
-      { content: HIDDEN.GLASSES,      y:  5 + Math.floor(rng() * 35),  x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.LANTERN,      y: 10 + Math.floor(rng() * 20),  x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.SKULL,        y:  3 + Math.floor(rng() * 22),  x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.CANTEEN,      y:  5 + Math.floor(rng() * 25),  x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.LUNCHBOX,     y:  7 + Math.floor(rng() * 28),  x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.RADIO,        y: 15 + Math.floor(rng() * 35),  x: 1 + Math.floor(rng() * xRange) },
+      // Glasses at fixed depth directly below the outhouse
+      { content: HIDDEN.GLASSES,      y: GLASSES_DEPTH + 1,            x: GLASSES_X },
       // Ring at fixed depth: RING_DEPTH+1 (depth display = y-1 = RING_DEPTH m)
-      { content: HIDDEN.RING,         y: RING_DEPTH + 1,                x: RING_X },
+      { content: HIDDEN.RING,         y: RING_DEPTH + 1,               x: RING_X },
     ];
   }
 

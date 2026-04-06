@@ -555,7 +555,7 @@ class Game {
         if (!p.specialItems.has('glasses')) {
           p.specialItems.add('glasses');
           this.world.setTile(x, y, TILE.EMPTY);
-          p.setMessage('🕶️ Stylish glasses. You look great down here.');
+          p.setMessage('🕶️ A pair of glasses? What else lies beneath the loo?');
           sounds.playItemPickup();
         }
         break;
@@ -619,7 +619,7 @@ class Game {
         if (!p.hasRing) {
           p.hasRing = true;
           this.world.setTile(x, y, TILE.EMPTY);
-          p.setMessage('💍 You found a ring! Take it to the girl at the Bar (with $1000).');
+          p.setMessage('💍 You found a ring!');
           sounds.playItemPickup();
         }
         break;

@@ -245,7 +245,7 @@ class UI {
       html = `
         <h2>🍺 The Bar</h2>
         <p class="bar-girl">👱‍♀️ <em>${line}</em></p>
-        <p class="hint">Hint: find the ring hidden in the mine at 67m depth (directly below the outhouse) and come back with $${JEWELER_MONEY_COST}.</p>
+        <p class="hint">Hint: find the ring hidden in the mine at 50m depth (directly below the outhouse) and come back with $${JEWELER_MONEY_COST}.</p>
         <button class="close-btn" id="overlay-close">Close &nbsp;<kbd>Esc</kbd></button>`;
 
     // ── Step 1: Flower given; buy drinks ─────────────────────────────────
