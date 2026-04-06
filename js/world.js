@@ -4,9 +4,10 @@
  * World – infinite-depth mine with lazy chunk generation.
  *
  * Layout:
- *   y=0  Building facades – BUILDING/OUTHOUSE/SHOP/BAR/DOCTOR/BANK/MINE_ENT tiles.
- *   y=1  Pavement row – PAVEMENT; MINE_ENT at x=22-24 is the crossing point.
- *   y≥2  Mine – DIRT initially, generated in chunks, extends infinitely.
+ *   y=0  Full sky row – decorative SKY tiles above the buildings.
+ *   y=1  Building facades – BUILDING/OUTHOUSE/SHOP/BAR/DOCTOR/BANK/MINE_ENT tiles.
+ *   y=2  Pavement row – PAVEMENT; MINE_ENT at x=22-24 is the crossing point.
+ *   y≥3  Mine – DIRT initially, generated in chunks, extends infinitely.
  *
  * Unique items (ruby, rubber boot, pocket watch, glasses) are pre-placed at
  * fixed random positions decided at construction time, so each appears exactly
@@ -24,7 +25,7 @@ class World {
     this.width       = MAP_WIDTH;
     this.rowTiles    = new Map();   // y → Uint8Array[MAP_WIDTH]
     this.rowData     = new Map();   // y → Array[MAP_WIDTH] of null|object
-    this.deepestGenY = 1;
+    this.deepestGenY = 2;
 
     // Track spring-source water tiles (cannot be cleared by bucket).
     this.springTiles = new Set();
@@ -33,7 +34,7 @@ class World {
     this.lavaSources = new Set();
 
     this._buildSurface();
-    this._generateChunk(2);   // First mine chunk (mine starts at y=2)
+    this._generateChunk(3);   // First mine chunk (mine starts at y=3)
   }
 
   // -------------------------------------------------------------------------
@@ -61,25 +62,26 @@ class World {
    * Decide fixed positions for the unique items using the shared RNG.
    * Positions are restricted to columns 1-20 (avoiding the mine entrance area)
    * and to depths where the mine is fully generated as DIRT.
-   * The ring is always at a fixed position (RING_X, RING_DEPTH+1) so it is
-   * reliably "50 m below the outhouse".
+   * The ring is placed at a random depth 50-60 m below the outhouse so it is
+   * "50 or so" metres down – same x-column as the outhouse.
    */
   _computeUniqueItemPositions() {
     const rng    = this._rng;
     const xRange = MINE_ENT_X_MIN - 2;   // 20 safe columns (x ∈ [1, 20])
+    // Mine starts at y=3, so world-y = mine_depth + 2.
     return [
-      { content: HIDDEN.RUBY,         y: 20 + Math.floor(rng() * 80),  x: 1 + Math.floor(rng() * xRange) },
-      { content: HIDDEN.RUBBER_BOOT,  y:  8 + Math.floor(rng() * 40),  x: 1 + Math.floor(rng() * xRange) },
-      { content: HIDDEN.POCKET_WATCH, y: 12 + Math.floor(rng() * 60),  x: 1 + Math.floor(rng() * xRange) },
-      { content: HIDDEN.LANTERN,      y: 10 + Math.floor(rng() * 20),  x: 1 + Math.floor(rng() * xRange) },
-      { content: HIDDEN.SKULL,        y:  3 + Math.floor(rng() * 22),  x: 1 + Math.floor(rng() * xRange) },
-      { content: HIDDEN.CANTEEN,      y:  5 + Math.floor(rng() * 25),  x: 1 + Math.floor(rng() * xRange) },
-      { content: HIDDEN.LUNCHBOX,     y:  7 + Math.floor(rng() * 28),  x: 1 + Math.floor(rng() * xRange) },
-      { content: HIDDEN.RADIO,        y: 15 + Math.floor(rng() * 35),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.RUBY,         y: 21 + Math.floor(rng() * 80),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.RUBBER_BOOT,  y:  9 + Math.floor(rng() * 40),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.POCKET_WATCH, y: 13 + Math.floor(rng() * 60),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.LANTERN,      y: 11 + Math.floor(rng() * 20),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.SKULL,        y:  4 + Math.floor(rng() * 22),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.CANTEEN,      y:  6 + Math.floor(rng() * 25),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.LUNCHBOX,     y:  8 + Math.floor(rng() * 28),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.RADIO,        y: 16 + Math.floor(rng() * 35),  x: 1 + Math.floor(rng() * xRange) },
       // Glasses at fixed depth directly below the outhouse
-      { content: HIDDEN.GLASSES,      y: GLASSES_DEPTH + 1,            x: GLASSES_X },
-      // Ring at fixed depth: RING_DEPTH+1 (depth display = y-1 = RING_DEPTH m)
-      { content: HIDDEN.RING,         y: RING_DEPTH + 1,               x: RING_X },
+      { content: HIDDEN.GLASSES,      y: GLASSES_DEPTH + 2,            x: GLASSES_X },
+      // Ring at random depth 50-60 m below the outhouse (world-y = depth + 2)
+      { content: HIDDEN.RING,         y: 50 + Math.floor(rng() * 11) + 2, x: RING_X },
     ];
   }
 
@@ -126,8 +128,12 @@ class World {
   // -------------------------------------------------------------------------
 
   _buildSurface() {
-    // ── y=0: Building facades ──────────────────────────────────────────────
-    const { tiles: top } = this._getOrCreateRow(0);
+    // ── y=0: Full sky row ──────────────────────────────────────────────────
+    const { tiles: sky } = this._getOrCreateRow(0);
+    sky.fill(TILE.SKY);
+
+    // ── y=1: Building facades ──────────────────────────────────────────────
+    const { tiles: top } = this._getOrCreateRow(1);
     top.fill(TILE.SKY);   // Open sky between buildings
 
     top[OUTHOUSE_X] = TILE.OUTHOUSE;   // Left-side outhouse (x=1)
@@ -138,13 +144,13 @@ class World {
     top[BANK_X]     = TILE.BANK;       // Town bank (x=17)
     // Jeweler removed – x=19 remains SKY
 
-    // Mine entrance arch at x=22-24 (decorative upper; actual entrance at y=1)
+    // Mine entrance arch at x=22-24 (decorative upper; actual entrance at y=2)
     for (let x = MINE_ENT_X_MIN; x <= MINE_ENT_X_MAX; x++) {
       top[x] = TILE.MINE_ENT;
     }
 
-    // ── y=1: Pavement row ──────────────────────────────────────────────────
-    const { tiles: pave } = this._getOrCreateRow(1);
+    // ── y=2: Pavement row ──────────────────────────────────────────────────
+    const { tiles: pave } = this._getOrCreateRow(2);
     pave.fill(TILE.PAVEMENT);
     for (let x = MINE_ENT_X_MIN; x <= MINE_ENT_X_MAX; x++) {
       pave[x] = TILE.MINE_ENT;

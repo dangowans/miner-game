@@ -500,9 +500,9 @@ class Renderer {
     }
 
     // ── Sky horizon for the building-facade row ───────────────────────────────
-    // Draw a sky-blue strip across the top of every y=0 building tile (SHOP,
+    // Draw a sky-blue strip across the top of every y=1 building tile (SHOP,
     // BAR, DOCTOR, BANK, OUTHOUSE).  SKY, FLOWER and MINE_ENT tiles are excluded.
-    if (ty === 0 && tile !== TILE.MINE_ENT && tile !== TILE.SKY && tile !== TILE.FLOWER) {
+    if (ty === 1 && tile !== TILE.MINE_ENT && tile !== TILE.SKY && tile !== TILE.FLOWER) {
       ctx.fillStyle = '#7ab8e8';
       ctx.fillRect(px, py, ts, 8);
     }
@@ -699,7 +699,7 @@ class Renderer {
 
   _drawHeadsUpOverlay(player) {
     const ctx  = this.ctx;
-    const text = player.y <= 1 ? 'Surface' : `Depth: ${player.y - 1}m`;
+    const text = player.y <= 2 ? 'Surface' : `Depth: ${player.y - 2}m`;
 
     ctx.fillStyle = 'rgba(0,0,0,0.55)';
     ctx.fillRect(CANVAS_W - 130, 6, 124, 22);

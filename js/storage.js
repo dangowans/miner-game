@@ -8,11 +8,11 @@
  * (death or win) so that "Try Again" / "Play Again" always starts fresh.
  *
  * Save key:    'minerGameSave'
- * Format version: 1
+ * Format version: 2
  */
 
 const SAVE_KEY     = 'minerGameSave';
-const SAVE_VERSION = 1;
+const SAVE_VERSION = 2;
 
 const Storage = {
 
