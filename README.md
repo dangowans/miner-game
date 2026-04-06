@@ -30,27 +30,31 @@ python3 -m http.server 8080
 ## Gameplay Overview
 
 ### The Surface
-The surface consists of two rows:
+The surface consists of three rows:
 
-**Row y=0 — Building facades** (impassable wall):
-The entire row is a solid wall of buildings. Special door tiles mark the shops you can interact with.
+**Row y=0 — Sky** (decorative):
+Open sky above the buildings — purely decorative.
 
-**Row y=1 — Pavement** (walkable):
+**Row y=1 — Building facades** (impassable wall):
+The entire row is a solid wall of buildings. Special door tiles mark the buildings you can interact with.
+
+**Row y=2 — Pavement** (walkable):
 The player walks along this stone pavement. Stand below a building door and press **E** to interact.
 
 | Building | Door (x) | Interact (E) |
 |----------|----------|-------------|
-| 🏪 **Shop** | x=5 | Sell gems · buy tools & upgrades |
+| 🏪 **Shop** | x=5 | Buy tools & items |
 | 🍺 **Bar** | x=9 | Talk to the girl · win condition |
 | 🏥 **Doctor** | x=13 | Restore hearts · buy extra heart slots |
-| ▼ **Mine Entrance** | x=22–24 | Walk south (↓) to enter the mine |
+| 🏦 **Bank** | x=17 | Sell ore for coins |
+| ▼ **Mine Entrance** | x=22–23 | Walk south (↓) to enter the mine |
 
-The pavement **cannot be crossed** downward except at the mine entrance (x=22–24).
+The pavement **cannot be crossed** downward except at the mine entrance (x=22–23).
 
 ### The Mine
 - The mine is **randomly generated every game** and extends **infinitely downward**.
 - Every tile starts as **dirt** — gems, hazards, stone, and items are all hidden inside.
-- The **only way** back to the surface is through the mine-entrance columns (x 22–24).
+- The **only way** back to the surface is through the mine-entrance columns (x=22–23).
 
 ### Revealing Dirt
 
@@ -68,11 +72,12 @@ The pavement **cannot be crossed** downward except at the mine entrance (x=22–
 | Item | Price | Effect |
 |------|------:|-------|
 | ⛏ Shovel | $50 | Reduces dirt reveal effort (−12 probes / tile) |
-| ⚒ Pick | $100 | Walk into **stone** to break it → empty |
-| 🪣 Bucket | $80 | Walk into spread **water** to clear it to empty — free passage, no heart cost |
-| 🧯 Fire Extinguisher | $120 | Walk into **lava** to convert it to stone (no damage) |
-| 🎒 Large Bag | $75 | Doubles gem carry capacity (10 → 20) |
-| 💍 Ring | $500 | Buy this, then visit the Bar to win |
+| ⚒ Pick | $100 | Walk into **stone** to break it → empty (10 uses) |
+| 🪣 Bucket | $80 | Walk into spread **water** to clear it to empty — free passage, no heart cost (10 uses) |
+| 🧯 Fire Extinguisher | $120 | Walk into **lava** to convert it to stone (no damage; 10 uses) |
+| 🎒 Large Bag | $75 | Doubles ore carry capacity (10 → 20) |
+| 💣 Dynamite | $75 | Place a charge with a 5-second fuse; blasts open dirt tiles in a 3-tile radius |
+| 🩹 First Aid Kit | $65 | Restore health to full from inventory |
 
 ---
 
@@ -107,7 +112,7 @@ The pavement **cannot be crossed** downward except at the mine entrance (x=22–
 
 | Service | Cost |
 |---------|-----:|
-| Restore 1 heart | $40 |
+| Restore 1 heart | $30 |
 | Buy +1 max heart slot | $150 |
 
 Maximum hearts: **6**. New heart slots are granted full.
@@ -116,23 +121,27 @@ Maximum hearts: **6**. New heart slots are granted full.
 
 ## Economy
 
-1. Collect **gems** in the mine (auto-picked up by walking over them).
-2. Return to the **surface** and visit the **Shop** to sell them.
-3. Spend coins on tools, the Large Bag, and ultimately the **Ring**.
+1. Collect **ore** in the mine (auto-picked up by walking over it).
+2. Return to the **surface** and visit the **Bank** (x=17) to sell it.
+3. Spend coins on tools and items at the **Shop** (x=5).
 
-| Gem | Value |
+| Ore | Value |
 |-----|------:|
-| 💚 Emerald (low) | $10 |
-| 💙 Sapphire (mid) | $30 |
-| ❤️ Ruby (high) | $75 |
+| 🥈 Silver | $8 |
+| 🥇 Gold | $25 |
+| ⬜ Platinum | $65 |
+| 💎 Diamond | $200 |
+| 🔴 Ruby (unique) | $500 |
 
 ---
 
 ## Win Condition
 
-1. Earn **$500** in the mine.
-2. Buy the **Ring 💍** at the Shop.
-3. Walk to the **Bar** and press **E** to interact.
+1. Pick up the 🌸 **flower** to the left of the outhouse and give it to the girl at the Bar.
+2. Buy **3 drinks** 🍺 at the Bar ($10 each).
+3. Find the 💍 **ring** hidden in the mine (~50 m below the outhouse, x=1).
+4. Have **$1,000** in your pocket.
+5. Return to the **Bar** and propose.
 
 ---
 
@@ -141,5 +150,5 @@ Maximum hearts: **6**. New heart slots are granted full.
 - Move back and forth next to a suspicious dirt tile to reveal it safely before stepping in.
 - Buy the **Shovel** early — it cuts reveal time significantly.
 - **Bucket** + **Fire Extinguisher** + **Pick** together let you navigate almost any obstacle.
-- Gems get more valuable (Sapphires and Rubies more common) the deeper you dig.
+- Ore gets more valuable (Platinum and Diamonds more common) the deeper you dig.
 - Visit the **Doctor** before a long mining session if you're low on hearts.
