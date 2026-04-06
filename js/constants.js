@@ -8,11 +8,11 @@ const MAP_WIDTH      = 24;   // Fixed horizontal width (tiles)
 
 // Viewport – what the canvas shows at any one time
 const VIEWPORT_COLS  = 24;   // Must equal MAP_WIDTH
-const VIEWPORT_ROWS  = 15;   // Rows visible on screen
+const VIEWPORT_ROWS  = 14;   // Rows visible on screen
 
 // Canvas pixel dimensions
 const CANVAS_W       = VIEWPORT_COLS * TILE_SIZE;  // 816
-const CANVAS_H       = VIEWPORT_ROWS * TILE_SIZE;  // 510
+const CANVAS_H       = VIEWPORT_ROWS * TILE_SIZE;  // 476
 
 // Chunk generation
 const CHUNK_SIZE     = 30;   // Mine rows generated per chunk
