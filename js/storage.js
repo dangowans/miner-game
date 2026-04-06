@@ -128,8 +128,9 @@ const Storage = {
 
   /** Restore game-level transient state (active dynamites, dragon warnings). */
   restoreGame(g, data) {
-    g._dynamites      = data.dynamites.map(d => Object.assign({}, d));
-    g._dragonWarnings = data.dragonWarnings;
+    g._dynamites          = data.dynamites.map(d => Object.assign({}, d));
+    g._dragonWarnings     = data.dragonWarnings;
+    g._previousPlayTimeMs = data.previousPlayTimeMs || 0;
   },
 };
 
@@ -201,7 +202,8 @@ function _serializeWorld(w) {
 
 function _serializeGame(g) {
   return {
-    dynamites:      g._dynamites.map(d => Object.assign({}, d)),
-    dragonWarnings: g._dragonWarnings,
+    dynamites:           g._dynamites.map(d => Object.assign({}, d)),
+    dragonWarnings:      g._dragonWarnings,
+    previousPlayTimeMs:  g._previousPlayTimeMs + (performance.now() - g._startTime),
   };
 }
