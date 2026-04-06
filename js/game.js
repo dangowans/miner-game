@@ -425,10 +425,12 @@ class Game {
     const tx = p.x + dx;
     const ty = p.y + dy;
 
-    // Can only place inside the mine (y≥3) in an empty tile
+    // Can place on empty mine tiles (y≥3) or on open surface tiles (pavement/sky at y<3)
     const tile = this.world.getTile(tx, ty);
-    if (ty < 3 || tile !== TILE.EMPTY) {
-      p.setMessage('💣 Can only place dynamite on empty mine tiles.');
+    const isValidMine    = ty >= 3 && tile === TILE.EMPTY;
+    const isValidSurface = ty < 3  && (tile === TILE.PAVEMENT || tile === TILE.SKY);
+    if (!isValidMine && !isValidSurface) {
+      p.setMessage('💣 Can only place dynamite on empty mine tiles or open surface tiles.');
       p.placingDynamite = false;
       return;
     }
@@ -470,6 +472,24 @@ class Game {
     const { x: bx, y: by } = dyn;
     sounds.playDynamiteExplode();
 
+    // Always clear the dynamite's own tile first (the blast loop skips surface
+    // tiles, so this ensures the tile is cleaned up even for surface explosions).
+    this.world.setTile(bx, by, TILE.EMPTY);
+    this.world.setData(bx, by, null);
+
+    // ── Police arrest: dynamite was placed and exploded on the surface ───────
+    if (by < 3) {
+      Storage.clear();
+      this.state = 'dead';
+      this.ui.showPoliceArrest(this._elapsedTimeLabel());
+      return;
+    }
+
+    // ── Mine collapse: blast radius geometrically reaches the surface ────────
+    // The topmost row the blast can reach is (by - DYNAMITE_RADIUS).
+    // If that row is above the mine boundary (y<3), the surface is affected.
+    const blastTouchesSurface = (by - DYNAMITE_RADIUS) < 3;
+
     // Reveal / clear tiles in blast radius (mine rows only)
     for (let dx = -DYNAMITE_RADIUS; dx <= DYNAMITE_RADIUS; dx++) {
       for (let dy = -DYNAMITE_RADIUS; dy <= DYNAMITE_RADIUS; dy++) {
@@ -492,6 +512,14 @@ class Game {
         }
         // Ore, stone, water and lava tiles are left intact — dynamite just reveals
       }
+    }
+
+    // ── Mine collapse game over: blast reached the surface ──────────────────
+    if (blastTouchesSurface) {
+      Storage.clear();
+      this.state = 'dead';
+      this.ui.showMineCollapse(this._elapsedTimeLabel());
+      return;
     }
 
     // Damage player based on distance from blast centre (squared to avoid sqrt)
