@@ -24,9 +24,9 @@ const GEN_LOOKAHEAD  = 20;   // Generate new chunk when within this many rows of
 const TILE = Object.freeze({
   GRASS:        0,   // Surface ground (gaps between buildings)
   BUILDING:     1,   // Impassable building wall/facade
-  SHOP:         2,   // Shop door at y=0 – interact from pavement by pressing E
-  BAR:          3,   // Bar door at y=0
-  DOCTOR:       4,   // Doctor door at y=0
+  SHOP:         2,   // Shop door at y=1 – interact from pavement by pressing E
+  BAR:          3,   // Bar door at y=1
+  DOCTOR:       4,   // Doctor door at y=1
   MINE_ENT:     5,   // Mine entrance arch (pavement crossing, x=22-24)
   DIRT:         6,   // Unexcavated mine tile (hides content)
   EMPTY:        7,   // Mined-out open space
@@ -39,7 +39,7 @@ const TILE = Object.freeze({
   PICK:        14,   // Revealed pick item – breaks STONE
   BAG:         15,   // Revealed large-bag item
   STONE:       16,   // Solid stone block – impassable without a pick
-  PAVEMENT:    17,   // Surface pavement row (y=1) – walkable
+  PAVEMENT:    17,   // Surface pavement row (y=2) – walkable
   BANK:        19,   // Town Bank facade – sell ore here
   OUTHOUSE:    20,   // Outhouse facade – cosmetic only
   DIAMOND:     21,   // Revealed diamond (rare, deeper mine)
@@ -50,7 +50,7 @@ const TILE = Object.freeze({
   JEWELER:     26,   // (unused) Jeweler building
   SKY:         27,   // Open sky between surface buildings (decorative, y=0)
   DYNAMITE:    28,   // Lit dynamite placed by the player – explodes after fuse
-  RING:        29,   // Hidden ring – found 50m below the outhouse in the mine
+  RING:        29,   // Hidden ring – found ~50 m below the outhouse in the mine
   FLOWER:      30,   // Surface flower – collectible, to the left of the outhouse
   LANTERN:     31,   // Hidden lantern – enables adjacent dirt probing when found
   RADIO:       32,   // Hidden radio – teleports player to mine entrance when used
@@ -78,7 +78,7 @@ const HIDDEN = Object.freeze({
   RUBBER_BOOT:  'rubber_boot',  // Unique – one per entire mine
   POCKET_WATCH: 'pocket_watch', // Unique – one per entire mine
   GLASSES:      'glasses',      // Unique – one per entire mine
-  RING:         'ring',         // Unique – fixed position 50m below outhouse
+  RING:         'ring',         // Unique – random position ~50 m below outhouse
   LANTERN:      'lantern',      // Unique – enables adjacent dirt probing when found
   RADIO:        'radio',        // Unique – teleports player to mine entrance
   SKULL:        'skull',        // Unique – novelty collectible
@@ -239,10 +239,9 @@ const JEWELER_X   = 19;  // Jeweler (between Bank and mine entrance)
 const BANK_X      = 17;  // Town bank (between Doctor and mine entrance)
 
 // ---------------------------------------------------------------------------
-// Ring location – hidden in the mine 50 m below the outhouse
+// Ring location – hidden in the mine ~50 m below the outhouse (randomised 50-60 m)
 // ---------------------------------------------------------------------------
-const RING_DEPTH = 50;          // Mine depth (m) where the ring is hidden
-const RING_X     = OUTHOUSE_X;  // Same x-column as the outhouse (x=1)
+const RING_X = OUTHOUSE_X;  // Same x-column as the outhouse (x=1)
 
 // ---------------------------------------------------------------------------
 // Glasses location – hidden directly below the outhouse (shallow)
@@ -255,13 +254,13 @@ const GLASSES_X     = OUTHOUSE_X; // Same x-column as the outhouse (x=1)
 // ---------------------------------------------------------------------------
 const MINE_ENT_X_MIN         = 22;
 const MINE_ENT_X_MAX         = 23;
-const MINE_ENT_CLEARED_DEPTH = 3;   // Mine-entrance columns pre-cleared to this row
+const MINE_ENT_CLEARED_DEPTH = 4;   // Mine-entrance columns pre-cleared to this row
 
 // ---------------------------------------------------------------------------
 // Player start position (pavement row, open area)
 // ---------------------------------------------------------------------------
 const PLAYER_START_X = 16;
-const PLAYER_START_Y = 1;   // y=1 is the pavement row
+const PLAYER_START_Y = 2;   // y=2 is the pavement row
 
 // ---------------------------------------------------------------------------
 // Player physics / UI timings

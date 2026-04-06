@@ -46,8 +46,19 @@ class Game {
 
     this._lastTime  = 0;
     this._startTime = performance.now();
+    this._lastSaveTime = 0;   // Throttle: track when the last save was written
     this._dynamites = [];   // Array of { x, y, frames } for lit dynamite placements
     this._dragonWarnings = 0;  // Count of times the player has been warned about dragons
+
+    // Restore a previous session if one was saved
+    const saved = Storage.load();
+    if (saved) {
+      Storage.restorePlayer(this.player, saved.player);
+      Storage.restoreWorld(this.world, saved.world);
+      Storage.restoreGame(this, saved.game);
+      this.ui.updateHUD(this.player);
+    }
+
     requestAnimationFrame((t) => this._loop(t));
   }
 
@@ -103,6 +114,18 @@ class Game {
 
     this.player.tick();
     this.ui.updateHUD(this.player);
+    this._saveThrottled();
+  }
+
+  /**
+   * Write a save snapshot at most once every 500 ms to avoid hammering
+   * localStorage on rapid repeated key-presses.
+   */
+  _saveThrottled() {
+    const now = performance.now();
+    if (now - this._lastSaveTime < 500) return;
+    this._lastSaveTime = now;
+    Storage.save(this.player, this.world, this);
   }
 
   // -------------------------------------------------------------------------
@@ -117,6 +140,7 @@ class Game {
     this.input.clear();
     this._dragonWarnings++;
     if (this._dragonWarnings >= 10) {
+      Storage.clear();
       this.state = 'dead';
       this.ui.showWarned(this._elapsedTimeLabel());
     } else {
@@ -147,21 +171,21 @@ class Game {
       this._warnDragons();
       return;
     }
-    if (ny < 1) {
+    if (ny < 2) {
       // Walking into the building row — treat as interact if player is on pavement
-      if (p.y === 1) this._handleInteract();
+      if (p.y === 2) this._handleInteract();
       return;
     }
 
     // ── Max mine depth ────────────────────────────────────────────────────
-    // depth in metres = ny - 1; block movement beyond MAX_MINE_DEPTH
-    if (ny - 1 > MAX_MINE_DEPTH) {
+    // depth in metres = ny - 2; block movement beyond MAX_MINE_DEPTH
+    if (ny - 2 > MAX_MINE_DEPTH) {
       this._warnDragons();
       return;
     }
 
-    // Pavement (y=1) ↔ mine (y=2) boundary: only crossable at mine-entrance columns
-    if ((p.y === 1 && ny === 2) || (p.y === 2 && ny === 1)) {
+    // Pavement (y=2) ↔ mine (y=3) boundary: only crossable at mine-entrance columns
+    if ((p.y === 2 && ny === 3) || (p.y === 3 && ny === 2)) {
       if (nx < MINE_ENT_X_MIN || nx > MINE_ENT_X_MAX) return;
     }
 
@@ -306,9 +330,9 @@ class Game {
 
   /** Shared post-move logic: probe neighbours + pickup. */
   _afterMove(x, y) {
-    // Only probe adjacent dirt tiles when the player is inside the mine (y≥2).
-    // Pavement movement (y=1) must not reveal hidden content in the top mine row.
-    if (y >= 2) {
+    // Only probe adjacent dirt tiles when the player is inside the mine (y≥3).
+    // Pavement movement (y=2) must not reveal hidden content in the top mine row.
+    if (y >= 3) {
       const revealed = this.world.probeAdjacent(x, y, this.player.toolReduction, this.player.hasLantern);
       for (const { x: rx, y: ry, content } of revealed) {
         this._onContentRevealed(content, rx, ry);
@@ -327,6 +351,7 @@ class Game {
     const died = p.takeDamage();
     sounds.playHazardHit();
     if (died) {
+      Storage.clear();
       this.state = 'dead';
       this.ui.showDead(this._elapsedTimeLabel());
     } else {
@@ -399,9 +424,9 @@ class Game {
     const tx = p.x + dx;
     const ty = p.y + dy;
 
-    // Can only place inside the mine (y≥2) in an empty tile
+    // Can only place inside the mine (y≥3) in an empty tile
     const tile = this.world.getTile(tx, ty);
-    if (ty < 2 || tile !== TILE.EMPTY) {
+    if (ty < 3 || tile !== TILE.EMPTY) {
       p.setMessage('💣 Can only place dynamite on empty mine tiles.');
       p.placingDynamite = false;
       return;
@@ -450,7 +475,7 @@ class Game {
         if (dx * dx + dy * dy > DYNAMITE_RADIUS * DYNAMITE_RADIUS) continue;
         const tx = bx + dx;
         const ty = by + dy;
-        if (ty < 2) continue;  // Don't blast the surface
+        if (ty < 3) continue;  // Don't blast the surface
         const t = this.world.getTile(tx, ty);
         if (t === TILE.DIRT) {
           // Reveal the hidden content rather than destroying it
@@ -475,6 +500,7 @@ class Game {
       const died = p.takeDamageMultiple(2);
       sounds.playHazardHit();
       if (died) {
+        Storage.clear();
         this.state = 'dead';
         this.ui.showDead(this._elapsedTimeLabel());
         return;
@@ -484,6 +510,7 @@ class Game {
       const died = p.takeDamage();
       sounds.playHazardHit();
       if (died) {
+        Storage.clear();
         this.state = 'dead';
         this.ui.showDead(this._elapsedTimeLabel());
         return;
@@ -705,12 +732,12 @@ class Game {
       this.world.getTile(p.x, p.y)     === type ||
       this.world.getTile(p.x, p.y - 1) === type;
 
-    // ── Flower pickup (to the left of the outhouse at y=0) ────────────────
+    // ── Flower pickup (to the left of the outhouse at y=1) ────────────────
     if (checkTile(TILE.FLOWER)) {
       if (!p.hasFlower) {
         p.hasFlower = true;
-        // Remove the flower tile from the surface
-        this.world.setTile(p.x, 0, TILE.SKY);
+        // Remove the flower tile from the building-facade row
+        this.world.setTile(p.x, 1, TILE.SKY);
         p.setMessage('🌸 You found a flower.');
         sounds.playItemPickup();
         this.ui.updateHUD(p);
@@ -740,6 +767,7 @@ class Game {
       this.state = 'overlay';
       this.ui.openBar(p, (won) => {
         if (won) {
+          Storage.clear();
           this.state = 'won';
           this.ui.showWin(this._elapsedTimeLabel());
         } else {
