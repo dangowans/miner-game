@@ -172,7 +172,7 @@ class World {
       { content: HIDDEN.SILVER,   weight: Math.max( 2, Math.round((22 - depthBonus * 2) * surfaceOreScale))      },
       { content: HIDDEN.GOLD,     weight: Math.max( 1, Math.round((14 - depthBonus)     * surfaceOreScale))      },
       { content: HIDDEN.PLATINUM, weight: Math.max(0, (depthBonus - 1) * 3)                                       },
-      { content: HIDDEN.DIAMOND,  weight: Math.max(0, Math.floor(fromY / 30) - 1)                          },
+      { content: HIDDEN.DIAMOND,  weight: Math.max(0, Math.floor((fromY - 60) / 10))             },
       { content: HIDDEN.WATER,    weight: waterWeight                                                              },
       { content: HIDDEN.LAVA,     weight: lavaWeight                                                               },
       { content: HIDDEN.STONE,    weight: 10 + Math.floor(depthBonus * 1.5)                                       },
