@@ -169,7 +169,7 @@ const SHOP_ITEMS = [
   {
     id:      'firstaid',
     name:    'First Aid Kit',
-    price:   60,
+    price:   65,
     desc:    'Use from inventory to restore health to full.',
     oneTime: false,
   },
@@ -203,7 +203,7 @@ const JEWELER_MONEY_COST   = 1000;  // Cash required alongside the ring for prop
 // ---------------------------------------------------------------------------
 // Doctor services
 // ---------------------------------------------------------------------------
-const HEAL_PRICE        = 40;   // Cost to restore 1 heart
+const HEAL_PRICE        = 30;   // Cost to restore 1 heart
 const EXTRA_HEART_PRICE = 150;  // Cost to add +1 max heart (up to MAX_HEARTS)
 const MAX_HEARTS        = 6;
 const START_HEARTS      = 3;
