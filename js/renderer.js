@@ -431,13 +431,44 @@ class Renderer {
         }
         break;
       }
+
+      case TILE.RING: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('💍', cx, cy + 8);
+        // Golden star marker to signal importance
+        ctx.fillStyle = '#ffd700';
+        ctx.font      = 'bold 8px monospace';
+        ctx.fillText('★', cx, py + 9);
+        break;
+      }
+
+      case TILE.FLOWER: {
+        // Surface flower tile – drawn in the building facade row
+        ctx.fillStyle = '#3a8010';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '18px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🌸', cx, cy + 8);
+        break;
+      }
+
+      case TILE.LANTERN: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🔦', cx, cy + 8);
+        break;
+      }
     }
 
     // ── Sky horizon for the building-facade row ───────────────────────────────
     // Draw a sky-blue strip across the top of every y=0 building tile (SHOP,
-    // BAR, DOCTOR, BANK, JEWELER, OUTHOUSE).  SKY tiles already show full sky,
-    // and MINE_ENT sits in solid rock — both are excluded.
-    if (ty === 0 && tile !== TILE.MINE_ENT && tile !== TILE.SKY) {
+    // BAR, DOCTOR, BANK, OUTHOUSE).  SKY, FLOWER and MINE_ENT tiles are excluded.
+    if (ty === 0 && tile !== TILE.MINE_ENT && tile !== TILE.SKY && tile !== TILE.FLOWER) {
       ctx.fillStyle = '#7ab8e8';
       ctx.fillRect(px, py, ts, 8);
     }

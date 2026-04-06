@@ -55,19 +55,24 @@ class World {
   // -------------------------------------------------------------------------
 
   /**
-   * Decide fixed positions for the four unique items using the shared RNG.
+   * Decide fixed positions for the unique items using the shared RNG.
    * Positions are restricted to columns 1-20 (avoiding the mine entrance area)
    * and to depths where the mine is fully generated as DIRT.
+   * The ring is always at a fixed position (RING_X, RING_DEPTH+1) so it is
+   * reliably "67 m below the outhouse".
    */
   _computeUniqueItemPositions() {
     const rng    = this._rng;
     const xRange = MINE_ENT_X_MIN - 2;   // 20 safe columns (x ∈ [1, 20])
     return [
-      { content: HIDDEN.RUBY,         y: 20 + Math.floor(rng() * 80) },
-      { content: HIDDEN.RUBBER_BOOT,  y:  8 + Math.floor(rng() * 40) },
-      { content: HIDDEN.POCKET_WATCH, y: 12 + Math.floor(rng() * 60) },
-      { content: HIDDEN.GLASSES,      y:  5 + Math.floor(rng() * 35) },
-    ].map(item => ({ ...item, x: 1 + Math.floor(rng() * xRange) }));
+      { content: HIDDEN.RUBY,         y: 20 + Math.floor(rng() * 80),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.RUBBER_BOOT,  y:  8 + Math.floor(rng() * 40),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.POCKET_WATCH, y: 12 + Math.floor(rng() * 60),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.GLASSES,      y:  5 + Math.floor(rng() * 35),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.LANTERN,      y: 10 + Math.floor(rng() * 20),  x: 1 + Math.floor(rng() * xRange) },
+      // Ring at fixed depth: RING_DEPTH+1 (depth display = y-1 = RING_DEPTH m)
+      { content: HIDDEN.RING,         y: RING_DEPTH + 1,                x: RING_X },
+    ];
   }
 
   // -------------------------------------------------------------------------
@@ -118,11 +123,12 @@ class World {
     top.fill(TILE.SKY);   // Open sky between buildings
 
     top[OUTHOUSE_X] = TILE.OUTHOUSE;   // Left-side outhouse (x=1)
-    top[5]          = TILE.SHOP;        // General store
-    top[9]          = TILE.BAR;         // Bar
-    top[13]         = TILE.DOCTOR;      // Doctor
-    top[BANK_X]     = TILE.BANK;        // Town bank (x=17)
-    top[JEWELER_X]  = TILE.JEWELER;     // Jeweler (x=19)
+    top[0]          = TILE.FLOWER;     // Flower to the left of the outhouse (x=0)
+    top[5]          = TILE.SHOP;       // General store
+    top[9]          = TILE.BAR;        // Bar
+    top[13]         = TILE.DOCTOR;     // Doctor
+    top[BANK_X]     = TILE.BANK;       // Town bank (x=17)
+    // Jeweler removed – x=19 remains SKY
 
     // Mine entrance arch at x=22-24 (decorative upper; actual entrance at y=1)
     for (let x = MINE_ENT_X_MIN; x <= MINE_ENT_X_MAX; x++) {
@@ -166,7 +172,7 @@ class World {
       { content: HIDDEN.SILVER,   weight: Math.max( 2, Math.round((22 - depthBonus * 2) * surfaceOreScale))      },
       { content: HIDDEN.GOLD,     weight: Math.max( 1, Math.round((14 - depthBonus)     * surfaceOreScale))      },
       { content: HIDDEN.PLATINUM, weight: Math.max(0, (depthBonus - 1) * 3)                                       },
-      { content: HIDDEN.DIAMOND,  weight: Math.max(0, depthBonus - 2)                                             },
+      { content: HIDDEN.DIAMOND,  weight: Math.max(0, Math.floor(fromY / 30) - 1)                          },
       { content: HIDDEN.WATER,    weight: waterWeight                                                              },
       { content: HIDDEN.LAVA,     weight: lavaWeight                                                               },
       { content: HIDDEN.STONE,    weight: 10 + Math.floor(depthBonus * 1.5)                                       },
@@ -245,7 +251,11 @@ class World {
   // Reveal logic
   // -------------------------------------------------------------------------
 
-  probeAdjacent(px, py, toolReduction) {
+  probeAdjacent(px, py, toolReduction, hasLantern) {
+    // Without the lantern, adjacent probing is not possible.
+    // The player must walk directly into dirt tiles to reveal them.
+    if (!hasLantern) return [];
+
     const revealed = [];
     const DIRS = [
       { dx: 1, dy: 0 }, { dx: -1, dy: 0 },
@@ -256,10 +266,10 @@ class World {
       if (this.getTile(nx, ny) !== TILE.DIRT) continue;
       const d = this.getData(nx, ny);
       if (!d) continue;
-      // Impenetrable tiles cannot be revealed by probing – must be walked into.
-      if (d.impenetrable) continue;
+      // With lantern all dirt tiles (including formerly-impenetrable ones) can be
+      // revealed by moving back and forth. A single touch never reveals (min 2 probes).
       d.probes++;
-      const effective = Math.max(1, d.threshold - toolReduction);
+      const effective = Math.max(2, d.threshold - toolReduction);
       if (d.probes >= effective) {
         const content = this._revealTile(nx, ny);
         if (content !== null) revealed.push({ x: nx, y: ny, content });
@@ -304,6 +314,8 @@ class World {
       case HIDDEN.RUBBER_BOOT:  this.setTile(x, y, TILE.RUBBER_BOOT);  break;
       case HIDDEN.POCKET_WATCH: this.setTile(x, y, TILE.POCKET_WATCH); break;
       case HIDDEN.GLASSES:      this.setTile(x, y, TILE.GLASSES);      break;
+      case HIDDEN.RING:         this.setTile(x, y, TILE.RING);         break;
+      case HIDDEN.LANTERN:      this.setTile(x, y, TILE.LANTERN);      break;
       default:                  this.setTile(x, y, TILE.EMPTY);        break;
     }
     return hidden;
@@ -373,6 +385,8 @@ class World {
       case TILE.SHOVEL:
       case TILE.PICK:
       case TILE.BAG:
+      case TILE.RING:
+      case TILE.LANTERN:
         return true;
       case TILE.BUILDING:
       case TILE.DIRT:

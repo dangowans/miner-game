@@ -45,6 +45,11 @@ class Player {
     // Unique novelty items found in the mine (rubber boot, pocket watch, glasses)
     this.specialItems = new Set();
 
+    // Unique key items
+    this.hasLantern    = false;   // Enables adjacent dirt probing when true
+    this.hasFlower     = false;   // Flower collected from the surface
+    this.hasGivenFlower = false;  // True once the flower has been given to the bar girl
+
     // Health
     this.hearts    = START_HEARTS;
     this.maxHearts = START_HEARTS;
