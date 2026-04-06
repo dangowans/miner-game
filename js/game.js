@@ -599,7 +599,7 @@ class Game {
         p.hasFlower = true;
         // Remove the flower tile from the surface
         this.world.setTile(p.x, 0, TILE.SKY);
-        p.setMessage('🌸 You picked the flower! Give it to the girl at the Bar.');
+        p.setMessage('🌸 You found a flower.');
         sounds.playItemPickup();
         this.ui.updateHUD(p);
       } else {
