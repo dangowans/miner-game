@@ -164,7 +164,7 @@ class Game {
       const newTile = this.world.getTile(nx, ny);
 
       // Stone revealed by digging: do NOT move (need pick on next move)
-      if (newTile === TILE.STONE) return;
+      if (newTile === TILE.STONE) { sounds.playTinkStone(); return; }
 
       // Hazard tiles revealed by digging are entered via their own helpers
       if (newTile === TILE.LAVA)  { this._enterLava(p, nx, ny); return; }
