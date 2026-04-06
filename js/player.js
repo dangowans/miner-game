@@ -49,6 +49,10 @@ class Player {
     this.hasLantern    = false;   // Enables adjacent dirt probing when true
     this.hasFlower     = false;   // Flower collected from the surface
     this.hasGivenFlower = false;  // True once the flower has been given to the bar girl
+    this.hasRadio      = false;   // Radio found in the mine – teleports to mine entrance
+
+    // Consumable items
+    this.firstAidKits  = 0;       // First Aid Kits in inventory (bought at shop)
 
     // Health
     this.hearts    = START_HEARTS;

@@ -461,6 +461,42 @@ class Renderer {
         ctx.fillText('🔦', cx, cy + 8);
         break;
       }
+
+      case TILE.RADIO: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('📻', cx, cy + 8);
+        break;
+      }
+
+      case TILE.SKULL: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('💀', cx, cy + 8);
+        break;
+      }
+
+      case TILE.CANTEEN: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🧴', cx, cy + 8);
+        break;
+      }
+
+      case TILE.LUNCHBOX: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🍱', cx, cy + 8);
+        break;
+      }
     }
 
     // ── Sky horizon for the building-facade row ───────────────────────────────

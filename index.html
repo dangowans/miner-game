@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Miner</title>
+  <title>Mini Miner</title>
   <style>
     /* ── Reset & base ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -166,15 +166,22 @@
     #hud-msg {
       color: #aad4ff;
       font-size: 0.85em;
-      white-space: nowrap;
+      white-space: normal;
       overflow: hidden;
       text-overflow: ellipsis;
       min-height: 16px;
+      line-height: 1.5;
     }
 
     /* ── D-pad controls ── */
-    #controls {
+    #controls-wrap {
       margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #controls {
       display: grid;
       grid-template-columns: repeat(3, 52px);
       grid-template-rows:    repeat(3, 52px);
@@ -198,9 +205,30 @@
 
     #btn-up    { grid-column: 2; grid-row: 1; }
     #btn-left  { grid-column: 1; grid-row: 2; }
-    #btn-dynamite { grid-column: 2; grid-row: 2; font-size: 1.4em; }
     #btn-right { grid-column: 3; grid-row: 2; }
     #btn-down  { grid-column: 2; grid-row: 3; }
+
+    /* ── Inventory buttons (beside D-pad) ── */
+    #inventory-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    #inventory-btns button {
+      width: 52px;
+      height: 52px;
+      background: #252525;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #ccc;
+      font-size: 1.4em;
+      cursor: pointer;
+      user-select: none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #inventory-btns button:active { background: #3a3a3a; }
+    #inventory-btns button:disabled { opacity: 0.3; cursor: default; }
 
     #controls-label {
       margin-top: 6px;
@@ -212,7 +240,7 @@
 </head>
 <body>
 
-  <h1>⛏ MINER</h1>
+  <h1>⛏ MINI MINER</h1>
 
   <div id="game-wrap">
     <canvas id="canvas" width="816" height="510"></canvas>
@@ -232,15 +260,21 @@
     <span id="hud-msg"></span>
   </div>
 
-  <!-- Mobile D-pad -->
-  <div id="controls" aria-label="Game controls">
-    <button id="btn-up"       title="Move up (W / ↑)"              aria-label="Up">▲</button>
-    <button id="btn-left"     title="Move left (A / ←)"            aria-label="Left">◀</button>
-    <button id="btn-dynamite" title="Place dynamite (X)"           aria-label="Dynamite" disabled>💣</button>
-    <button id="btn-right"    title="Move right (D / →)"           aria-label="Right">▶</button>
-    <button id="btn-down"     title="Move down (S / ↓)"            aria-label="Down">▼</button>
+  <!-- Mobile D-pad + Inventory -->
+  <div id="controls-wrap">
+    <div id="controls" aria-label="Game controls">
+      <button id="btn-up"    title="Move up (W / ↑)"    aria-label="Up">▲</button>
+      <button id="btn-left"  title="Move left (A / ←)"  aria-label="Left">◀</button>
+      <button id="btn-right" title="Move right (D / →)" aria-label="Right">▶</button>
+      <button id="btn-down"  title="Move down (S / ↓)"  aria-label="Down">▼</button>
+    </div>
+    <div id="inventory-btns" aria-label="Inventory">
+      <button id="btn-dynamite" title="Place dynamite (X)"             aria-label="Dynamite" disabled>💣</button>
+      <button id="btn-firstaid" title="Use First Aid Kit"              aria-label="First Aid Kit" disabled>🩹</button>
+      <button id="btn-radio"    title="Use radio — teleport to entrance" aria-label="Radio" style="display:none">📻</button>
+    </div>
   </div>
-  <div id="controls-label">Arrow keys / WASD to move &nbsp;·&nbsp; E / Enter to interact &nbsp;·&nbsp; X to place dynamite</div>
+  <div id="controls-label">Arrow keys / WASD to move &nbsp;·&nbsp; E / Enter to interact &nbsp;·&nbsp; X to place dynamite &nbsp;·&nbsp; 🩹 first aid &nbsp;·&nbsp; 📻 radio (if found)</div>
 
   <!-- Game scripts (order matters – constants first) -->
   <script src="js/constants.js"></script>

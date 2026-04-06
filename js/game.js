@@ -85,6 +85,8 @@ class Game {
       case 'right':    this._tryMove( 1,  0); break;
       case 'interact': this._handleInteract(); break;
       case 'dynamite': this._toggleDynamitePlacement(); break;
+      case 'firstaid': this._useFirstAidKit(); break;
+      case 'radio':    this._useRadio();       break;
     }
 
     this.player.tick();
@@ -334,6 +336,38 @@ class Game {
     }
   }
 
+  /** Use a First Aid Kit to restore health to full. */
+  _useFirstAidKit() {
+    const p = this.player;
+    if (p.firstAidKits <= 0) {
+      p.setMessage('No First Aid Kits — buy one at the Shop.');
+      return;
+    }
+    if (p.hearts >= p.maxHearts) {
+      p.setMessage('❤️ Already at full health!');
+      return;
+    }
+    p.firstAidKits--;
+    p.hearts = p.maxHearts;
+    p.setMessage(`🩹 First Aid Kit used! Restored to full health. (${p.firstAidKits} left)`);
+    sounds.playTransaction();
+    this.ui.updateHUD(p);
+  }
+
+  /** Use the radio to teleport to the mine entrance. */
+  _useRadio() {
+    const p = this.player;
+    if (!p.hasRadio) {
+      p.setMessage('📻 Find a radio in the mine first!');
+      return;
+    }
+    p.x = MINE_ENT_X_MIN;
+    p.y = 1;
+    p.setMessage('📻 Radio crackles — you\'re teleported to the mine entrance!');
+    sounds.playItemPickup();
+    this.ui.updateHUD(p);
+  }
+
   /**
    * Place a stick of dynamite in the tile adjacent to the player in direction (dx, dy).
    * The player stays put; a TILE.DYNAMITE tile is created and the fuse starts.
@@ -521,7 +555,7 @@ class Game {
         if (!p.specialItems.has('glasses')) {
           p.specialItems.add('glasses');
           this.world.setTile(x, y, TILE.EMPTY);
-          p.setMessage('🕶️ Stylish glasses. You look great down here.');
+          p.setMessage('🕶️ A pair of glasses? What else lies beneath the loo?');
           sounds.playItemPickup();
         }
         break;
@@ -538,12 +572,54 @@ class Game {
         break;
       }
 
+      // ── Radio – teleports to mine entrance ────────────────────────────
+      case TILE.RADIO: {
+        if (!p.hasRadio) {
+          p.hasRadio = true;
+          this.world.setTile(x, y, TILE.EMPTY);
+          p.setMessage('📻 Old radio found! Use the 📻 button to call for a ride to the mine entrance.');
+          sounds.playItemPickup();
+        }
+        break;
+      }
+
+      // ── Novelty collectibles ───────────────────────────────────────────
+      case TILE.SKULL: {
+        if (!p.specialItems.has('skull')) {
+          p.specialItems.add('skull');
+          this.world.setTile(x, y, TILE.EMPTY);
+          p.setMessage('💀 A skull. Someone didn\'t make it back.');
+          sounds.playItemPickup();
+        }
+        break;
+      }
+
+      case TILE.CANTEEN: {
+        if (!p.specialItems.has('canteen')) {
+          p.specialItems.add('canteen');
+          this.world.setTile(x, y, TILE.EMPTY);
+          p.setMessage('🧴 A dusty canteen. Still has a drop of water in it.');
+          sounds.playItemPickup();
+        }
+        break;
+      }
+
+      case TILE.LUNCHBOX: {
+        if (!p.specialItems.has('lunchbox')) {
+          p.specialItems.add('lunchbox');
+          this.world.setTile(x, y, TILE.EMPTY);
+          p.setMessage('🍱 A lunch box. The sandwich inside is ancient but tempting.');
+          sounds.playItemPickup();
+        }
+        break;
+      }
+
       // ── Ring – the proposal item ───────────────────────────────────────
       case TILE.RING: {
         if (!p.hasRing) {
           p.hasRing = true;
           this.world.setTile(x, y, TILE.EMPTY);
-          p.setMessage('💍 You found a ring! Take it to the girl at the Bar (with $1000).');
+          p.setMessage('💍 You found a ring!');
           sounds.playItemPickup();
         }
         break;

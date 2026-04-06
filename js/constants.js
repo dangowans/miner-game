@@ -50,9 +50,13 @@ const TILE = Object.freeze({
   JEWELER:     26,   // (unused) Jeweler building
   SKY:         27,   // Open sky between surface buildings (decorative, y=0)
   DYNAMITE:    28,   // Lit dynamite placed by the player – explodes after fuse
-  RING:        29,   // Hidden ring – found 67m below the outhouse in the mine
+  RING:        29,   // Hidden ring – found 50m below the outhouse in the mine
   FLOWER:      30,   // Surface flower – collectible, to the left of the outhouse
   LANTERN:     31,   // Hidden lantern – enables adjacent dirt probing when found
+  RADIO:       32,   // Hidden radio – teleports player to mine entrance when used
+  SKULL:       33,   // Hidden skull – novelty collectible
+  CANTEEN:     34,   // Hidden canteen – novelty collectible
+  LUNCHBOX:    35,   // Hidden lunch box – novelty collectible
 });
 
 // ---------------------------------------------------------------------------
@@ -74,8 +78,12 @@ const HIDDEN = Object.freeze({
   RUBBER_BOOT:  'rubber_boot',  // Unique – one per entire mine
   POCKET_WATCH: 'pocket_watch', // Unique – one per entire mine
   GLASSES:      'glasses',      // Unique – one per entire mine
-  RING:         'ring',         // Unique – fixed position 67m below outhouse
+  RING:         'ring',         // Unique – fixed position 50m below outhouse
   LANTERN:      'lantern',      // Unique – enables adjacent dirt probing when found
+  RADIO:        'radio',        // Unique – teleports player to mine entrance
+  SKULL:        'skull',        // Unique – novelty collectible
+  CANTEEN:      'canteen',      // Unique – novelty collectible
+  LUNCHBOX:     'lunchbox',     // Unique – novelty collectible
 });
 
 // ---------------------------------------------------------------------------
@@ -158,6 +166,13 @@ const SHOP_ITEMS = [
     desc:    'Press 💣 to enter placement mode, then move in any direction to place. 5-second fuse — get clear!',
     oneTime: false,
   },
+  {
+    id:      'firstaid',
+    name:    'First Aid Kit',
+    price:   60,
+    desc:    'Use from inventory to restore health to full.',
+    oneTime: false,
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -217,10 +232,16 @@ const JEWELER_X   = 19;  // Jeweler (between Bank and mine entrance)
 const BANK_X      = 17;  // Town bank (between Doctor and mine entrance)
 
 // ---------------------------------------------------------------------------
-// Ring location – hidden in the mine 67 m below the outhouse
+// Ring location – hidden in the mine 50 m below the outhouse
 // ---------------------------------------------------------------------------
-const RING_DEPTH = 67;          // Mine depth (m) where the ring is hidden
+const RING_DEPTH = 50;          // Mine depth (m) where the ring is hidden
 const RING_X     = OUTHOUSE_X;  // Same x-column as the outhouse (x=1)
+
+// ---------------------------------------------------------------------------
+// Glasses location – hidden directly below the outhouse (shallow)
+// ---------------------------------------------------------------------------
+const GLASSES_DEPTH = 2;          // Mine depth (m) where the glasses are hidden
+const GLASSES_X     = OUTHOUSE_X; // Same x-column as the outhouse (x=1)
 
 // ---------------------------------------------------------------------------
 // Mine entrance x-range (right side of surface row)
@@ -277,8 +298,12 @@ const TILE_COLOR = {
   [TILE.SKY]:          '#7ab8e8',
   [TILE.DYNAMITE]:     '#cc2200',
   [TILE.RING]:         '#ffe0a0',
-  [TILE.FLOWER]:       '#ff88cc',
+  [TILE.FLOWER]:       '#7ab8e8',
   [TILE.LANTERN]:      '#ffdd44',
+  [TILE.RADIO]:        '#225588',
+  [TILE.SKULL]:        '#aaaaaa',
+  [TILE.CANTEEN]:      '#556644',
+  [TILE.LUNCHBOX]:     '#884422',
 };
 
 // Ore tile types that can be destroyed when a hazard spreads over them

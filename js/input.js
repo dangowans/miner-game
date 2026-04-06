@@ -43,6 +43,8 @@ class Input {
       'btn-left':     'left',
       'btn-right':    'right',
       'btn-dynamite': 'dynamite',
+      'btn-firstaid': 'firstaid',
+      'btn-radio':    'radio',
     };
     for (const [id, action] of Object.entries(MAP)) {
       const btn = document.getElementById(id);

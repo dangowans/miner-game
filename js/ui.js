@@ -65,14 +65,19 @@ class UI {
     if (player.hasLantern)      tools.push('🔦');
     if (player.hasFlower)       tools.push('🌸');
     if (player.hasRing)         tools.push('💍');
+    if (player.hasRadio)        tools.push('📻');
     if (player.specialItems.has('rubber_boot'))  tools.push('🥾');
     if (player.specialItems.has('pocket_watch')) tools.push('⌚');
     if (player.specialItems.has('glasses'))      tools.push('🕶️');
+    if (player.specialItems.has('skull'))        tools.push('💀');
+    if (player.specialItems.has('canteen'))      tools.push('🧴');
+    if (player.specialItems.has('lunchbox'))     tools.push('🍱');
     if (player.dynamiteCount > 0) {
       tools.push(player.placingDynamite
         ? `💣×${player.dynamiteCount} [PLACING]`
         : `💣×${player.dynamiteCount}`);
     }
+    if (player.firstAidKits > 0) tools.push(`🩹×${player.firstAidKits}`);
     this._hudTools.textContent = tools.join(' ');
 
     // Dynamite button: enabled only when the player has dynamite
@@ -80,6 +85,18 @@ class UI {
       this._btnDynamite.disabled = player.dynamiteCount === 0 && !player.placingDynamite;
       this._btnDynamite.textContent = player.placingDynamite ? '✕💣' : '💣';
       this._btnDynamite.style.borderColor = player.placingDynamite ? '#ff6600' : '';
+    }
+
+    // First Aid Kit button: enabled when kits are in stock
+    const btnFirstAid = document.getElementById('btn-firstaid');
+    if (btnFirstAid) {
+      btnFirstAid.disabled = player.firstAidKits <= 0 || player.hearts >= player.maxHearts;
+    }
+
+    // Radio button: hidden until found, then always enabled
+    const btnRadio = document.getElementById('btn-radio');
+    if (btnRadio) {
+      btnRadio.style.display = player.hasRadio ? '' : 'none';
     }
 
     this._hudMsg.textContent = player.message;
@@ -96,17 +113,20 @@ class UI {
                     (item.id === 'bucket'        && player.hasBucket)      ||
                     (item.id === 'extinguisher'  && player.hasExtinguisher)||
                     (item.id === 'bag'           && player.hasBag);
-      const dynamiteCount = item.id === 'dynamite' ? player.dynamiteCount : null;
+      const dynamiteCount  = item.id === 'dynamite'  ? player.dynamiteCount  : null;
+      const firstAidCount  = item.id === 'firstaid'  ? player.firstAidKits   : null;
       const affordable = player.money >= item.price;
       // Dynamite is never "owned once" — can always buy more if affordable
-      const buyable    = item.id === 'dynamite' ? affordable : (!owned && affordable);
+      // Same for first aid kits
+      const buyable    = (item.id === 'dynamite' || item.id === 'firstaid') ? affordable : (!owned && affordable);
       const cls        = buyable ? 'shop-item buyable' : 'shop-item disabled';
+      const stockNote  = (count) => count > 0 ? ` <em>(×${count} in stock)</em>` : '';
+      const needNote   = !affordable ? ` <em class="short">(need $${item.price - player.money} more)</em>` : '';
       let note;
       if (item.id === 'dynamite') {
-        note = dynamiteCount > 0
-          ? ` <em>(×${dynamiteCount} in stock)</em>`
-          : '';
-        if (!affordable) note += ` <em class="short">(need $${item.price - player.money} more)</em>`;
+        note = stockNote(dynamiteCount) + needNote;
+      } else if (item.id === 'firstaid') {
+        note = stockNote(firstAidCount) + needNote;
       } else if (owned) {
         const usesMap = { pick: player.pickUses, bucket: player.bucketUses, extinguisher: player.extinguisherUses };
         const uses    = usesMap[item.id] ?? null;
@@ -146,6 +166,7 @@ class UI {
         else if (id === 'extinguisher'){ player.hasExtinguisher = true; player.extinguisherUses = TOOL_USES; }
         else if (id === 'bag')         { player.hasBag = true; player.maxGems = 20; }
         else if (id === 'dynamite')    { player.dynamiteCount++; }
+        else if (id === 'firstaid')    { player.firstAidKits++; }
         player.setMessage(`Bought: ${id}!`);
         sounds.playTransaction();
         this._closeOverlay();
@@ -224,7 +245,7 @@ class UI {
       html = `
         <h2>🍺 The Bar</h2>
         <p class="bar-girl">👱‍♀️ <em>${line}</em></p>
-        <p class="hint">Hint: find the ring hidden in the mine at 67m depth (directly below the outhouse) and come back with $${JEWELER_MONEY_COST}.</p>
+        <p class="hint">Hint: find the ring hidden in the mine at 50m depth (directly below the outhouse) and come back with $${JEWELER_MONEY_COST}.</p>
         <button class="close-btn" id="overlay-close">Close &nbsp;<kbd>Esc</kbd></button>`;
 
     // ── Step 1: Flower given; buy drinks ─────────────────────────────────
@@ -378,7 +399,7 @@ class UI {
         <p class="overlay-emoji">💍🎉</p>
         <h2 class="overlay-title" style="color:#f5c842">YOU WIN!</h2>
         <p>You found the ring and won her heart!</p>
-        <p style="color:#aaa;font-size:0.85em">Thanks for playing Miner.</p>
+        <p style="color:#aaa;font-size:0.85em">Thanks for playing Mini Miner.</p>
         <button class="close-btn" onclick="location.reload()">
           🎊 Play Again
         </button>
