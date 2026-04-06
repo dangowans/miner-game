@@ -414,6 +414,40 @@ class UI {
     this._openOverlay(() => {});
   }
 
+  showPoliceArrest(elapsedTime) {
+    const timeHtml = elapsedTime
+      ? `<p class="overlay-time">Time: ${elapsedTime}</p>`
+      : '';
+    this.overlay.innerHTML = `
+      <div class="overlay-centered">
+        <p class="overlay-emoji">👮</p>
+        <h2 class="overlay-title" style="color:#ff4444">BUSTED!</h2>
+        <p>You set off dynamite in town! A police officer arrested you on the spot.</p>
+        ${timeHtml}
+        <button class="close-btn" onclick="location.reload()">
+          🔄 Try Again
+        </button>
+      </div>`;
+    this._openOverlay(() => {});
+  }
+
+  showMineCollapse(elapsedTime) {
+    const timeHtml = elapsedTime
+      ? `<p class="overlay-time">Time: ${elapsedTime}</p>`
+      : '';
+    this.overlay.innerHTML = `
+      <div class="overlay-centered">
+        <p class="overlay-emoji">⛏️💥</p>
+        <h2 class="overlay-title" style="color:#ff4444">MINE COLLAPSE!</h2>
+        <p>The blast reached the surface and caused a catastrophic mine collapse. You didn't make it out.</p>
+        ${timeHtml}
+        <button class="close-btn" onclick="location.reload()">
+          🔄 Try Again
+        </button>
+      </div>`;
+    this._openOverlay(() => {});
+  }
+
   showWin(elapsedTime) {
     const timeHtml = elapsedTime
       ? `<p class="overlay-time">Time: ${elapsedTime}</p>`
