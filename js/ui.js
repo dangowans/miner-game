@@ -189,13 +189,12 @@ class UI {
     // ── Proposal: drinks done, ring in hand, $1000 available ─────────────
     } else if (unlockedByDrinks && hasRingAndMoney) {
       html = `
-        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-                    height:100%;gap:14px;padding:20px;text-align:center">
-          <p style="font-size:2em;line-height:1">💍</p>
-          <p style="font-size:1.1em;margin:0">You kneel down with the ring in your hand…</p>
-          <p style="font-size:1.4em;margin:0"><em>"Will you marry me?"</em></p>
-          <p style="font-size:1.5em;color:#f5c842;margin:0">💛 <em>"Yes! A thousand times yes!"</em></p>
-          <button class="close-btn" id="overlay-close" style="margin-top:8px">
+        <div class="overlay-centered">
+          <p class="overlay-emoji">💍</p>
+          <p class="overlay-title" style="color:#f5c842">You kneel down…</p>
+          <p><em>"Will you marry me?"</em></p>
+          <p style="color:#f5c842"><em>💛 "Yes! A thousand times yes!"</em></p>
+          <button class="close-btn" id="overlay-close">
             Continue →
           </button>
         </div>`;
@@ -359,15 +358,14 @@ class UI {
 
   showDead() {
     this.overlay.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-                  height:100%;gap:14px;padding:20px;text-align:center">
-        <p style="font-size:3em;line-height:1">💀</p>
-        <h2 style="color:#ff4444;font-size:1.8em;margin:0">YOU DIED</h2>
-        <p style="margin:0">The mine claimed another victim.</p>
-        <p style="color:#aaa;font-size:0.9em;margin:0">
+      <div class="overlay-centered">
+        <p class="overlay-emoji">💀</p>
+        <h2 class="overlay-title" style="color:#ff4444">YOU DIED</h2>
+        <p>The mine claimed another victim.</p>
+        <p style="color:#aaa;font-size:0.85em">
           Tip: visit the Doctor to increase your max hearts.
         </p>
-        <button class="close-btn" style="margin-top:8px" onclick="location.reload()">
+        <button class="close-btn" onclick="location.reload()">
           🔄 Try Again
         </button>
       </div>`;
@@ -376,15 +374,12 @@ class UI {
 
   showWin() {
     this.overlay.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-                  height:100%;gap:14px;padding:20px;text-align:center">
-        <p style="font-size:2.5em;line-height:1">💍🎉</p>
-        <h2 style="color:#f5c842;font-size:1.8em;margin:0">YOU WIN!</h2>
-        <p style="font-size:1.1em;margin:0">You bought the ring and won her heart!</p>
-        <p style="color:#aaa;font-size:0.9em;margin:0">
-          Thanks for playing Miner.
-        </p>
-        <button class="close-btn" style="margin-top:8px" onclick="location.reload()">
+      <div class="overlay-centered">
+        <p class="overlay-emoji">💍🎉</p>
+        <h2 class="overlay-title" style="color:#f5c842">YOU WIN!</h2>
+        <p>You found the ring and won her heart!</p>
+        <p style="color:#aaa;font-size:0.85em">Thanks for playing Miner.</p>
+        <button class="close-btn" onclick="location.reload()">
           🎊 Play Again
         </button>
       </div>`;
@@ -451,11 +446,10 @@ class UI {
 
   openDragons(onClose) {
     this.overlay.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-                  height:100%;gap:14px;padding:20px;text-align:center">
-        <p style="font-size:3em;line-height:1">🐉</p>
-        <p style="font-size:1.3em;margin:0"><em>"Thar be dragons!"</em></p>
-        <button class="close-btn" id="overlay-close" style="margin-top:8px">
+      <div class="overlay-centered">
+        <p class="overlay-emoji">🐉</p>
+        <p class="overlay-title"><em>"Thar be dragons!"</em></p>
+        <button class="close-btn" id="overlay-close">
           Turn Back
         </button>
       </div>`;
@@ -466,11 +460,10 @@ class UI {
   // Outhouse overlay
   openOuthouse(onClose) {
     this.overlay.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-                  height:100%;gap:14px;padding:20px;text-align:center">
-        <p style="font-size:3em;line-height:1">🚽</p>
-        <p style="font-size:1.3em;margin:0"><em>"You feel relieved."</em></p>
-        <button class="close-btn" id="overlay-close" style="margin-top:8px">
+      <div class="overlay-centered">
+        <p class="overlay-emoji">🚽</p>
+        <p class="overlay-title"><em>"You feel relieved."</em></p>
+        <button class="close-btn" id="overlay-close">
           Leave
         </button>
       </div>`;
