@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 34" width="32" height="32">
+  <!-- Background -->
+  <rect width="34" height="34" rx="4" fill="#1a1a2e"/>
+  <!-- Legs -->
+  <rect x="8" y="24" width="6" height="10" fill="#2a1a08"/>
+  <rect x="20" y="24" width="6" height="10" fill="#2a1a08"/>
+  <!-- Body -->
+  <rect x="7" y="11" width="20" height="15" fill="#d06010"/>
+  <!-- Head -->
+  <rect x="9" y="3" width="16" height="10" fill="#e8a860"/>
+  <!-- Hard hat brim -->
+  <rect x="6" y="2" width="22" height="4" fill="#f0c000"/>
+  <!-- Hard hat dome -->
+  <rect x="9" y="0" width="16" height="4" fill="#e8b800"/>
+  <!-- Eyes -->
+  <rect x="11" y="5" width="3" height="3" fill="#222222"/>
+  <rect x="20" y="5" width="3" height="3" fill="#222222"/>
+  <!-- Lamp on hat -->
+  <rect x="15" y="0" width="4" height="3" fill="#fff8a0"/>
+</svg>

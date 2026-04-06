@@ -139,18 +139,25 @@ class UI {
         note = '';
       }
       return `<div class="${cls}" data-id="${item.id}" data-price="${item.price}">
-        <strong>${item.name}</strong> — <span class="price">$${item.price}</span>${note}<br>
-        <small>${item.desc}</small>
+        <div class="shop-item-row">
+          <span class="shop-item-icon">${item.icon}</span>
+          <div class="shop-item-text">
+            <strong>${item.name}</strong> — <span class="price">$${item.price}</span>${note}<br>
+            <small>${item.desc}</small>
+          </div>
+        </div>
       </div>`;
     }).join('');
 
     this.overlay.innerHTML = `
-      <h2>🏪 General Store</h2>
+      <div class="overlay-header">
+        <h2>🏪 General Store</h2>
+        <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
+      </div>
       <p class="shop-balance">Your money: <strong>$${player.money}</strong></p>
       <p style="color:#aaa;font-size:0.85em;margin:4px 0 8px">Sell your ore at the 🏦 Bank next door.</p>
       <div class="section-label">BUY</div>
       ${itemsHtml}
-      <button class="close-btn" id="overlay-close">✕ Close &nbsp;<kbd>Esc</kbd></button>
     `;
     this._openOverlay(onClose);
 
@@ -202,10 +209,12 @@ class UI {
       ];
       const line = flowerLines[Math.floor(Math.random() * flowerLines.length)];
       html = `
-        <h2>🍺 The Bar</h2>
+        <div class="overlay-header">
+          <h2>🍺 The Bar</h2>
+          <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
+        </div>
         <p class="bar-girl">👱‍♀️ <em>${line}</em></p>
-        <p class="hint">Pick the 🌸 flower to the left of the outhouse and bring it to her.</p>
-        <button class="close-btn" id="overlay-close">Close &nbsp;<kbd>Esc</kbd></button>`;
+        <p class="hint">Pick the 🌸 flower to the left of the outhouse and bring it to her.</p>`;
 
     // ── Proposal: drinks done, ring in hand, $1000 available ─────────────
     } else if (unlockedByDrinks && hasRingAndMoney) {
@@ -223,10 +232,12 @@ class UI {
     // ── Ring in hand but not enough money ─────────────────────────────────
     } else if (unlockedByDrinks && player.hasRing && player.money < JEWELER_MONEY_COST) {
       html = `
-        <h2>🍺 The Bar</h2>
+        <div class="overlay-header">
+          <h2>🍺 The Bar</h2>
+          <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
+        </div>
         <p class="bar-girl">👱‍♀️ <em>"That ring is beautiful… but a girl needs security. Come back with $${JEWELER_MONEY_COST}."</em></p>
-        <p class="hint">You need $${JEWELER_MONEY_COST - player.money} more to propose.</p>
-        <button class="close-btn" id="overlay-close">Close &nbsp;<kbd>Esc</kbd></button>`;
+        <p class="hint">You need $${JEWELER_MONEY_COST - player.money} more to propose.</p>`;
 
     // ── Drinks done, waiting for the ring ─────────────────────────────────
     } else if (unlockedByDrinks) {
@@ -243,10 +254,12 @@ class UI {
       ];
       const line = lines[Math.floor(Math.random() * lines.length)];
       html = `
-        <h2>🍺 The Bar</h2>
+        <div class="overlay-header">
+          <h2>🍺 The Bar</h2>
+          <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
+        </div>
         <p class="bar-girl">👱‍♀️ <em>${line}</em></p>
-        <p class="hint">Hint: find the ring hidden in the mine at 50m depth (directly below the outhouse) and come back with $${JEWELER_MONEY_COST}.</p>
-        <button class="close-btn" id="overlay-close">Close &nbsp;<kbd>Esc</kbd></button>`;
+        <p class="hint">Hint: find the ring hidden in the mine at 50m depth (directly below the outhouse) and come back with $${JEWELER_MONEY_COST}.</p>`;
 
     // ── Step 1: Flower given; buy drinks ─────────────────────────────────
     } else {
@@ -268,13 +281,15 @@ class UI {
       const drinkBtnCls  = canAfford ? 'shop-item buyable' : 'shop-item disabled';
       const drinkNote    = canAfford ? '' : ` <em class="short">(need $${DRINK_PRICE - player.money} more)</em>`;
       html = `
-        <h2>🍺 The Bar</h2>
+        <div class="overlay-header">
+          <h2>🍺 The Bar</h2>
+          <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
+        </div>
         <p class="bar-girl">👱‍♀️ <em>${line}</em></p>
         <p class="hint">Buy her ${drinksLeft} more drink${drinksLeft !== 1 ? 's' : ''} to win her over. (${player.drinksBought}/${DRINKS_TO_UNLOCK} bought)</p>
         <div class="${drinkBtnCls}" id="buy-drink-btn">
           <strong>🍺 Buy a Drink</strong> — <span class="price">$${DRINK_PRICE}</span>${drinkNote}
-        </div>
-        <button class="close-btn" id="overlay-close">Close &nbsp;<kbd>Esc</kbd></button>`;
+        </div>`;
     }
 
     this.overlay.innerHTML = html;
@@ -339,7 +354,10 @@ class UI {
            </div>`;
 
     this.overlay.innerHTML = `
-      <h2>🏥 Doctor's Office</h2>
+      <div class="overlay-header">
+        <h2>🏥 Doctor's Office</h2>
+        <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
+      </div>
       <p class="shop-balance">Your money: <strong>$${player.money}</strong></p>
       <p class="shop-balance">Health: <strong style="color:#ff8888">${heartsDisplay()}</strong>
          (${player.hearts}/${player.maxHearts})</p>
@@ -347,7 +365,6 @@ class UI {
       ${healHtml}
       <div class="section-label">UPGRADES</div>
       ${expandHtml}
-      <button class="close-btn" id="overlay-close">✕ Close &nbsp;<kbd>Esc</kbd></button>
     `;
     this._openOverlay(onClose);
 
@@ -451,11 +468,13 @@ class UI {
     }
 
     this.overlay.innerHTML = `
-      <h2>🏦 Town Bank</h2>
+      <div class="overlay-header">
+        <h2>🏦 Town Bank</h2>
+        <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
+      </div>
       <p class="shop-balance">Your money: <strong>$${player.money}</strong></p>
       <div class="section-label">SELL ORE</div>
       ${itemsHtml}
-      <button class="close-btn" id="overlay-close">✕ Close &nbsp;<kbd>Esc</kbd></button>
     `;
     this._openOverlay(onClose);
 
@@ -477,7 +496,7 @@ class UI {
     this.overlay.innerHTML = `
       <div class="overlay-centered">
         <p class="overlay-emoji">🐉</p>
-        <p class="overlay-title"><em>"Thar be dragons!"</em></p>
+        <p class="overlay-title"><em>"There be dragons!"</em></p>
         <button class="close-btn" id="overlay-close">
           Turn Back
         </button>
@@ -489,14 +508,51 @@ class UI {
   // Outhouse overlay
   openOuthouse(onClose) {
     this.overlay.innerHTML = `
+      <div class="overlay-header">
+        <h2>🚽 Outhouse</h2>
+        <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
+      </div>
+      <p style="text-align:center;font-size:2.5em;margin:24px 0 12px">🚽</p>
+      <p style="text-align:center;font-size:0.95em"><em>"You feel relieved."</em></p>
+    `;
+    this._openOverlay(onClose);
+  }
+
+  // -------------------------------------------------------------------------
+  // Item pickup overlay (non-ore items found in the mine)
+  // -------------------------------------------------------------------------
+
+  showItemPickup(emoji, message, onClose) {
+    this.overlay.innerHTML = `
       <div class="overlay-centered">
-        <p class="overlay-emoji">🚽</p>
-        <p class="overlay-title"><em>"You feel relieved."</em></p>
+        <p class="overlay-emoji">${emoji}</p>
+        <p class="overlay-title">${message}</p>
         <button class="close-btn" id="overlay-close">
-          Leave
+          OK
         </button>
       </div>`;
     this._openOverlay(onClose);
+  }
+
+  // -------------------------------------------------------------------------
+  // "You were warned" game over screen (10 dragon warnings)
+  // -------------------------------------------------------------------------
+
+  showWarned(elapsedTime) {
+    const timeHtml = elapsedTime
+      ? `<p class="overlay-time">Time: ${elapsedTime}</p>`
+      : '';
+    this.overlay.innerHTML = `
+      <div class="overlay-centered">
+        <p class="overlay-emoji">🐉</p>
+        <h2 class="overlay-title" style="color:#ff4444">GAME OVER</h2>
+        <p>You were warned.</p>
+        ${timeHtml}
+        <button class="close-btn" onclick="location.reload()">
+          🔄 Try Again
+        </button>
+      </div>`;
+    this._openOverlay(() => {});
   }
 
   // -------------------------------------------------------------------------

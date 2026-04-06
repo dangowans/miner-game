@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Mini Miner</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <style>
     /* ── Reset & base ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -187,7 +188,7 @@
       margin-top: 10px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 24px;
     }
 
     #controls {
@@ -245,42 +246,120 @@
       color: #555;
       text-align: center;
     }
+
+    /* ── Overlay building header (title + close button) ── */
+    #overlay .overlay-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    #overlay .overlay-header h2 {
+      margin-bottom: 0;
+      flex: 1;
+    }
+    #overlay .overlay-header .close-btn {
+      margin-top: 0;
+      padding: 5px 10px;
+      flex-shrink: 0;
+    }
+
+    /* ── Shop item with icon picture ── */
+    #overlay .shop-item-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    #overlay .shop-item-icon {
+      font-size: 1.8em;
+      line-height: 1.1;
+      flex-shrink: 0;
+    }
+    #overlay .shop-item-text {
+      flex: 1;
+    }
+
+    /* ── Page layout: game area + controls ── */
+    #page-layout {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    #game-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    /* ── Landscape mode: buttons beside the game screen ── */
+    @media (orientation: landscape) and (max-height: 520px) {
+      body {
+        padding: 4px 8px 8px;
+        justify-content: center;
+      }
+      #page-layout {
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+      }
+      #game-area {
+        flex: 1;
+        min-width: 0;
+      }
+      h1 {
+        font-size: 1em;
+        margin-bottom: 4px;
+      }
+      #controls-wrap {
+        margin-top: 0;
+        flex-shrink: 0;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <h1>⛏ MINI MINER</h1>
+  <div id="page-layout">
+    <div id="game-area">
+      <h1>⛏ MINI MINER</h1>
 
-  <div id="game-wrap">
-    <canvas id="canvas" width="816" height="510"></canvas>
-    <div id="overlay"></div>
-  </div>
+      <div id="game-wrap">
+        <canvas id="canvas" width="816" height="510"></canvas>
+        <div id="overlay"></div>
+      </div>
 
-  <!-- HUD -->
-  <div id="hud">
-    <div id="hud-stats">
-      <span id="hud-hearts">♥♥♥</span>
-      <span class="hud-sep">|</span>
-      <span>💰&nbsp;<span id="hud-money">0</span></span>
-      <span class="hud-sep">|</span>
-      <span id="hud-gems-detail">💎 0/10</span>
-      <span id="hud-tools"></span>
+      <!-- HUD -->
+      <div id="hud">
+        <div id="hud-stats">
+          <span id="hud-hearts">♥♥♥</span>
+          <span class="hud-sep">|</span>
+          <span>💰&nbsp;<span id="hud-money">0</span></span>
+          <span class="hud-sep">|</span>
+          <span id="hud-gems-detail">💎 0/10</span>
+          <span id="hud-tools"></span>
+        </div>
+        <span id="hud-msg"></span>
+      </div>
     </div>
-    <span id="hud-msg"></span>
-  </div>
 
-  <!-- Mobile D-pad + Inventory -->
-  <div id="controls-wrap">
-    <div id="controls" aria-label="Game controls">
-      <button id="btn-up"    title="Move up (W / ↑)"    aria-label="Up">▲</button>
-      <button id="btn-left"  title="Move left (A / ←)"  aria-label="Left">◀</button>
-      <button id="btn-right" title="Move right (D / →)" aria-label="Right">▶</button>
-      <button id="btn-down"  title="Move down (S / ↓)"  aria-label="Down">▼</button>
-    </div>
-    <div id="inventory-btns" aria-label="Inventory">
-      <button id="btn-dynamite" title="Place dynamite (X)"             aria-label="Dynamite" disabled>💣</button>
-      <button id="btn-firstaid" title="Use First Aid Kit"              aria-label="First Aid Kit" disabled>🩹</button>
-      <button id="btn-radio"    title="Use radio — teleport to entrance" aria-label="Radio" style="display:none">📻</button>
+    <!-- Mobile D-pad + Inventory -->
+    <div id="controls-wrap">
+      <div id="controls" aria-label="Game controls">
+        <button id="btn-up"    title="Move up (W / ↑)"    aria-label="Up">▲</button>
+        <button id="btn-left"  title="Move left (A / ←)"  aria-label="Left">◀</button>
+        <button id="btn-right" title="Move right (D / →)" aria-label="Right">▶</button>
+        <button id="btn-down"  title="Move down (S / ↓)"  aria-label="Down">▼</button>
+      </div>
+      <div id="inventory-btns" aria-label="Inventory">
+        <button id="btn-dynamite" title="Place dynamite (X)"             aria-label="Dynamite" disabled>💣</button>
+        <button id="btn-firstaid" title="Use First Aid Kit"              aria-label="First Aid Kit" disabled>🩹</button>
+        <button id="btn-radio"    title="Use radio — teleport to entrance" aria-label="Radio" style="display:none">📻</button>
+      </div>
     </div>
   </div>
   <div id="controls-label">Arrow keys / WASD to move &nbsp;·&nbsp; E / Enter to interact &nbsp;·&nbsp; X to place dynamite &nbsp;·&nbsp; 🩹 first aid &nbsp;·&nbsp; 📻 radio (if found)</div>
