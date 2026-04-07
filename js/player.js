@@ -62,6 +62,13 @@ class Player {
     this.dead = false;
     this.won  = false;
 
+    // Family-mode state
+    this.familyMode     = false;
+    this.bankBalance    = 0;     // Bank account balance (separate from cash)
+    this.babyCount      = 0;     // Number of babies
+    this.houseLevel     = 1;     // House expansion level (1 = base)
+    this.suppliesMeter  = 100;   // Household supplies 0–100 %
+
     // HUD message
     this.message      = '';
     this.messageTimer = 0;

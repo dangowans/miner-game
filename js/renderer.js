@@ -141,6 +141,36 @@ class Renderer {
         break;
       }
 
+      case TILE.HOUSE: {
+        // Small family house – peaked roof and front door
+        // Wall
+        ctx.fillStyle = '#c8956a';
+        ctx.fillRect(px + 4, py + 10, ts - 8, ts - 10);
+        // Roof (triangle)
+        ctx.fillStyle = '#6a3a18';
+        ctx.beginPath();
+        ctx.moveTo(px + 1,      py + 10);
+        ctx.lineTo(cx,          py + 2);
+        ctx.lineTo(px + ts - 1, py + 10);
+        ctx.closePath();
+        ctx.fill();
+        // Door
+        ctx.fillStyle = '#4a2200';
+        ctx.fillRect(cx - 3, py + 20, 7, ts - 20);
+        // Window
+        ctx.fillStyle = '#aaddff';
+        ctx.fillRect(px + 6, py + 13, 5, 5);
+        ctx.fillStyle = '#88bbdd';
+        ctx.fillRect(px + 7, py + 14, 3, 1);
+        ctx.fillRect(px + 8, py + 13, 1, 3);
+        // Label
+        ctx.fillStyle = '#4a2200';
+        ctx.font      = 'bold 5px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('HOME', cx, py + ts - 3);
+        break;
+      }
+
       case TILE.DOCTOR: {
         ctx.fillStyle = '#ddf4ff';
         ctx.fillRect(px + 7, py + 8, ts - 14, ts - 8);

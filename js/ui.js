@@ -78,6 +78,15 @@ class UI {
         : `💣×${player.dynamiteCount}`);
     }
     if (player.firstAidKits > 0) tools.push(`🩹×${player.firstAidKits}`);
+
+    // Family mode status (appended to tool row)
+    if (player.familyMode) {
+      const supPct  = Math.round(player.suppliesMeter);
+      const barFull = Math.round(supPct / 10);
+      const supBar  = '█'.repeat(barFull) + '░'.repeat(10 - barFull);
+      tools.push(`| 🏦$${player.bankBalance} 🏠[${supBar}]${supPct}%`);
+    }
+
     this._hudTools.textContent = tools.join(' ');
 
     // Dynamite button: enabled only when the player has dynamite
@@ -448,7 +457,7 @@ class UI {
     this._openOverlay(() => {});
   }
 
-  showWin(elapsedTime) {
+  showWin(elapsedTime, onFamilyMode) {
     const timeHtml = elapsedTime
       ? `<p class="overlay-time">Time: ${elapsedTime}</p>`
       : '';
@@ -457,13 +466,32 @@ class UI {
         <p class="overlay-emoji">💍🎉</p>
         <h2 class="overlay-title" style="color:#f5c842">YOU WIN!</h2>
         <p>You found the ring and won her heart!</p>
+        <p style="color:#f5c842"><em>💛 "Yes! A thousand times yes!"</em></p>
         ${timeHtml}
-        <p style="color:#aaa;font-size:0.85em">Thanks for playing Mini Miner.</p>
-        <button class="close-btn" onclick="location.reload()">
+        <p style="color:#aaa;font-size:0.85em;margin-top:4px">What would you like to do next?</p>
+        <button class="close-btn" id="family-mode-btn" style="border-color:#f5c842;color:#f5c842">
+          👨‍👩‍👧‍👦 Enter Family Mode
+        </button>
+        <button class="close-btn" id="play-again-btn" style="margin-top:4px">
           🎊 Play Again
         </button>
       </div>`;
     this._openOverlay(() => {});
+
+    const familyBtn = document.getElementById('family-mode-btn');
+    if (familyBtn) {
+      familyBtn.addEventListener('click', () => {
+        this._closeOverlay();
+        if (onFamilyMode) onFamilyMode();
+      });
+    }
+    const playAgainBtn = document.getElementById('play-again-btn');
+    if (playAgainBtn) {
+      playAgainBtn.addEventListener('click', () => {
+        Storage.clear();
+        location.reload();
+      });
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -501,6 +529,30 @@ class UI {
       itemsHtml = `<div class="shop-item disabled">No ore to sell — go mining!</div>`;
     }
 
+    // Bank account section (family mode only)
+    let accountHtml = '';
+    if (player.familyMode) {
+      const depositStep  = 50;
+      const canDeposit   = player.money >= depositStep;
+      const canWithdraw  = player.bankBalance >= depositStep;
+      const depositCls   = canDeposit  ? 'shop-item buyable' : 'shop-item disabled';
+      const withdrawCls  = canWithdraw ? 'shop-item buyable' : 'shop-item disabled';
+      const depositNote  = canDeposit  ? '' : ` <em class="short">(need $${depositStep - player.money} more)</em>`;
+      const withdrawNote = canWithdraw ? '' : ` <em class="short">(balance too low)</em>`;
+      accountHtml = `
+        <div class="section-label">BANK ACCOUNT</div>
+        <p style="font-size:0.88em;margin:4px 0 8px">
+          Account balance: <strong style="color:#f5c842">$${player.bankBalance}</strong>
+          <small style="color:#888"> — taxes are debited from here automatically</small>
+        </p>
+        <div class="${depositCls}" id="deposit-btn" data-amount="${depositStep}">
+          💳 Deposit $${depositStep}${depositNote}
+        </div>
+        <div class="${withdrawCls}" id="withdraw-btn" data-amount="${depositStep}">
+          💸 Withdraw $${depositStep}${withdrawNote}
+        </div>`;
+    }
+
     this.overlay.innerHTML = `
       <div class="overlay-header">
         <h2>🏦 Town Bank</h2>
@@ -509,6 +561,7 @@ class UI {
       <p class="shop-balance">Your money: <strong>$${player.money}</strong></p>
       <div class="section-label">SELL ORE</div>
       ${itemsHtml}
+      ${accountHtml}
     `;
     this._openOverlay(onClose);
 
@@ -521,13 +574,219 @@ class UI {
         this._closeOverlay();
       });
     }
+
+    const depositBtn = document.getElementById('deposit-btn');
+    if (depositBtn && depositBtn.classList.contains('buyable')) {
+      depositBtn.addEventListener('click', () => {
+        const amt = parseInt(depositBtn.dataset.amount, 10);
+        if (player.money < amt) return;
+        player.money       -= amt;
+        player.bankBalance += amt;
+        player.setMessage(`💳 Deposited $${amt} into bank account. Balance: $${player.bankBalance}`);
+        sounds.playTransaction();
+        this._closeOverlay();
+      });
+    }
+
+    const withdrawBtn = document.getElementById('withdraw-btn');
+    if (withdrawBtn && withdrawBtn.classList.contains('buyable')) {
+      withdrawBtn.addEventListener('click', () => {
+        const amt = parseInt(withdrawBtn.dataset.amount, 10);
+        if (player.bankBalance < amt) return;
+        player.bankBalance -= amt;
+        player.money       += amt;
+        player.setMessage(`💸 Withdrew $${amt} from bank account. Balance: $${player.bankBalance}`);
+        sounds.playTransaction();
+        this._closeOverlay();
+      });
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // House overlay (family mode)
+  // -------------------------------------------------------------------------
+
+  openHouse(player, onClose) {
+    const taxAmount    = FAMILY_BASE_TAX
+      + (player.houseLevel - 1) * FAMILY_TAX_PER_LEVEL
+      + player.babyCount        * FAMILY_TAX_PER_BABY;
+
+    const supPct  = Math.round(player.suppliesMeter);
+    const barFull = Math.round(supPct / 10);
+    const supBar  = '█'.repeat(barFull) + '░'.repeat(10 - barFull);
+    const supColor = supPct > 40 ? '#88cc44' : supPct > 15 ? '#f5c842' : '#ff4444';
+
+    // House expand
+    const canExpand      = player.houseLevel < HOUSE_MAX_LEVEL && player.money >= HOUSE_UPGRADE_COST;
+    const maxLevel       = player.houseLevel >= HOUSE_MAX_LEVEL;
+    const expandNote     = maxLevel ? ' <em>(maximum size reached)</em>'
+      : player.money < HOUSE_UPGRADE_COST
+        ? ` <em class="short">(need $${HOUSE_UPGRADE_COST - player.money} more)</em>` : '';
+    const expandCls      = canExpand ? 'shop-item buyable' : 'shop-item disabled';
+
+    // Baby
+    const canHaveBaby    = player.babyCount < MAX_BABIES && player.money >= BABY_COST;
+    const maxBabies      = player.babyCount >= MAX_BABIES;
+    const babyNote       = maxBabies ? ' <em>(maximum babies reached)</em>'
+      : player.money < BABY_COST
+        ? ` <em class="short">(need $${BABY_COST - player.money} more)</em>` : '';
+    const babyCls        = canHaveBaby ? 'shop-item buyable' : 'shop-item disabled';
+
+    // Supplies refill
+    const canRefill      = player.suppliesMeter < 100 && player.money >= SUPPLIES_REFILL_COST;
+    const refillNote     = player.suppliesMeter >= 100 ? ' <em>(supplies full)</em>'
+      : player.money < SUPPLIES_REFILL_COST
+        ? ` <em class="short">(need $${SUPPLIES_REFILL_COST - player.money} more)</em>` : '';
+    const refillCls      = canRefill ? 'shop-item buyable' : 'shop-item disabled';
+
+    const houseEmoji = ['🏠', '🏡', '🏘️', '🏰'][Math.min(player.houseLevel - 1, 3)];
+    const babyEmojis = ['👶', '👶👶', '👶👶👶', '👶👶👶👶'][Math.max(0, player.babyCount - 1)] || '—';
+
+    this.overlay.innerHTML = `
+      <div class="overlay-header">
+        <h2>${houseEmoji} Your Home</h2>
+        <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
+      </div>
+      <p class="shop-balance">Your money: <strong>$${player.money}</strong></p>
+      <p style="font-size:0.88em;margin:2px 0 4px">
+        House level: <strong>${player.houseLevel} / ${HOUSE_MAX_LEVEL}</strong>
+        &nbsp;·&nbsp; Babies: <strong>${player.babyCount}</strong> ${player.babyCount > 0 ? babyEmojis : ''}
+      </p>
+      <p style="font-size:0.88em;margin:2px 0 8px">
+        Taxes every 30 min: <span class="price">$${taxAmount}</span>
+        <small style="color:#888"> (paid from bank account)</small>
+      </p>
+
+      <div class="section-label">SUPPLIES</div>
+      <p style="font-size:0.88em;margin:4px 0 6px">
+        👱‍♀️ <em>"We need food and supplies!"</em><br>
+        Supplies: <strong style="color:${supColor}">[${supBar}] ${supPct}%</strong>
+      </p>
+      <div class="${refillCls}" id="refill-btn">
+        🛒 Buy supplies (+${SUPPLIES_REFILL_AMOUNT}%) — <span class="price">$${SUPPLIES_REFILL_COST}</span>${refillNote}
+      </div>
+
+      <div class="section-label">EXPAND HOME</div>
+      <div class="${expandCls}" id="expand-house-btn">
+        🏠 Expand house (Level ${player.houseLevel} → ${player.houseLevel + 1}) — <span class="price">$${HOUSE_UPGRADE_COST}</span>${expandNote}
+      </div>
+
+      <div class="section-label">FAMILY</div>
+      <div class="${babyCls}" id="baby-btn">
+        👶 Have a baby (${player.babyCount}/${MAX_BABIES}) — <span class="price">$${BABY_COST}</span>${babyNote}
+        <br><small>Each baby increases tax by $${FAMILY_TAX_PER_BABY}/cycle and speeds up supply depletion.</small>
+      </div>
+    `;
+    this._openOverlay(onClose);
+
+    const refillBtn = document.getElementById('refill-btn');
+    if (refillBtn && refillBtn.classList.contains('buyable')) {
+      refillBtn.addEventListener('click', () => {
+        if (player.money < SUPPLIES_REFILL_COST) return;
+        player.money        -= SUPPLIES_REFILL_COST;
+        player.suppliesMeter = Math.min(100, player.suppliesMeter + SUPPLIES_REFILL_AMOUNT);
+        player.setMessage(`🛒 Supplies restocked! (${Math.round(player.suppliesMeter)}% full)`);
+        sounds.playTransaction();
+        this._closeOverlay();
+      });
+    }
+
+    const expandBtn = document.getElementById('expand-house-btn');
+    if (expandBtn && expandBtn.classList.contains('buyable')) {
+      expandBtn.addEventListener('click', () => {
+        if (player.money < HOUSE_UPGRADE_COST || player.houseLevel >= HOUSE_MAX_LEVEL) return;
+        player.money      -= HOUSE_UPGRADE_COST;
+        player.houseLevel += 1;
+        player.setMessage(`🏠 House expanded to level ${player.houseLevel}!`);
+        sounds.playTransaction();
+        this._closeOverlay();
+      });
+    }
+
+    const babyBtn = document.getElementById('baby-btn');
+    if (babyBtn && babyBtn.classList.contains('buyable')) {
+      babyBtn.addEventListener('click', () => {
+        if (player.money < BABY_COST || player.babyCount >= MAX_BABIES) return;
+        player.money     -= BABY_COST;
+        player.babyCount += 1;
+        player.setMessage(`👶 Baby #${player.babyCount} welcomed to the family!`);
+        sounds.playTransaction();
+        this._closeOverlay();
+      });
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Family-mode game-over screens
+  // -------------------------------------------------------------------------
+
+  /** Helper – builds the "what you had" summary HTML. */
+  _familyStatsHtml(stats) {
+    const itemList = stats.items.length
+      ? stats.items.join(' · ')
+      : '—';
+    const babies = stats.babyCount > 0
+      ? '👶'.repeat(stats.babyCount)
+      : 'none';
+    return `
+      <p style="font-size:0.82em;color:#aaa;margin:4px 0 0">
+        💰 Cash: $${stats.cash}
+        &nbsp;·&nbsp; 🏦 Bank: $${stats.bankBalance}
+        &nbsp;·&nbsp; ⚖️ Net worth: <strong>$${stats.netWorth}</strong>
+      </p>
+      <p style="font-size:0.82em;color:#aaa;margin:2px 0">
+        🎒 Ore carried: ${stats.gemCarried} (value $${stats.gemValue})
+      </p>
+      <p style="font-size:0.82em;color:#aaa;margin:2px 0">
+        🏠 House level: ${stats.houseLevel} &nbsp;·&nbsp; Babies: ${babies}
+      </p>
+      <p style="font-size:0.82em;color:#aaa;margin:2px 0 6px">
+        🧰 Items: ${itemList}
+      </p>`;
+  }
+
+  showEviction(stats) {
+    const timeHtml = stats.elapsedTime
+      ? `<p class="overlay-time">Time: ${stats.elapsedTime}</p>`
+      : '';
+    this.overlay.innerHTML = `
+      <div class="overlay-centered">
+        <p class="overlay-emoji">🏚️</p>
+        <h2 class="overlay-title" style="color:#ff4444">EVICTED!</h2>
+        <p>You fell behind on your taxes and the bailiff came knocking.</p>
+        <p style="color:#ff8888"><em>"Pack your things and get out."</em></p>
+        ${timeHtml}
+        ${this._familyStatsHtml(stats)}
+        <button class="close-btn" onclick="location.reload()">
+          🔄 Try Again
+        </button>
+      </div>`;
+    this._openOverlay(() => {});
+  }
+
+  showDivorce(stats) {
+    const timeHtml = stats.elapsedTime
+      ? `<p class="overlay-time">Time: ${stats.elapsedTime}</p>`
+      : '';
+    this.overlay.innerHTML = `
+      <div class="overlay-centered">
+        <p class="overlay-emoji">💔</p>
+        <h2 class="overlay-title" style="color:#ff4444">DIVORCED!</h2>
+        <p>You let the supplies run dry for too long.</p>
+        <p style="color:#ff8888"><em>"I can't do this anymore. The kids are hungry. We're done."</em></p>
+        ${timeHtml}
+        ${this._familyStatsHtml(stats)}
+        <button class="close-btn" onclick="location.reload()">
+          🔄 Try Again
+        </button>
+      </div>`;
+    this._openOverlay(() => {});
   }
 
   // -------------------------------------------------------------------------
   // -------------------------------------------------------------------------
 
-  openDragons(onClose) {
-    this.overlay.innerHTML = `
+  openDragons(onClose) {    this.overlay.innerHTML = `
       <div class="overlay-centered">
         <p class="overlay-emoji">🐉</p>
         <p class="overlay-title"><em>"There be dragons!"</em></p>

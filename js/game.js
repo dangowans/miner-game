@@ -51,6 +51,14 @@ class Game {
     this._dynamites = [];   // Array of { x, y, frames } for lit dynamite placements
     this._dragonWarnings = 0;  // Count of times the player has been warned about dragons
 
+    // Family-mode timers (wall-clock Date.now() epoch timestamps; 0 = inactive)
+    this._lastTaxTime          = 0;
+    this._taxGraceStart        = 0;
+    this._taxInGrace           = false;
+    this._lastSuppliesTickTime = 0;
+    this._suppliesGraceStart   = 0;
+    this._suppliesInGrace      = false;
+
     // Restore a previous session if one was saved
     const saved = Storage.load();
     if (saved) {
@@ -91,6 +99,13 @@ class Game {
   // -------------------------------------------------------------------------
 
   _update(_dt) {
+    // Tick family-mode timers regardless of overlay state so deadlines are real-time,
+    // but only when no overlay is blocking interaction.
+    if (this.player.familyMode && this.state === 'playing' && !this.ui.overlayOpen) {
+      this._tickFamilyMode();
+      if (this.state !== 'playing') return;
+    }
+
     if (this.state !== 'playing') return;
     if (this.ui.overlayOpen)      return;
 
@@ -794,13 +809,25 @@ class Game {
       return;
     }
 
-    if (checkTile(TILE.BAR)) {
+    if (checkTile(TILE.BAR) || checkTile(TILE.HOUSE)) {
+      // In family mode the house stands where the bar was – ignore re-entry to the bar
+      if (checkTile(TILE.HOUSE)) {
+        this.state = 'overlay';
+        this.ui.openHouse(p, () => {
+          this.state = 'playing';
+          this.input.clear();
+          this.ui.updateHUD(p);
+        });
+        return;
+      }
       this.state = 'overlay';
       this.ui.openBar(p, (won) => {
         if (won) {
-          Storage.clear();
           this.state = 'won';
-          this.ui.showWin(this._elapsedTimeLabel());
+          this.ui.showWin(this._elapsedTimeLabel(), () => {
+            // "Enter Family Mode" chosen
+            this._activateFamilyMode();
+          });
         } else {
           this.state = 'playing';
           this.input.clear();
@@ -832,6 +859,161 @@ class Game {
 
     if (checkTile(TILE.MINE_ENT)) {
       p.setMessage('⛏ Walk down (↓ / S) to enter the mine.');
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Family Mode
+  // -------------------------------------------------------------------------
+
+  /** Activate family mode: replace the bar with a house, init timers. */
+  _activateFamilyMode() {
+    const p = this.player;
+    p.familyMode    = true;
+    p.bankBalance   = 0;
+    p.babyCount     = 0;
+    p.houseLevel    = 1;
+    p.suppliesMeter = 100;
+
+    // Replace bar with house tile
+    this.world.setTile(BAR_X, 1, TILE.HOUSE);
+
+    // Initialise wall-clock timers
+    const now = Date.now();
+    this._lastTaxTime          = now;
+    this._taxGraceStart        = 0;
+    this._taxInGrace           = false;
+    this._lastSuppliesTickTime = now;
+    this._suppliesGraceStart   = 0;
+    this._suppliesInGrace      = false;
+
+    // Place player on pavement near the house
+    p.x = BAR_X + 1;
+    p.y = PLAYER_START_Y;
+
+    this.state = 'playing';
+    this.input.clear();
+    p.setMessage('👨‍👩‍👧‍👦 Family Mode! Visit your new home and the bank to get started.');
+    this.ui.updateHUD(p);
+    Storage.save(p, this.world, this);
+  }
+
+  /** Compute the current tax bill based on house level and babies. */
+  _calcTaxAmount() {
+    const p = this.player;
+    return FAMILY_BASE_TAX
+      + (p.houseLevel - 1) * FAMILY_TAX_PER_LEVEL
+      + p.babyCount        * FAMILY_TAX_PER_BABY;
+  }
+
+  /** Called each frame while in family mode to check tax + supplies deadlines. */
+  _tickFamilyMode() {
+    const now = Date.now();
+
+    // ── Tax collection ────────────────────────────────────────────────────
+    if (this._lastTaxTime > 0 && now - this._lastTaxTime >= FAMILY_TAX_INTERVAL_MS) {
+      this._collectTaxes(now);
+      if (this.state !== 'playing') return;
+    } else if (this._taxInGrace && now - this._taxGraceStart >= FAMILY_TAX_GRACE_MS) {
+      this._familyGameOver('eviction');
+      return;
+    }
+
+    // ── Supplies depletion ────────────────────────────────────────────────
+    if (this._lastSuppliesTickTime > 0) {
+      const elapsed = now - this._lastSuppliesTickTime;
+      const ticks   = Math.floor(elapsed / FAMILY_SUPPLIES_TICK_MS);
+      if (ticks > 0) {
+        const p        = this.player;
+        const ratePerTick = 1 + p.babyCount * FAMILY_SUPPLIES_PER_BABY;
+        p.suppliesMeter   = Math.max(0, p.suppliesMeter - ratePerTick * ticks);
+        this._lastSuppliesTickTime += ticks * FAMILY_SUPPLIES_TICK_MS;
+
+        if (p.suppliesMeter <= 0 && !this._suppliesInGrace) {
+          this._suppliesInGrace    = true;
+          this._suppliesGraceStart = now;
+          p.setMessage('⚠️ You are out of supplies! Visit your home and pay your wife — 10 minutes before divorce!');
+        }
+      }
+    }
+
+    if (this._suppliesInGrace) {
+      const p = this.player;
+      if (p.suppliesMeter > 0) {
+        // Supplies refilled; clear grace
+        this._suppliesInGrace  = false;
+        this._suppliesGraceStart = 0;
+      } else if (Date.now() - this._suppliesGraceStart >= FAMILY_SUPPLIES_GRACE_MS) {
+        this._familyGameOver('divorce');
+        return;
+      }
+    }
+  }
+
+  /** Try to collect taxes from the bank account. */
+  _collectTaxes(now) {
+    const p      = this.player;
+    const amount = this._calcTaxAmount();
+
+    if (p.bankBalance >= amount) {
+      p.bankBalance -= amount;
+      this._lastTaxTime = now;
+      this._taxInGrace  = false;
+      this._taxGraceStart = 0;
+      p.setMessage(`🏠 Taxes paid: $${amount}. Bank balance: $${p.bankBalance}`);
+    } else {
+      const interest = Math.ceil(amount * FAMILY_TAX_INTEREST);
+      const total    = amount + interest;
+      if (!this._taxInGrace) {
+        this._taxInGrace    = true;
+        this._taxGraceStart = now;
+        this._lastTaxTime   = now;   // Reset so it doesn't re-fire immediately
+        p.setMessage(`⚠️ Tax bill of $${total} (incl. ${Math.round(FAMILY_TAX_INTEREST * 100)}% interest) due! Deposit funds at the Bank within 10 minutes!`);
+      }
+    }
+  }
+
+  /** Build a stats snapshot for the family-mode game-over screens. */
+  _collectFamilyStats() {
+    const p       = this.player;
+    const gemTotal = p.gems.reduce((s, g) => s + (GEM_VALUE[g] || 0), 0);
+    const items   = [];
+    if (p.hasShovel)       items.push('⛏ Shovel');
+    if (p.hasPick)         items.push(`⚒ Pick (×${p.pickUses})`);
+    if (p.hasBucket)       items.push(`🪣 Bucket (×${p.bucketUses})`);
+    if (p.hasExtinguisher) items.push(`🧯 Extinguisher (×${p.extinguisherUses})`);
+    if (p.hasBag)          items.push('🎒 Large Bag');
+    if (p.hasRing)         items.push('💍 Ring');
+    if (p.hasLantern)      items.push('🔦 Lantern');
+    if (p.hasRadio)        items.push('📻 Radio');
+    if (p.dynamiteCount)   items.push(`💣 Dynamite ×${p.dynamiteCount}`);
+    if (p.firstAidKits)    items.push(`🩹 First Aid ×${p.firstAidKits}`);
+    for (const si of p.specialItems) {
+      const icons = { rubber_boot: '🥾', pocket_watch: '⌚', glasses: '🕶️', skull: '💀', canteen: '🧴', lunchbox: '🍱' };
+      if (icons[si]) items.push(icons[si]);
+    }
+    return {
+      cash:        p.money,
+      bankBalance: p.bankBalance,
+      gemCarried:  p.gemCount,
+      gemValue:    gemTotal,
+      netWorth:    p.money + p.bankBalance + gemTotal,
+      houseLevel:  p.houseLevel,
+      babyCount:   p.babyCount,
+      items,
+      elapsedTime: this._elapsedTimeLabel(),
+    };
+  }
+
+  /** Trigger a family-mode game over. */
+  _familyGameOver(reason) {
+    Storage.clear();
+    this.state       = 'dead';
+    const stats      = this._collectFamilyStats();
+    if (reason === 'eviction') {
+      this.ui.showEviction(stats);
+    } else {
+      this.ui.showDivorce(stats);
     }
   }
 
