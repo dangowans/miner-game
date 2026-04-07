@@ -898,12 +898,11 @@ class Game {
     Storage.save(p, this.world, this);
   }
 
-  /** Compute the current tax bill based on house level and babies. */
+  /** Compute the current tax bill based on house level. */
   _calcTaxAmount() {
     const p = this.player;
     return FAMILY_BASE_TAX
-      + (p.houseLevel - 1) * FAMILY_TAX_PER_LEVEL
-      + p.babyCount        * FAMILY_TAX_PER_BABY;
+      + (p.houseLevel - 1) * FAMILY_TAX_PER_LEVEL;
   }
 
   /** Called each frame while in family mode to check tax + supplies deadlines. */

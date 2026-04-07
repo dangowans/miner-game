@@ -608,8 +608,7 @@ class UI {
 
   openHouse(player, onClose) {
     const taxAmount    = FAMILY_BASE_TAX
-      + (player.houseLevel - 1) * FAMILY_TAX_PER_LEVEL
-      + player.babyCount        * FAMILY_TAX_PER_BABY;
+      + (player.houseLevel - 1) * FAMILY_TAX_PER_LEVEL;
 
     const supPct  = Math.round(player.suppliesMeter);
     const barFull = Math.round(supPct / 10);
@@ -674,7 +673,7 @@ class UI {
       <div class="section-label">FAMILY</div>
       <div class="${babyCls}" id="baby-btn">
         👶 Have a baby (${player.babyCount}/${MAX_BABIES}) — <span class="price">$${BABY_COST}</span>${babyNote}
-        <br><small>Each baby increases tax by $${FAMILY_TAX_PER_BABY}/cycle and speeds up supply depletion.</small>
+        <br><small>Each baby speeds up supply depletion.</small>
       </div>
     `;
     this._openOverlay(onClose);

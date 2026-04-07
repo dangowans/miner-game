@@ -205,14 +205,13 @@ const FAMILY_TAX_INTERVAL_MS   = 30 * 60 * 1000;   // Taxes due every 30 minutes
 const FAMILY_TAX_GRACE_MS      = 10 * 60 * 1000;   // 10-minute grace before eviction
 const FAMILY_BASE_TAX          = 50;                // Base tax per cycle
 const FAMILY_TAX_PER_LEVEL     = 25;               // Extra tax per extra house level
-const FAMILY_TAX_PER_BABY      = 20;               // Extra tax per baby
 const FAMILY_TAX_INTEREST      = 0.25;             // 25 % surcharge if bank is short
 
 const FAMILY_SUPPLIES_TICK_MS  = 60 * 1000;        // Supplies deplete 1 % per minute
 const FAMILY_SUPPLIES_GRACE_MS = 10 * 60 * 1000;   // 10-minute grace before divorce
 const FAMILY_SUPPLIES_PER_BABY = 0.5;              // Extra % depletion per minute per baby
 
-const HOUSE_UPGRADE_COST       = 200;   // Cost to expand house (per level)
+const HOUSE_UPGRADE_COST       = 500;   // Cost to expand house (per level)
 const HOUSE_MAX_LEVEL          = 4;     // Maximum house expansion level
 const BABY_COST                = 150;   // Cost to have each baby
 const MAX_BABIES               = 4;     // Maximum number of babies
