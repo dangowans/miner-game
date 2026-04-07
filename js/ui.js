@@ -786,7 +786,8 @@ class UI {
   // -------------------------------------------------------------------------
   // -------------------------------------------------------------------------
 
-  openDragons(onClose) {    this.overlay.innerHTML = `
+  openDragons(onClose) {
+    this.overlay.innerHTML = `
       <div class="overlay-centered">
         <p class="overlay-emoji">🐉</p>
         <p class="overlay-title"><em>"There be dragons!"</em></p>
