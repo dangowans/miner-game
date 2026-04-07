@@ -142,10 +142,13 @@ class Renderer {
       }
 
       case TILE.HOUSE: {
-        // Small family house – peaked roof and front door
+        // Small family house – visually expands with player.houseLevel
+        const lvl = (player && player.houseLevel) || 1;
+
         // Wall
         ctx.fillStyle = '#c8956a';
         ctx.fillRect(px + 4, py + 10, ts - 8, ts - 10);
+
         // Roof (triangle)
         ctx.fillStyle = '#6a3a18';
         ctx.beginPath();
@@ -154,15 +157,47 @@ class Renderer {
         ctx.lineTo(px + ts - 1, py + 10);
         ctx.closePath();
         ctx.fill();
+
+        // Level 3+: dormer window on the roof (above door)
+        if (lvl >= 3) {
+          ctx.fillStyle = '#6a3a18';
+          ctx.beginPath();
+          ctx.moveTo(cx - 4, py + 10);
+          ctx.lineTo(cx,     py + 5);
+          ctx.lineTo(cx + 4, py + 10);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = '#aaddff';
+          ctx.fillRect(cx - 2, py + 7, 5, 3);
+        }
+
         // Door
         ctx.fillStyle = '#4a2200';
         ctx.fillRect(cx - 3, py + 20, 7, ts - 20);
-        // Window
+
+        // Left window (always present)
         ctx.fillStyle = '#aaddff';
         ctx.fillRect(px + 6, py + 13, 5, 5);
         ctx.fillStyle = '#88bbdd';
         ctx.fillRect(px + 7, py + 14, 3, 1);
         ctx.fillRect(px + 8, py + 13, 1, 3);
+
+        // Level 2+: right window beside the door
+        if (lvl >= 2) {
+          ctx.fillStyle = '#aaddff';
+          ctx.fillRect(px + ts - 11, py + 13, 5, 5);
+          ctx.fillStyle = '#88bbdd';
+          ctx.fillRect(px + ts - 10, py + 14, 3, 1);
+          ctx.fillRect(px + ts - 9,  py + 13, 1, 3);
+        }
+
+        // Level 4: upper-storey windows (above ground-floor windows)
+        if (lvl >= 4) {
+          ctx.fillStyle = '#aaddff';
+          ctx.fillRect(px + 6, py + 11, 4, 3);
+          ctx.fillRect(px + ts - 11, py + 11, 4, 3);
+        }
+
         // Label
         ctx.fillStyle = '#4a2200';
         ctx.font      = 'bold 5px monospace';

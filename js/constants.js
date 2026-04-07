@@ -211,9 +211,9 @@ const FAMILY_SUPPLIES_TICK_MS  = 60 * 1000;        // Supplies deplete 1 % per m
 const FAMILY_SUPPLIES_GRACE_MS = 10 * 60 * 1000;   // 10-minute grace before divorce
 const FAMILY_SUPPLIES_PER_BABY = 0.5;              // Extra % depletion per minute per baby
 
-const HOUSE_UPGRADE_COST       = 500;   // Cost to expand house (per level)
+const HOUSE_UPGRADE_COST       = 1000;  // Cost to expand house (per level)
 const HOUSE_MAX_LEVEL          = 4;     // Maximum house expansion level
-const BABY_COST                = 150;   // Cost to have each baby
+const BABY_COST                = 500;   // Cost to have each baby
 const MAX_BABIES               = 4;     // Maximum number of babies
 const SUPPLIES_REFILL_COST     = 40;    // Cost to refill supplies by 25 %
 const SUPPLIES_REFILL_AMOUNT   = 25;    // Percent refilled per payment

@@ -875,6 +875,9 @@ class Game {
     p.houseLevel    = 1;
     p.suppliesMeter = 100;
 
+    // Deduct marriage payment
+    p.money -= JEWELER_MONEY_COST;
+
     // Replace bar with house tile
     this.world.setTile(BAR_X, 1, TILE.HOUSE);
 
