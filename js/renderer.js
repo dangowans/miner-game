@@ -580,6 +580,32 @@ class Renderer {
         ctx.fillText('📿', cx, cy + 8);
         break;
       }
+
+      case TILE.WORKER: {
+        // Orange-brown shed façade
+        ctx.fillStyle = '#c87840';
+        ctx.fillRect(px + 4, py + 8, ts - 8, ts - 8);
+        // Roof triangle
+        ctx.fillStyle = '#7a4010';
+        ctx.beginPath();
+        ctx.moveTo(px, py + 10);
+        ctx.lineTo(cx, py + 2);
+        ctx.lineTo(px + ts, py + 10);
+        ctx.fill();
+        // Door
+        ctx.fillStyle = '#4a2200';
+        ctx.fillRect(cx - 3, py + 20, 7, ts - 20);
+        // Hard-hat icon
+        ctx.font      = 'bold 6px monospace';
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.fillText('🏗️', cx, py + 17);
+        // Label
+        ctx.fillStyle = '#4a2200';
+        ctx.font      = 'bold 5px monospace';
+        ctx.fillText('WORKER', cx, py + ts - 3);
+        break;
+      }
     }
 
     // ── Sky horizon for the building-facade row ───────────────────────────────

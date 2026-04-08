@@ -606,6 +606,68 @@ class UI {
   }
 
   // -------------------------------------------------------------------------
+  // Construction worker overlay
+  // -------------------------------------------------------------------------
+
+  openWorker(player, { onClose, onBuildElevator }) {
+    const canExpand   = player.houseLevel < HOUSE_MAX_LEVEL && player.money >= HOUSE_UPGRADE_COST;
+    const maxLevel    = player.houseLevel >= HOUSE_MAX_LEVEL;
+    const expandNote  = maxLevel ? ' <em>(maximum size reached)</em>'
+      : player.money < HOUSE_UPGRADE_COST
+        ? ` <em class="short">(need $${HOUSE_UPGRADE_COST - player.money} more)</em>` : '';
+    const expandCls   = (canExpand && player.familyMode) ? 'shop-item buyable' : 'shop-item disabled';
+    const expandAvail = player.familyMode ? '' : ' <em>(available in family mode)</em>';
+
+    const elevatorAlready = player.hasElevator;
+    const canElevator     = !elevatorAlready && player.money >= ELEVATOR_COST;
+    const elevatorNote    = elevatorAlready ? ' <em>(already built)</em>'
+      : player.money < ELEVATOR_COST
+        ? ` <em class="short">(need $${ELEVATOR_COST - player.money} more)</em>` : '';
+    const elevatorCls     = canElevator ? 'shop-item buyable' : 'shop-item disabled';
+
+    this.overlay.innerHTML = `
+      <div class="overlay-header">
+        <h2>🏗️ Construction Worker</h2>
+        <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
+      </div>
+      <p class="shop-balance">Your money: <strong>$${player.money}</strong></p>
+
+      <div class="section-label">HOME EXPANSION</div>
+      <div class="${expandCls}" id="worker-expand-btn">
+        🏠 Expand house (Level ${player.houseLevel} → ${player.houseLevel + 1}) — <span class="price">$${HOUSE_UPGRADE_COST}</span>${expandNote}${expandAvail}
+      </div>
+
+      <div class="section-label">ELEVATOR</div>
+      <div class="${elevatorCls}" id="worker-elevator-btn">
+        🛗 Build elevator shaft (x=21) — <span class="price">$${ELEVATOR_COST}</span>${elevatorNote}
+        <br><small>Pre-digs a shaft next to the mine entrance for fast vertical travel.</small>
+      </div>
+    `;
+    this._openOverlay(onClose);
+
+    const expandBtn = document.getElementById('worker-expand-btn');
+    if (expandBtn && expandBtn.classList.contains('buyable')) {
+      expandBtn.addEventListener('click', () => {
+        if (!player.familyMode || player.money < HOUSE_UPGRADE_COST || player.houseLevel >= HOUSE_MAX_LEVEL) return;
+        player.money      -= HOUSE_UPGRADE_COST;
+        player.houseLevel += 1;
+        player.setMessage(`🏠 House expanded to level ${player.houseLevel}!`);
+        sounds.playTransaction();
+        this._closeOverlay();
+      });
+    }
+
+    const elevatorBtn = document.getElementById('worker-elevator-btn');
+    if (elevatorBtn && elevatorBtn.classList.contains('buyable')) {
+      elevatorBtn.addEventListener('click', () => {
+        if (player.hasElevator || player.money < ELEVATOR_COST) return;
+        this._closeOverlay();
+        if (onBuildElevator) onBuildElevator();
+      });
+    }
+  }
+
+  // -------------------------------------------------------------------------
   // House overlay (family mode)
   // -------------------------------------------------------------------------
 
@@ -618,13 +680,8 @@ class UI {
     const supBar  = '█'.repeat(barFull) + '░'.repeat(10 - barFull);
     const supColor = supPct > 40 ? '#88cc44' : supPct > 15 ? '#f5c842' : '#ff4444';
 
-    // House expand
-    const canExpand      = player.houseLevel < HOUSE_MAX_LEVEL && player.money >= HOUSE_UPGRADE_COST;
-    const maxLevel       = player.houseLevel >= HOUSE_MAX_LEVEL;
-    const expandNote     = maxLevel ? ' <em>(maximum size reached)</em>'
-      : player.money < HOUSE_UPGRADE_COST
-        ? ` <em class="short">(need $${HOUSE_UPGRADE_COST - player.money} more)</em>` : '';
-    const expandCls      = canExpand ? 'shop-item buyable' : 'shop-item disabled';
+    // House expand is now at the construction worker — only show status here
+    const maxLevel = player.houseLevel >= HOUSE_MAX_LEVEL;
 
     // Baby – necklaces are delivered automatically on house entry; show status only
     const maxBabies = player.babyCount >= MAX_BABIES;
@@ -668,11 +725,6 @@ class UI {
         🛒 Buy ${foodLabel} (+${SUPPLIES_REFILL_AMOUNT}%) — <span class="price">$${SUPPLIES_REFILL_COST}</span>${refillNote}
       </div>
 
-      <div class="section-label">EXPAND HOME</div>
-      <div class="${expandCls}" id="expand-house-btn">
-        🏠 Expand house (Level ${player.houseLevel} → ${player.houseLevel + 1}) — <span class="price">$${HOUSE_UPGRADE_COST}</span>${expandNote}
-      </div>
-
       <div class="section-label">FAMILY</div>
       <p style="font-size:0.88em;margin:4px 0 6px">
         Babies: <strong>${player.babyCount} / ${MAX_BABIES}</strong>
@@ -690,18 +742,6 @@ class UI {
         player.money        -= SUPPLIES_REFILL_COST;
         player.suppliesMeter = Math.min(100, player.suppliesMeter + SUPPLIES_REFILL_AMOUNT);
         player.setMessage(`🛒 Stocked up on ${foodLabel}! (${Math.round(player.suppliesMeter)}% full)`);
-        sounds.playTransaction();
-        this._closeOverlay();
-      });
-    }
-
-    const expandBtn = document.getElementById('expand-house-btn');
-    if (expandBtn && expandBtn.classList.contains('buyable')) {
-      expandBtn.addEventListener('click', () => {
-        if (player.money < HOUSE_UPGRADE_COST || player.houseLevel >= HOUSE_MAX_LEVEL) return;
-        player.money      -= HOUSE_UPGRADE_COST;
-        player.houseLevel += 1;
-        player.setMessage(`🏠 House expanded to level ${player.houseLevel}!`);
         sounds.playTransaction();
         this._closeOverlay();
       });

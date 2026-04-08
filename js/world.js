@@ -108,6 +108,9 @@ class World {
     this.springTiles = new Set();
     this.lavaSources = new Set();
 
+    // Elevator shaft state
+    this.elevatorBuilt = false;
+
     // Re-seed the RNG and recompute unique item positions
     this._rng = this._makeRng(Date.now());
     this.uniqueItemPositions = this._computeUniqueItemPositions();
@@ -139,6 +142,25 @@ class World {
       if (this.getTile(x, y) === TILE.DIRT) {
         const data = this.getData(x, y);
         if (data) data.hidden = HIDDEN.NECKLACE;
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Elevator shaft
+  // -------------------------------------------------------------------------
+
+  /**
+   * Build the elevator shaft: clears column x=ELEVATOR_X from y=3 down to
+   * the current deepest generated row, then sets a flag so future chunk
+   * generation keeps that column open.
+   */
+  buildElevator() {
+    this.elevatorBuilt = true;
+    for (let y = 3; y <= this.deepestGenY; y++) {
+      if (this.getTile(ELEVATOR_X, y) !== null) {
+        this.setTile(ELEVATOR_X, y, TILE.EMPTY);
+        this.setData(ELEVATOR_X, y, null);
       }
     }
   }
@@ -200,6 +222,7 @@ class World {
     top[9]          = TILE.BAR;        // Bar
     top[13]         = TILE.DOCTOR;     // Doctor
     top[BANK_X]     = TILE.BANK;       // Town bank (x=17)
+    top[WORKER_X]   = TILE.WORKER;     // Construction worker (x=20)
     // Jeweler removed – x=19 remains SKY
 
     // Mine entrance arch at x=22-24 (decorative upper; actual entrance at y=2)
@@ -266,6 +289,13 @@ class World {
       for (let x = 0; x < this.width; x++) {
         if (x >= MINE_ENT_X_MIN && y <= MINE_ENT_CLEARED_DEPTH) {
           tiles[x] = TILE.EMPTY;
+          continue;
+        }
+
+        // Keep the elevator shaft open if it has been built
+        if (this.elevatorBuilt && x === ELEVATOR_X) {
+          tiles[x] = TILE.EMPTY;
+          data[x]  = null;
           continue;
         }
 
@@ -449,6 +479,7 @@ class World {
       case TILE.DYNAMITE:
       case TILE.MINE_ENT:
       case TILE.HOUSE:
+      case TILE.WORKER:
       case TILE.EMPTY:
       case TILE.SILVER:
       case TILE.GOLD:

@@ -138,6 +138,7 @@ const Storage = {
     p.houseLevel    = data.houseLevel    ?? 1;
     p.suppliesMeter = data.suppliesMeter ?? 100;
     p.necklaceCount = data.necklaceCount ?? 0;
+    p.hasElevator   = data.hasElevator   ?? false;
   },
 
   /** Overwrite a freshly constructed World with saved state. */
@@ -161,6 +162,7 @@ const Storage = {
     // Restore RNG state so newly generated chunks are consistent with the
     // original seed sequence.
     w._rng.setState(data.rngState);
+    w.elevatorBuilt = data.elevatorBuilt ?? false;
   },
 
   /** Restore game-level transient state (active dynamites, dragon warnings). */
@@ -225,6 +227,7 @@ function _serializePlayer(p) {
     houseLevel:    p.houseLevel,
     suppliesMeter: p.suppliesMeter,
     necklaceCount: p.necklaceCount,
+    hasElevator:   p.hasElevator,
   };
 }
 
@@ -249,6 +252,7 @@ function _serializeWorld(w) {
     lavaSources:         Array.from(w.lavaSources),
     uniqueItemPositions: w.uniqueItemPositions.map(p => Object.assign({}, p)),
     rngState:            w._rng.getState(),
+    elevatorBuilt:       w.elevatorBuilt,
   };
 }
 

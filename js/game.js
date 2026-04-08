@@ -895,8 +895,39 @@ class Game {
       return;
     }
 
+    if (checkTile(TILE.WORKER)) {
+      this.state = 'overlay';
+      this.ui.openWorker(p, {
+        onClose: () => { this.state = 'playing'; this.input.clear(); this.ui.updateHUD(p); },
+        onBuildElevator: () => {
+          p.money -= ELEVATOR_COST;
+          p.hasElevator = true;
+          this.world.buildElevator();
+          p.setMessage('🏗️ Elevator shaft built! Use it at x=21 to travel the mine quickly.');
+          this.ui.updateHUD(p);
+          Storage.save(p, this.world, this);
+        },
+      });
+      return;
+    }
+
     if (checkTile(TILE.MINE_ENT)) {
-      p.setMessage('⛏ Walk down (↓ / S) to enter the mine.');
+      if (p.hasElevator && p.y >= 3) {
+        // Player is in the mine at the elevator shaft entrance — offer fast travel to surface
+        p.x = ELEVATOR_X;
+        p.y = PLAYER_START_Y;
+        p.setMessage('🛗 Elevator: back at the surface!');
+        this.ui.updateHUD(p);
+      } else if (p.hasElevator && p.y === PLAYER_START_Y && p.x === ELEVATOR_X) {
+        // Player is on the surface at the elevator — descend to deepest point
+        const targetY = Math.max(3, this.world.deepestGenY - 2);
+        p.x = ELEVATOR_X;
+        p.y = targetY;
+        p.setMessage(`🛗 Elevator: descended to depth ${targetY - 2} m.`);
+        this.ui.updateHUD(p);
+      } else {
+        p.setMessage('⛏ Walk down (↓ / S) to enter the mine.');
+      }
     }
   }
 
