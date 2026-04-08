@@ -626,12 +626,11 @@ class UI {
         ? ` <em class="short">(need $${HOUSE_UPGRADE_COST - player.money} more)</em>` : '';
     const expandCls      = canExpand ? 'shop-item buyable' : 'shop-item disabled';
 
-    // Baby – via necklace delivery
-    const canDeliverNecklace = player.necklaceCount > 0 && player.babyCount < MAX_BABIES;
-    const maxBabies          = player.babyCount >= MAX_BABIES;
-    const necklaceNote       = maxBabies ? ' <em>(maximum babies reached)</em>'
-      : player.necklaceCount === 0 ? ' <em>(find a necklace in the mine first)</em>' : '';
-    const necklaceCls        = canDeliverNecklace ? 'shop-item buyable' : 'shop-item disabled';
+    // Baby – necklaces are delivered automatically on house entry; show status only
+    const maxBabies = player.babyCount >= MAX_BABIES;
+    const babyHint  = maxBabies
+      ? '<em>(maximum babies reached)</em>'
+      : `<em>Find a 📿 necklace in the mine — it's delivered automatically when you visit home.</em>`;
 
     // Supplies refill – label changes based on whether there are babies
     const foodLabel      = player.babyCount > 0 ? 'food and diapers' : 'food';
@@ -675,10 +674,12 @@ class UI {
       </div>
 
       <div class="section-label">FAMILY</div>
-      <div class="${necklaceCls}" id="necklace-btn">
-        📿 Deliver necklace for a baby (${player.babyCount}/${MAX_BABIES}) — you have ${player.necklaceCount} necklace${player.necklaceCount !== 1 ? 's' : ''}${necklaceNote}
+      <p style="font-size:0.88em;margin:4px 0 6px">
+        Babies: <strong>${player.babyCount} / ${MAX_BABIES}</strong>
+        ${player.babyCount > 0 ? babyEmojis : ''}
+        <br>${babyHint}
         <br><small>Each baby speeds up food &amp; diaper depletion.</small>
-      </div>
+      </p>
     `;
     this._openOverlay(onClose);
 
@@ -701,18 +702,6 @@ class UI {
         player.money      -= HOUSE_UPGRADE_COST;
         player.houseLevel += 1;
         player.setMessage(`🏠 House expanded to level ${player.houseLevel}!`);
-        sounds.playTransaction();
-        this._closeOverlay();
-      });
-    }
-
-    const necklaceBtn = document.getElementById('necklace-btn');
-    if (necklaceBtn && necklaceBtn.classList.contains('buyable')) {
-      necklaceBtn.addEventListener('click', () => {
-        if (player.necklaceCount <= 0 || player.babyCount >= MAX_BABIES) return;
-        player.necklaceCount -= 1;
-        player.babyCount     += 1;
-        player.setMessage(`👶 Baby #${player.babyCount} welcomed to the family!`);
         sounds.playTransaction();
         this._closeOverlay();
       });

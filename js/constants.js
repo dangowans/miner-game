@@ -60,6 +60,7 @@ const TILE = Object.freeze({
   HOUSE:       36,   // Family home – replaces bar in family mode
   TIN_CAN:     37,   // Hidden tin can – novelty collectible
   NECKLACE:    38,   // Hidden necklace – found in mine during family mode; deliver home to have a baby
+  WORKER:      39,   // Construction worker building on the surface
 });
 
 // ---------------------------------------------------------------------------
@@ -256,6 +257,9 @@ const HAZARD_SPREAD = 12;  // Max EMPTY tiles a water/lava spring floods when tr
 // ---------------------------------------------------------------------------
 // Elevator
 // ---------------------------------------------------------------------------
+const WORKER_X        = 20;   // Construction worker building x-column
+const ELEVATOR_X      = 21;   // Elevator shaft x-column (adjacent to mine entrance)
+const ELEVATOR_COST   = 500;  // One-time cost to build the elevator
 
 // ---------------------------------------------------------------------------
 // Surface building x-positions in the building facade row (y=0)
@@ -339,6 +343,7 @@ const TILE_COLOR = {
   [TILE.HOUSE]:        '#8b5e3c',
   [TILE.TIN_CAN]:      '#708090',
   [TILE.NECKLACE]:     '#f0c040',
+  [TILE.WORKER]:       '#c87840',
 };
 
 // Ore tile types that can be destroyed when a hazard spreads over them

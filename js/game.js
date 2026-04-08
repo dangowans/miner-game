@@ -843,6 +843,13 @@ class Game {
     if (checkTile(TILE.BAR) || checkTile(TILE.HOUSE)) {
       // In family mode the house stands where the bar was – ignore re-entry to the bar
       if (checkTile(TILE.HOUSE)) {
+        // Auto-deliver any necklaces in the player's pocket
+        while (p.necklaceCount > 0 && p.babyCount < MAX_BABIES) {
+          p.necklaceCount--;
+          p.babyCount++;
+          p.setMessage(`👶 Baby #${p.babyCount} welcomed to the family!`);
+          sounds.playTransaction();
+        }
         this.state = 'overlay';
         this.ui.openHouse(p, () => {
           this.state = 'playing';
