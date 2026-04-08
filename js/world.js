@@ -94,8 +94,11 @@ class World {
    * Clear all mine rows and regenerate them from scratch with a new seed.
    * The surface (y=0-2) is left untouched.
    * Called by the outhouse "Earthquake" button.
+   *
+   * @param {Player|null} player - When provided, one-time items already in the
+   *   player's possession are excluded from the regenerated mine.
    */
-  regenerateMine() {
+  regenerateMine(player = null) {
     // Remove every mine row
     for (const y of Array.from(this.rowTiles.keys())) {
       if (y >= 3) {
@@ -114,6 +117,26 @@ class World {
     // Re-seed the RNG and recompute unique item positions
     this._rng = this._makeRng(Date.now());
     this.uniqueItemPositions = this._computeUniqueItemPositions();
+
+    // Drop any one-time items the player already has so they don't reappear
+    if (player) {
+      this.uniqueItemPositions = this.uniqueItemPositions.filter(pos => {
+        switch (pos.content) {
+          case HIDDEN.GLASSES:      return !player.specialItems.has(HIDDEN.GLASSES);
+          case HIDDEN.TIN_CAN:      return !player.specialItems.has(HIDDEN.TIN_CAN);
+          case HIDDEN.RUBBER_BOOT:  return !player.specialItems.has(HIDDEN.RUBBER_BOOT);
+          case HIDDEN.POCKET_WATCH: return !player.specialItems.has(HIDDEN.POCKET_WATCH);
+          case HIDDEN.SKULL:        return !player.specialItems.has(HIDDEN.SKULL);
+          case HIDDEN.CANTEEN:      return !player.specialItems.has(HIDDEN.CANTEEN);
+          case HIDDEN.LUNCHBOX:     return !player.specialItems.has(HIDDEN.LUNCHBOX);
+          case HIDDEN.RING:         return !player.hasRing;
+          case HIDDEN.LANTERN:      return !player.hasLantern;
+          case HIDDEN.RADIO:        return !player.hasRadio;
+          default:                  return true;
+        }
+      });
+    }
+
     this.deepestGenY = 2;
 
     // Generate the first chunk

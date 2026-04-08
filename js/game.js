@@ -1106,8 +1106,8 @@ class Game {
   _doEarthquake() {
     const p = this.player;
 
-    // Regenerate the mine
-    this.world.regenerateMine();
+    // Regenerate the mine, excluding items the player already has
+    this.world.regenerateMine(p);
 
     // Clear any live dynamites (they're in the old mine)
     this._dynamites = [];
