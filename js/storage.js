@@ -12,7 +12,7 @@
  */
 
 const SAVE_KEY     = 'minerGameSave';
-const SAVE_VERSION = 2;
+const SAVE_VERSION = 3;
 
 const Storage = {
 
@@ -101,6 +101,12 @@ const Storage = {
 
     p.dead = data.dead;
     p.won  = data.won;
+
+    p.familyMode    = data.familyMode    ?? false;
+    p.bankBalance   = data.bankBalance   ?? 0;
+    p.babyCount     = data.babyCount     ?? 0;
+    p.houseLevel    = data.houseLevel    ?? 1;
+    p.suppliesMeter = data.suppliesMeter ?? 100;
   },
 
   /** Overwrite a freshly constructed World with saved state. */
@@ -131,6 +137,14 @@ const Storage = {
     g._dynamites          = data.dynamites.map(d => Object.assign({}, d));
     g._dragonWarnings     = data.dragonWarnings;
     g._previousPlayTimeMs = data.previousPlayTimeMs || 0;
+
+    // Family-mode timers (wall-clock epoch ms; 0 means "not started / not active")
+    g._lastTaxTime           = data.lastTaxTime           || 0;
+    g._taxGraceStart         = data.taxGraceStart         || 0;
+    g._taxInGrace            = data.taxInGrace            || false;
+    g._lastSuppliesTickTime  = data.lastSuppliesTickTime  || 0;
+    g._suppliesGraceStart    = data.suppliesGraceStart    || 0;
+    g._suppliesInGrace       = data.suppliesInGrace       || false;
   },
 };
 
@@ -173,6 +187,12 @@ function _serializePlayer(p) {
 
     dead: p.dead,
     won:  p.won,
+
+    familyMode:    p.familyMode,
+    bankBalance:   p.bankBalance,
+    babyCount:     p.babyCount,
+    houseLevel:    p.houseLevel,
+    suppliesMeter: p.suppliesMeter,
   };
 }
 
@@ -202,8 +222,14 @@ function _serializeWorld(w) {
 
 function _serializeGame(g) {
   return {
-    dynamites:           g._dynamites.map(d => Object.assign({}, d)),
-    dragonWarnings:      g._dragonWarnings,
-    previousPlayTimeMs:  g._previousPlayTimeMs + (performance.now() - g._startTime),
+    dynamites:              g._dynamites.map(d => Object.assign({}, d)),
+    dragonWarnings:         g._dragonWarnings,
+    previousPlayTimeMs:     g._previousPlayTimeMs + (performance.now() - g._startTime),
+    lastTaxTime:            g._lastTaxTime,
+    taxGraceStart:          g._taxGraceStart,
+    taxInGrace:             g._taxInGrace,
+    lastSuppliesTickTime:   g._lastSuppliesTickTime,
+    suppliesGraceStart:     g._suppliesGraceStart,
+    suppliesInGrace:        g._suppliesInGrace,
   };
 }

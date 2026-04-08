@@ -57,6 +57,7 @@ const TILE = Object.freeze({
   SKULL:       33,   // Hidden skull – novelty collectible
   CANTEEN:     34,   // Hidden canteen – novelty collectible
   LUNCHBOX:    35,   // Hidden lunch box – novelty collectible
+  HOUSE:       36,   // Family home – replaces bar in family mode
 });
 
 // ---------------------------------------------------------------------------
@@ -191,10 +192,31 @@ const DYNAMITE_CRITICAL_RADIUS       = 2;    // Within this many tiles: 2 hearts
 const DYNAMITE_URGENT_SECS           = 2;    // Fuse seconds remaining when urgent warning starts
 
 // ---------------------------------------------------------------------------
-// Bar
+// Bar / surface building x-positions (building facade row, y=1)
 // ---------------------------------------------------------------------------
 const DRINK_PRICE       = 10;   // Cost of one drink at the bar
 const DRINKS_TO_UNLOCK  = 3;    // Drinks required before the girl accepts a proposal
+const BAR_X             = 9;    // x-column of the bar building
+
+// ---------------------------------------------------------------------------
+// Family Mode
+// ---------------------------------------------------------------------------
+const FAMILY_TAX_INTERVAL_MS   = 30 * 60 * 1000;   // Taxes due every 30 minutes
+const FAMILY_TAX_GRACE_MS      = 10 * 60 * 1000;   // 10-minute grace before eviction
+const FAMILY_BASE_TAX          = 50;                // Base tax per cycle
+const FAMILY_TAX_PER_LEVEL     = 25;               // Extra tax per extra house level
+const FAMILY_TAX_INTEREST      = 0.25;             // 25 % surcharge if bank is short
+
+const FAMILY_SUPPLIES_TICK_MS  = 60 * 1000;        // Supplies deplete 1 % per minute
+const FAMILY_SUPPLIES_GRACE_MS = 10 * 60 * 1000;   // 10-minute grace before divorce
+const FAMILY_SUPPLIES_PER_BABY = 0.5;              // Extra % depletion per minute per baby
+
+const HOUSE_UPGRADE_COST       = 1000;  // Cost to expand house (per level)
+const HOUSE_MAX_LEVEL          = 4;     // Maximum house expansion level
+const BABY_COST                = 500;   // Cost to have each baby
+const MAX_BABIES               = 4;     // Maximum number of babies
+const SUPPLIES_REFILL_COST     = 40;    // Cost to refill supplies by 25 %
+const SUPPLIES_REFILL_AMOUNT   = 25;    // Percent refilled per payment
 
 // ---------------------------------------------------------------------------
 // Mine depth limit
@@ -310,6 +332,7 @@ const TILE_COLOR = {
   [TILE.SKULL]:        '#aaaaaa',
   [TILE.CANTEEN]:      '#556644',
   [TILE.LUNCHBOX]:     '#884422',
+  [TILE.HOUSE]:        '#8b5e3c',
 };
 
 // Ore tile types that can be destroyed when a hazard spreads over them
