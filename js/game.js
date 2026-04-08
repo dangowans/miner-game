@@ -431,7 +431,7 @@ class Game {
       return;
     }
     p.x = MINE_ENT_X_MIN;
-    p.y = 1;
+    p.y = 2;
     p.setMessage('📻 Radio crackles — you\'re teleported to the mine entrance!');
     sounds.playItemPickup();
     this.ui.updateHUD(p);
