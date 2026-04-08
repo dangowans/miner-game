@@ -59,6 +59,7 @@ const TILE = Object.freeze({
   LUNCHBOX:    35,   // Hidden lunch box – novelty collectible
   HOUSE:       36,   // Family home – replaces bar in family mode
   TIN_CAN:     37,   // Hidden tin can – novelty collectible
+  NECKLACE:    38,   // Hidden necklace – found in mine during family mode; deliver home to have a baby
 });
 
 // ---------------------------------------------------------------------------
@@ -87,6 +88,7 @@ const HIDDEN = Object.freeze({
   CANTEEN:      'canteen',      // Unique – novelty collectible
   LUNCHBOX:     'lunchbox',     // Unique – novelty collectible
   TIN_CAN:      'tin_can',      // Unique – novelty collectible
+  NECKLACE:     'necklace',     // Family-mode item – deliver home to have a baby
 });
 
 // ---------------------------------------------------------------------------
@@ -336,6 +338,7 @@ const TILE_COLOR = {
   [TILE.LUNCHBOX]:     '#884422',
   [TILE.HOUSE]:        '#8b5e3c',
   [TILE.TIN_CAN]:      '#708090',
+  [TILE.NECKLACE]:     '#f0c040',
 };
 
 // Ore tile types that can be destroyed when a hazard spreads over them

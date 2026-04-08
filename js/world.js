@@ -118,6 +118,32 @@ class World {
   }
 
   // -------------------------------------------------------------------------
+  // Family-mode jewelry placement
+  // -------------------------------------------------------------------------
+
+  /**
+   * Add MAX_BABIES necklace items to the mine, spread across depths 35–80.
+   * Called once when family mode is activated.
+   * Items are injected into uniqueItemPositions so they appear in future chunks,
+   * and also written directly into already-generated tiles.
+   */
+  addFamilyJewelry() {
+    const xRange = MINE_ENT_X_MIN - 2;   // x ∈ [1, 20]
+    const depths = [35, 50, 65, 80];     // One necklace per depth band (world-y = depth + 2)
+    for (const d of depths) {
+      const x = 1 + Math.floor(this._rng() * xRange);
+      const y = d + 2;
+      // Push into unique positions so future chunk generation respects it
+      this.uniqueItemPositions.push({ content: HIDDEN.NECKLACE, x, y });
+      // If the tile is already generated (DIRT), overwrite it now
+      if (this.getTile(x, y) === TILE.DIRT) {
+        const data = this.getData(x, y);
+        if (data) data.hidden = HIDDEN.NECKLACE;
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
   // Row accessors (auto-create empty arrays on demand)
   // -------------------------------------------------------------------------
 
@@ -364,6 +390,7 @@ class World {
       case HIDDEN.CANTEEN:      this.setTile(x, y, TILE.CANTEEN);      break;
       case HIDDEN.LUNCHBOX:     this.setTile(x, y, TILE.LUNCHBOX);     break;
       case HIDDEN.TIN_CAN:      this.setTile(x, y, TILE.TIN_CAN);      break;
+      case HIDDEN.NECKLACE:     this.setTile(x, y, TILE.NECKLACE);     break;
       default:                  this.setTile(x, y, TILE.EMPTY);        break;
     }
     return hidden;
@@ -441,6 +468,7 @@ class World {
       case TILE.CANTEEN:
       case TILE.LUNCHBOX:
       case TILE.TIN_CAN:
+      case TILE.NECKLACE:
         return true;
       case TILE.BUILDING:
       case TILE.DIRT:

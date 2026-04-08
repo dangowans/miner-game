@@ -919,6 +919,9 @@ class Game {
     // Mark that family mode has been reached (persists across resets)
     Storage.setFamilyModeUnlocked();
 
+    // Place necklaces in the mine for baby deliveries
+    this.world.addFamilyJewelry();
+
     // Place player on pavement near the house
     p.x = BAR_X + 1;
     p.y = PLAYER_START_Y;

@@ -137,6 +137,7 @@ const Storage = {
     p.babyCount     = data.babyCount     ?? 0;
     p.houseLevel    = data.houseLevel    ?? 1;
     p.suppliesMeter = data.suppliesMeter ?? 100;
+    p.necklaceCount = data.necklaceCount ?? 0;
   },
 
   /** Overwrite a freshly constructed World with saved state. */
@@ -223,6 +224,7 @@ function _serializePlayer(p) {
     babyCount:     p.babyCount,
     houseLevel:    p.houseLevel,
     suppliesMeter: p.suppliesMeter,
+    necklaceCount: p.necklaceCount,
   };
 }
 

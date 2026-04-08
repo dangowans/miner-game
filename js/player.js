@@ -68,6 +68,7 @@ class Player {
     this.babyCount      = 0;     // Number of babies
     this.houseLevel     = 1;     // House expansion level (1 = base)
     this.suppliesMeter  = 100;   // Household supplies 0–100 %
+    this.necklaceCount  = 0;     // Necklaces found in the mine (deliver at home for a baby)
 
     // HUD message
     this.message      = '';
