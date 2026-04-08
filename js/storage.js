@@ -11,8 +11,10 @@
  * Format version: 2
  */
 
-const SAVE_KEY     = 'minerGameSave';
-const SAVE_VERSION = 3;
+const SAVE_KEY            = 'minerGameSave';
+const SAVE_VERSION        = 3;
+const FAMILY_UNLOCKED_KEY = 'minerGameFamilyUnlocked';
+const START_FAMILY_KEY    = 'minerGameStartFamily';
 
 const Storage = {
 
@@ -58,6 +60,34 @@ const Storage = {
   /** Remove the save from localStorage. */
   clear() {
     try { localStorage.removeItem(SAVE_KEY); } catch (_e) { /* ignore */ }
+  },
+
+  // -------------------------------------------------------------------------
+  // Family-mode unlock (persists across game resets)
+  // -------------------------------------------------------------------------
+
+  /** Mark that the player has reached family mode at least once. */
+  setFamilyModeUnlocked() {
+    try { localStorage.setItem(FAMILY_UNLOCKED_KEY, '1'); } catch (_e) { /* ignore */ }
+  },
+
+  /** Returns true if family mode has been unlocked in a prior run. */
+  getFamilyModeUnlocked() {
+    try { return localStorage.getItem(FAMILY_UNLOCKED_KEY) === '1'; } catch (_e) { return false; }
+  },
+
+  /** Queue a family-mode start for the next page load. */
+  setStartInFamilyMode() {
+    try { localStorage.setItem(START_FAMILY_KEY, '1'); } catch (_e) { /* ignore */ }
+  },
+
+  /** Consume and clear the start-in-family-mode flag; returns true if it was set. */
+  popStartInFamilyMode() {
+    try {
+      const was = localStorage.getItem(START_FAMILY_KEY) === '1';
+      localStorage.removeItem(START_FAMILY_KEY);
+      return was;
+    } catch (_e) { return false; }
   },
 
   // -------------------------------------------------------------------------

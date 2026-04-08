@@ -66,6 +66,10 @@ class Game {
       Storage.restoreWorld(this.world, saved.world);
       Storage.restoreGame(this, saved.game);
       this.ui.updateHUD(this.player);
+    } else if (Storage.popStartInFamilyMode()) {
+      // Player chose "Jump to Family Mode" from the outhouse shortcut
+      this.player.money = 100;   // Starter funds for convenience
+      this._activateFamilyMode(true);
     }
 
     requestAnimationFrame((t) => this._loop(t));
@@ -805,7 +809,16 @@ class Game {
 
     if (checkTile(TILE.OUTHOUSE)) {
       this.state = 'overlay';
-      this.ui.openOuthouse(() => { this.state = 'playing'; this.input.clear(); });
+      this.ui.openOuthouse({
+        familyUnlocked: Storage.getFamilyModeUnlocked(),
+        onClose:      () => { this.state = 'playing'; this.input.clear(); },
+        onEarthquake: () => this._doEarthquake(),
+        onJumpFamily: () => {
+          Storage.setStartInFamilyMode();
+          Storage.clear();
+          location.reload();
+        },
+      });
       return;
     }
 
@@ -876,8 +889,9 @@ class Game {
   // Family Mode
   // -------------------------------------------------------------------------
 
-  /** Activate family mode: replace the bar with a house, init timers. */
-  _activateFamilyMode() {
+  /** Activate family mode: replace the bar with a house, init timers.
+   *  skipPayment – pass true when jumping straight to family mode from outhouse. */
+  _activateFamilyMode(skipPayment = false) {
     const p = this.player;
     p.familyMode    = true;
     p.bankBalance   = 0;
@@ -885,8 +899,10 @@ class Game {
     p.houseLevel    = 1;
     p.suppliesMeter = 100;
 
-    // Deduct marriage payment
-    p.money -= JEWELER_MONEY_COST;
+    // Deduct marriage payment (skipped when jumping from the outhouse shortcut)
+    if (!skipPayment) {
+      p.money -= JEWELER_MONEY_COST;
+    }
 
     // Replace bar with house tile
     this.world.setTile(BAR_X, 1, TILE.HOUSE);
@@ -899,6 +915,9 @@ class Game {
     this._lastSuppliesTickTime = now;
     this._suppliesGraceStart   = 0;
     this._suppliesInGrace      = false;
+
+    // Mark that family mode has been reached (persists across resets)
+    Storage.setFamilyModeUnlocked();
 
     // Place player on pavement near the house
     p.x = BAR_X + 1;
@@ -1027,6 +1046,33 @@ class Game {
     } else {
       this.ui.showDivorce(stats);
     }
+  }
+
+  // -------------------------------------------------------------------------
+  // Earthquake
+  // -------------------------------------------------------------------------
+
+  /** Refill the mine with fresh dirt and minerals (triggered via the outhouse). */
+  _doEarthquake() {
+    const p = this.player;
+
+    // Regenerate the mine
+    this.world.regenerateMine();
+
+    // Clear any live dynamites (they're in the old mine)
+    this._dynamites = [];
+
+    // If the player is underground, surface them
+    if (p.y >= 3) {
+      p.x = PLAYER_START_X;
+      p.y = PLAYER_START_Y;
+    }
+
+    p.setMessage('🌋 EARTHQUAKE! The mine has been refilled with fresh dirt and minerals!');
+    this.state = 'playing';
+    this.input.clear();
+    this.ui.updateHUD(p);
+    Storage.save(p, this.world, this);
   }
 
   // -------------------------------------------------------------------------

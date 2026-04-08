@@ -87,6 +87,37 @@ class World {
   }
 
   // -------------------------------------------------------------------------
+  // Earthquake – re-generate the entire mine
+  // -------------------------------------------------------------------------
+
+  /**
+   * Clear all mine rows and regenerate them from scratch with a new seed.
+   * The surface (y=0-2) is left untouched.
+   * Called by the outhouse "Earthquake" button.
+   */
+  regenerateMine() {
+    // Remove every mine row
+    for (const y of Array.from(this.rowTiles.keys())) {
+      if (y >= 3) {
+        this.rowTiles.delete(y);
+        this.rowData.delete(y);
+      }
+    }
+
+    // Clear hazard registries
+    this.springTiles = new Set();
+    this.lavaSources = new Set();
+
+    // Re-seed the RNG and recompute unique item positions
+    this._rng = this._makeRng(Date.now());
+    this.uniqueItemPositions = this._computeUniqueItemPositions();
+    this.deepestGenY = 2;
+
+    // Generate the first chunk
+    this._generateChunk(3);
+  }
+
+  // -------------------------------------------------------------------------
   // Row accessors (auto-create empty arrays on demand)
   // -------------------------------------------------------------------------
 

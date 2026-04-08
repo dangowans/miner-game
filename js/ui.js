@@ -799,22 +799,59 @@ class UI {
   }
 
   // -------------------------------------------------------------------------
-  // Outhouse overlay
-  openOuthouse(onClose) {
+  // Outhouse overlay (settings menu)
+  openOuthouse({ familyUnlocked, onClose, onEarthquake, onJumpFamily }) {
+    const familyBtn = familyUnlocked
+      ? `<div class="shop-item buyable" id="jump-family-btn" style="border-color:#f5c842;color:#f5c842">
+           👨‍👩‍👧‍👦 Jump to Family Mode
+           <br><small>Start a new game already in family mode</small>
+         </div>`
+      : '';
+
     this.overlay.innerHTML = `
       <div class="overlay-header">
         <h2>🚽 Outhouse</h2>
         <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
       </div>
-      <p style="text-align:center;font-size:2.5em;margin:24px 0 12px">🚽</p>
-      <p style="text-align:center;font-size:0.95em"><em>"You feel relieved."</em></p>
-      <div style="text-align:center;margin-top:20px">
-        <button class="close-btn" id="new-game-btn" style="color:#ff8888;border-color:#aa3333">
-          🗑️ New Game
-        </button>
+      <p style="text-align:center;font-size:2.5em;margin:16px 0 4px">🚽</p>
+      <p style="text-align:center;font-size:0.95em;margin:0 0 16px"><em>"You feel relieved."</em></p>
+
+      <div class="section-label">SETTINGS</div>
+
+      <div class="shop-item buyable" id="earthquake-btn">
+        🌋 Earthquake
+        <br><small>Refill the mine with fresh dirt and minerals</small>
+      </div>
+
+      ${familyBtn}
+
+      <div class="section-label">DANGER ZONE</div>
+
+      <div class="shop-item buyable" id="new-game-btn" style="border-color:#aa3333;color:#ff8888">
+        🗑️ New Game
+        <br><small>Erase all progress and start over</small>
       </div>
     `;
     this._openOverlay(onClose);
+
+    const earthquakeBtn = document.getElementById('earthquake-btn');
+    if (earthquakeBtn) {
+      earthquakeBtn.addEventListener('click', () => {
+        if (confirm('Trigger an earthquake? All minerals and items in the mine will be replaced.')) {
+          this._closeOverlay();
+          if (onEarthquake) onEarthquake();
+        }
+      });
+    }
+
+    const jumpFamilyBtn = document.getElementById('jump-family-btn');
+    if (jumpFamilyBtn) {
+      jumpFamilyBtn.addEventListener('click', () => {
+        if (confirm('Jump straight to Family Mode? Current progress will be lost.')) {
+          if (onJumpFamily) onJumpFamily();
+        }
+      });
+    }
 
     const newGameBtn = document.getElementById('new-game-btn');
     if (newGameBtn) {
