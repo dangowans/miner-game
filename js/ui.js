@@ -73,6 +73,7 @@ class UI {
     if (player.specialItems.has('canteen'))      tools.push('🧴');
     if (player.specialItems.has('lunchbox'))     tools.push('🍱');
     if (player.specialItems.has('tin_can'))      tools.push('🥫');
+    if (player.necklaceCount > 0)                tools.push(`📿×${player.necklaceCount}`);
     if (player.dynamiteCount > 0) {
       tools.push(player.placingDynamite
         ? `💣×${player.dynamiteCount} [PLACING]`
@@ -625,13 +626,12 @@ class UI {
         ? ` <em class="short">(need $${HOUSE_UPGRADE_COST - player.money} more)</em>` : '';
     const expandCls      = canExpand ? 'shop-item buyable' : 'shop-item disabled';
 
-    // Baby
-    const canHaveBaby    = player.babyCount < MAX_BABIES && player.money >= BABY_COST;
-    const maxBabies      = player.babyCount >= MAX_BABIES;
-    const babyNote       = maxBabies ? ' <em>(maximum babies reached)</em>'
-      : player.money < BABY_COST
-        ? ` <em class="short">(need $${BABY_COST - player.money} more)</em>` : '';
-    const babyCls        = canHaveBaby ? 'shop-item buyable' : 'shop-item disabled';
+    // Baby – via necklace delivery
+    const canDeliverNecklace = player.necklaceCount > 0 && player.babyCount < MAX_BABIES;
+    const maxBabies          = player.babyCount >= MAX_BABIES;
+    const necklaceNote       = maxBabies ? ' <em>(maximum babies reached)</em>'
+      : player.necklaceCount === 0 ? ' <em>(find a necklace in the mine first)</em>' : '';
+    const necklaceCls        = canDeliverNecklace ? 'shop-item buyable' : 'shop-item disabled';
 
     // Supplies refill – label changes based on whether there are babies
     const foodLabel      = player.babyCount > 0 ? 'food and diapers' : 'food';
@@ -675,8 +675,8 @@ class UI {
       </div>
 
       <div class="section-label">FAMILY</div>
-      <div class="${babyCls}" id="baby-btn">
-        👶 Have a baby (${player.babyCount}/${MAX_BABIES}) — <span class="price">$${BABY_COST}</span>${babyNote}
+      <div class="${necklaceCls}" id="necklace-btn">
+        📿 Deliver necklace for a baby (${player.babyCount}/${MAX_BABIES}) — you have ${player.necklaceCount} necklace${player.necklaceCount !== 1 ? 's' : ''}${necklaceNote}
         <br><small>Each baby speeds up food &amp; diaper depletion.</small>
       </div>
     `;
@@ -706,12 +706,12 @@ class UI {
       });
     }
 
-    const babyBtn = document.getElementById('baby-btn');
-    if (babyBtn && babyBtn.classList.contains('buyable')) {
-      babyBtn.addEventListener('click', () => {
-        if (player.money < BABY_COST || player.babyCount >= MAX_BABIES) return;
-        player.money     -= BABY_COST;
-        player.babyCount += 1;
+    const necklaceBtn = document.getElementById('necklace-btn');
+    if (necklaceBtn && necklaceBtn.classList.contains('buyable')) {
+      necklaceBtn.addEventListener('click', () => {
+        if (player.necklaceCount <= 0 || player.babyCount >= MAX_BABIES) return;
+        player.necklaceCount -= 1;
+        player.babyCount     += 1;
         player.setMessage(`👶 Baby #${player.babyCount} welcomed to the family!`);
         sounds.playTransaction();
         this._closeOverlay();

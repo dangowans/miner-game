@@ -736,6 +736,14 @@ class Game {
         break;
       }
 
+      case TILE.NECKLACE: {
+        p.necklaceCount++;
+        this.world.setTile(x, y, TILE.EMPTY);
+        sounds.playItemPickup();
+        this._showItemPickupOverlay('📿', `You found a necklace! Your wife will love it! (You have ${p.necklaceCount})`);
+        break;
+      }
+
       // ── Ring – the proposal item ───────────────────────────────────────
       case TILE.RING: {
         if (!p.hasRing) {
