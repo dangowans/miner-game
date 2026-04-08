@@ -966,7 +966,8 @@ class Game {
         if (p.suppliesMeter <= 0 && !this._suppliesInGrace) {
           this._suppliesInGrace    = true;
           this._suppliesGraceStart = now;
-          p.setMessage('⚠️ You are out of supplies! Visit your home and pay your wife — 10 minutes before divorce!');
+          const runOut = p.babyCount > 0 ? 'food and diapers' : 'food';
+          p.setMessage(`⚠️ You are out of ${runOut}! Visit your home — 10 minutes before divorce!`);
         }
       }
     }

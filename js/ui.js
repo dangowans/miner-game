@@ -85,7 +85,8 @@ class UI {
       const supPct  = Math.round(player.suppliesMeter);
       const barFull = Math.round(supPct / 10);
       const supBar  = '█'.repeat(barFull) + '░'.repeat(10 - barFull);
-      tools.push(`| 🏦$${player.bankBalance} 🏠[${supBar}]${supPct}%`);
+      const foodIcon = player.babyCount > 0 ? '🍼' : '🍞';
+      tools.push(`| 🏦$${player.bankBalance} ${foodIcon}[${supBar}]${supPct}%`);
     }
 
     this._hudTools.textContent = tools.join(' ');
@@ -632,9 +633,11 @@ class UI {
         ? ` <em class="short">(need $${BABY_COST - player.money} more)</em>` : '';
     const babyCls        = canHaveBaby ? 'shop-item buyable' : 'shop-item disabled';
 
-    // Supplies refill
+    // Supplies refill – label changes based on whether there are babies
+    const foodLabel      = player.babyCount > 0 ? 'food and diapers' : 'food';
+    const foodLabelCap   = player.babyCount > 0 ? 'Food & diapers'   : 'Food';
     const canRefill      = player.suppliesMeter < 100 && player.money >= SUPPLIES_REFILL_COST;
-    const refillNote     = player.suppliesMeter >= 100 ? ' <em>(supplies full)</em>'
+    const refillNote     = player.suppliesMeter >= 100 ? ` <em>(${foodLabel} fully stocked)</em>`
       : player.money < SUPPLIES_REFILL_COST
         ? ` <em class="short">(need $${SUPPLIES_REFILL_COST - player.money} more)</em>` : '';
     const refillCls      = canRefill ? 'shop-item buyable' : 'shop-item disabled';
@@ -657,13 +660,13 @@ class UI {
         <small style="color:#888"> (paid from bank account)</small>
       </p>
 
-      <div class="section-label">SUPPLIES</div>
+      <div class="section-label">${player.babyCount > 0 ? 'FOOD &amp; DIAPERS' : 'FOOD'}</div>
       <p style="font-size:0.88em;margin:4px 0 6px">
-        👱‍♀️ <em>"We need food and supplies!"</em><br>
-        Supplies: <strong style="color:${supColor}">[${supBar}] ${supPct}%</strong>
+        👱‍♀️ <em>"We need ${foodLabel}!"</em><br>
+        ${foodLabelCap}: <strong style="color:${supColor}">[${supBar}] ${supPct}%</strong>
       </p>
       <div class="${refillCls}" id="refill-btn">
-        🛒 Buy supplies (+${SUPPLIES_REFILL_AMOUNT}%) — <span class="price">$${SUPPLIES_REFILL_COST}</span>${refillNote}
+        🛒 Buy ${foodLabel} (+${SUPPLIES_REFILL_AMOUNT}%) — <span class="price">$${SUPPLIES_REFILL_COST}</span>${refillNote}
       </div>
 
       <div class="section-label">EXPAND HOME</div>
@@ -674,7 +677,7 @@ class UI {
       <div class="section-label">FAMILY</div>
       <div class="${babyCls}" id="baby-btn">
         👶 Have a baby (${player.babyCount}/${MAX_BABIES}) — <span class="price">$${BABY_COST}</span>${babyNote}
-        <br><small>Each baby speeds up supply depletion.</small>
+        <br><small>Each baby speeds up food &amp; diaper depletion.</small>
       </div>
     `;
     this._openOverlay(onClose);
@@ -685,7 +688,7 @@ class UI {
         if (player.money < SUPPLIES_REFILL_COST) return;
         player.money        -= SUPPLIES_REFILL_COST;
         player.suppliesMeter = Math.min(100, player.suppliesMeter + SUPPLIES_REFILL_AMOUNT);
-        player.setMessage(`🛒 Supplies restocked! (${Math.round(player.suppliesMeter)}% full)`);
+        player.setMessage(`🛒 Stocked up on ${foodLabel}! (${Math.round(player.suppliesMeter)}% full)`);
         sounds.playTransaction();
         this._closeOverlay();
       });
@@ -772,7 +775,7 @@ class UI {
       <div class="overlay-centered">
         <p class="overlay-emoji">💔</p>
         <h2 class="overlay-title" style="color:#ff4444">DIVORCED!</h2>
-        <p>You let the supplies run dry for too long.</p>
+        <p>You let the food run out for too long.</p>
         <p style="color:#ff8888"><em>"I can't do this anymore. The kids are hungry. We're done."</em></p>
         <p style="color:#ff8888"><em>"I'm moving in with the construction worker."</em></p>
         ${timeHtml}
