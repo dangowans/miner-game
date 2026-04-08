@@ -186,7 +186,8 @@ class UI {
         else if (id === 'bag')         { player.hasBag = true; player.maxGems = 20; }
         else if (id === 'dynamite')    { player.dynamiteCount++; }
         else if (id === 'firstaid')    { player.firstAidKits++; }
-        player.setMessage(`Bought: ${id}!`);
+        const itemName = (SHOP_ITEMS.find(i => i.id === id) || {}).name || id;
+        player.setMessage(`Bought: ${itemName}!`);
         sounds.playTransaction();
         this._closeOverlay();
       });
