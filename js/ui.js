@@ -774,6 +774,7 @@ class UI {
         <h2 class="overlay-title" style="color:#ff4444">DIVORCED!</h2>
         <p>You let the supplies run dry for too long.</p>
         <p style="color:#ff8888"><em>"I can't do this anymore. The kids are hungry. We're done."</em></p>
+        <p style="color:#ff8888"><em>"I'm moving in with the construction worker."</em></p>
         ${timeHtml}
         ${this._familyStatsHtml(stats)}
         <button class="close-btn" onclick="location.reload()">
