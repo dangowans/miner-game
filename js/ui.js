@@ -57,7 +57,7 @@ class UI {
     this._hudGemsDetail.textContent = `${breakdown} (${player.gemCount}/${player.maxGems})`;
 
     const tools = [];
-    if (player.hasShovel)       tools.push('⛏');
+    if (player.hasShovel)       tools.push('🪏');
     if (player.hasPick)         tools.push(`⚒×${player.pickUses}`);
     if (player.hasBucket)       tools.push(`🪣×${player.bucketUses}`);
     if (player.hasExtinguisher) tools.push(`🧯×${player.extinguisherUses}`);

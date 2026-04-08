@@ -393,7 +393,7 @@ class Renderer {
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         ctx.font      = '20px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('⛏', cx, cy + 8);
+        ctx.fillText('🪏', cx, cy + 8);
         break;
       }
 
@@ -585,9 +585,10 @@ class Renderer {
    * @param {string} label  - short chemical symbol (Ag, Au, Pt)
    */
   _drawOreVein(ctx, px, py, ts, tx, ty, dark, light, label) {
-    // Rock background
+    // Rock background – fill full tile to prevent the coloured TILE_COLOR
+    // border from showing through after the ore is mined.
     ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+    ctx.fillRect(px, py, ts, ts);
 
     // Seed deterministic layout from tile position using small coprime multipliers
     // so adjacent tiles produce visually distinct vein patterns.
@@ -627,9 +628,9 @@ class Renderer {
    */
   _drawDiamond(ctx, px, py, ts, cx, cy, hs,
                faceColor = '#6ab8d8', edgeColor = '#2a6888') {
-    // Dark rock background
+    // Dark rock background – fill full tile to prevent TILE_COLOR border artefacts.
     ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+    ctx.fillRect(px, py, ts, ts);
 
     const s = Math.round(hs * 0.48);
 

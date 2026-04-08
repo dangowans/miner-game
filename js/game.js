@@ -739,7 +739,7 @@ class Game {
           p.hasShovel = true;
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
-          this._showItemPickupOverlay('⛏', 'Found a Shovel! Digging dirt is easier now.');
+          this._showItemPickupOverlay('🪏', 'Found a Shovel! Digging dirt is easier now.');
         }
         break;
       }
@@ -980,7 +980,7 @@ class Game {
     const p       = this.player;
     const gemTotal = p.gems.reduce((s, g) => s + (GEM_VALUE[g] || 0), 0);
     const items   = [];
-    if (p.hasShovel)       items.push('⛏ Shovel');
+    if (p.hasShovel)       items.push('🪏 Shovel');
     if (p.hasPick)         items.push(`⚒ Pick (×${p.pickUses})`);
     if (p.hasBucket)       items.push(`🪣 Bucket (×${p.bucketUses})`);
     if (p.hasExtinguisher) items.push(`🧯 Extinguisher (×${p.extinguisherUses})`);

@@ -128,7 +128,7 @@ const SHOP_ITEMS = [
   {
     id:      'shovel',
     name:    'Shovel',
-    icon:    '⛏',
+    icon:    '🪏',
     price:   50,
     desc:    'Reduces effort to reveal dirt tiles',
     oneTime: true,
