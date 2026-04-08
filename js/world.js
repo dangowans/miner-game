@@ -78,11 +78,114 @@ class World {
       { content: HIDDEN.CANTEEN,      y:  6 + Math.floor(rng() * 25),  x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.LUNCHBOX,     y:  8 + Math.floor(rng() * 28),  x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.RADIO,        y: 16 + Math.floor(rng() * 35),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.TIN_CAN,      y:  5 + Math.floor(rng() * 30),  x: 1 + Math.floor(rng() * xRange) },
       // Glasses at fixed depth directly below the outhouse
       { content: HIDDEN.GLASSES,      y: GLASSES_DEPTH + 2,            x: GLASSES_X },
       // Ring at random depth 50-60 m below the outhouse (world-y = depth + 2)
       { content: HIDDEN.RING,         y: 50 + Math.floor(rng() * 11) + 2, x: RING_X },
     ];
+  }
+
+  // -------------------------------------------------------------------------
+  // Earthquake – re-generate the entire mine
+  // -------------------------------------------------------------------------
+
+  /**
+   * Clear all mine rows and regenerate them from scratch with a new seed.
+   * The surface (y=0-2) is left untouched.
+   * Called by the outhouse "Earthquake" button.
+   *
+   * @param {Player|null} player - When provided, one-time items already in the
+   *   player's possession are excluded from the regenerated mine.
+   */
+  regenerateMine(player = null) {
+    // Remove every mine row
+    for (const y of Array.from(this.rowTiles.keys())) {
+      if (y >= 3) {
+        this.rowTiles.delete(y);
+        this.rowData.delete(y);
+      }
+    }
+
+    // Clear hazard registries
+    this.springTiles = new Set();
+    this.lavaSources = new Set();
+
+    // Elevator shaft state
+    this.elevatorBuilt = false;
+
+    // Re-seed the RNG and recompute unique item positions
+    this._rng = this._makeRng(Date.now());
+    this.uniqueItemPositions = this._computeUniqueItemPositions();
+
+    // Drop any one-time items the player already has so they don't reappear
+    if (player) {
+      this.uniqueItemPositions = this.uniqueItemPositions.filter(pos => {
+        switch (pos.content) {
+          case HIDDEN.GLASSES:      return !player.specialItems.has(HIDDEN.GLASSES);
+          case HIDDEN.TIN_CAN:      return !player.specialItems.has(HIDDEN.TIN_CAN);
+          case HIDDEN.RUBBER_BOOT:  return !player.specialItems.has(HIDDEN.RUBBER_BOOT);
+          case HIDDEN.POCKET_WATCH: return !player.specialItems.has(HIDDEN.POCKET_WATCH);
+          case HIDDEN.SKULL:        return !player.specialItems.has(HIDDEN.SKULL);
+          case HIDDEN.CANTEEN:      return !player.specialItems.has(HIDDEN.CANTEEN);
+          case HIDDEN.LUNCHBOX:     return !player.specialItems.has(HIDDEN.LUNCHBOX);
+          case HIDDEN.RING:         return !player.hasRing;
+          case HIDDEN.LANTERN:      return !player.hasLantern;
+          case HIDDEN.RADIO:        return !player.hasRadio;
+          default:                  return true;
+        }
+      });
+    }
+
+    this.deepestGenY = 2;
+
+    // Generate the first chunk
+    this._generateChunk(3);
+  }
+
+  // -------------------------------------------------------------------------
+  // Family-mode jewelry placement
+  // -------------------------------------------------------------------------
+
+  /**
+   * Add MAX_BABIES necklace items to the mine, spread across depths 35–80.
+   * Called once when family mode is activated.
+   * Items are injected into uniqueItemPositions so they appear in future chunks,
+   * and also written directly into already-generated tiles.
+   */
+  addFamilyJewelry() {
+    const xRange = MINE_ENT_X_MIN - 2;   // x ∈ [1, 20]
+    const depths = [35, 50, 65, 80];     // One necklace per depth band (world-y = depth + 2)
+    for (const d of depths) {
+      const x = 1 + Math.floor(this._rng() * xRange);
+      const y = d + 2;
+      // Push into unique positions so future chunk generation respects it
+      this.uniqueItemPositions.push({ content: HIDDEN.NECKLACE, x, y });
+      // If the tile is already generated (DIRT), overwrite it now
+      if (this.getTile(x, y) === TILE.DIRT) {
+        const data = this.getData(x, y);
+        if (data) data.hidden = HIDDEN.NECKLACE;
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Elevator shaft
+  // -------------------------------------------------------------------------
+
+  /**
+   * Build the elevator shaft: clears column x=ELEVATOR_X from y=3 down to
+   * the current deepest generated row, then sets a flag so future chunk
+   * generation keeps that column open.
+   */
+  buildElevator() {
+    this.elevatorBuilt = true;
+    for (let y = 3; y <= this.deepestGenY; y++) {
+      if (this.getTile(ELEVATOR_X, y) !== null) {
+        this.setTile(ELEVATOR_X, y, TILE.EMPTY);
+        this.setData(ELEVATOR_X, y, null);
+      }
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -142,6 +245,7 @@ class World {
     top[9]          = TILE.BAR;        // Bar
     top[13]         = TILE.DOCTOR;     // Doctor
     top[BANK_X]     = TILE.BANK;       // Town bank (x=17)
+    top[WORKER_X]   = TILE.WORKER;     // Construction worker (x=20)
     // Jeweler removed – x=19 remains SKY
 
     // Mine entrance arch at x=22-24 (decorative upper; actual entrance at y=2)
@@ -208,6 +312,13 @@ class World {
       for (let x = 0; x < this.width; x++) {
         if (x >= MINE_ENT_X_MIN && y <= MINE_ENT_CLEARED_DEPTH) {
           tiles[x] = TILE.EMPTY;
+          continue;
+        }
+
+        // Keep the elevator shaft open if it has been built
+        if (this.elevatorBuilt && x === ELEVATOR_X) {
+          tiles[x] = TILE.EMPTY;
+          data[x]  = null;
           continue;
         }
 
@@ -331,6 +442,8 @@ class World {
       case HIDDEN.SKULL:        this.setTile(x, y, TILE.SKULL);        break;
       case HIDDEN.CANTEEN:      this.setTile(x, y, TILE.CANTEEN);      break;
       case HIDDEN.LUNCHBOX:     this.setTile(x, y, TILE.LUNCHBOX);     break;
+      case HIDDEN.TIN_CAN:      this.setTile(x, y, TILE.TIN_CAN);      break;
+      case HIDDEN.NECKLACE:     this.setTile(x, y, TILE.NECKLACE);     break;
       default:                  this.setTile(x, y, TILE.EMPTY);        break;
     }
     return hidden;
@@ -389,6 +502,7 @@ class World {
       case TILE.DYNAMITE:
       case TILE.MINE_ENT:
       case TILE.HOUSE:
+      case TILE.WORKER:
       case TILE.EMPTY:
       case TILE.SILVER:
       case TILE.GOLD:
@@ -407,6 +521,8 @@ class World {
       case TILE.SKULL:
       case TILE.CANTEEN:
       case TILE.LUNCHBOX:
+      case TILE.TIN_CAN:
+      case TILE.NECKLACE:
         return true;
       case TILE.BUILDING:
       case TILE.DIRT:

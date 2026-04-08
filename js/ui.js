@@ -57,8 +57,8 @@ class UI {
     this._hudGemsDetail.textContent = `${breakdown} (${player.gemCount}/${player.maxGems})`;
 
     const tools = [];
-    if (player.hasShovel)       tools.push('⛏');
-    if (player.hasPick)         tools.push(`⚒×${player.pickUses}`);
+    if (player.hasShovel)       tools.push('🪏');
+    if (player.hasPick)         tools.push(`⛏×${player.pickUses}`);
     if (player.hasBucket)       tools.push(`🪣×${player.bucketUses}`);
     if (player.hasExtinguisher) tools.push(`🧯×${player.extinguisherUses}`);
     if (player.hasBag)          tools.push('🎒×2');
@@ -72,6 +72,8 @@ class UI {
     if (player.specialItems.has('skull'))        tools.push('💀');
     if (player.specialItems.has('canteen'))      tools.push('🧴');
     if (player.specialItems.has('lunchbox'))     tools.push('🍱');
+    if (player.specialItems.has('tin_can'))      tools.push('🥫');
+    if (player.necklaceCount > 0)                tools.push(`📿×${player.necklaceCount}`);
     if (player.dynamiteCount > 0) {
       tools.push(player.placingDynamite
         ? `💣×${player.dynamiteCount} [PLACING]`
@@ -84,7 +86,8 @@ class UI {
       const supPct  = Math.round(player.suppliesMeter);
       const barFull = Math.round(supPct / 10);
       const supBar  = '█'.repeat(barFull) + '░'.repeat(10 - barFull);
-      tools.push(`| 🏦$${player.bankBalance} 🏠[${supBar}]${supPct}%`);
+      const foodIcon = player.babyCount > 0 ? '🍼' : '🍞';
+      tools.push(`| 🏦$${player.bankBalance} ${foodIcon}[${supBar}]${supPct}%`);
     }
 
     this._hudTools.textContent = tools.join(' ');
@@ -183,7 +186,8 @@ class UI {
         else if (id === 'bag')         { player.hasBag = true; player.maxGems = 20; }
         else if (id === 'dynamite')    { player.dynamiteCount++; }
         else if (id === 'firstaid')    { player.firstAidKits++; }
-        player.setMessage(`Bought: ${id}!`);
+        const itemName = (SHOP_ITEMS.find(i => i.id === id) || {}).name || id;
+        player.setMessage(`Bought: ${itemName}!`);
         sounds.playTransaction();
         this._closeOverlay();
       });
@@ -222,8 +226,7 @@ class UI {
           <h2>🍺 The Bar</h2>
           <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
         </div>
-        <p class="bar-girl">👱‍♀️ <em>${line}</em></p>
-        <p class="hint">Pick the 🌸 flower to the left of the outhouse and bring it to her.</p>`;
+        <p class="bar-girl">👱‍♀️ <em>${line}</em></p>`;
 
     // ── Proposal: drinks done, ring in hand, $1000 available ─────────────
     } else if (unlockedByDrinks && hasRingAndMoney) {
@@ -268,7 +271,7 @@ class UI {
           <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
         </div>
         <p class="bar-girl">👱‍♀️ <em>${line}</em></p>
-        <p class="hint">Hint: find the ring hidden in the mine around 50 m below the outhouse and come back with $${JEWELER_MONEY_COST}.</p>`;
+        <p class="hint">Rumour has it, a man dropped an engagement ring in the outhouse 50 or so years ago. I wonder if it's still down there?</p>`;
 
     // ── Step 1: Flower given; buy drinks ─────────────────────────────────
     } else {
@@ -603,6 +606,68 @@ class UI {
   }
 
   // -------------------------------------------------------------------------
+  // Construction worker overlay
+  // -------------------------------------------------------------------------
+
+  openWorker(player, { onClose, onBuildElevator }) {
+    const canExpand   = player.houseLevel < HOUSE_MAX_LEVEL && player.money >= HOUSE_UPGRADE_COST;
+    const maxLevel    = player.houseLevel >= HOUSE_MAX_LEVEL;
+    const expandNote  = maxLevel ? ' <em>(maximum size reached)</em>'
+      : player.money < HOUSE_UPGRADE_COST
+        ? ` <em class="short">(need $${HOUSE_UPGRADE_COST - player.money} more)</em>` : '';
+    const expandCls   = (canExpand && player.familyMode) ? 'shop-item buyable' : 'shop-item disabled';
+    const expandAvail = player.familyMode ? '' : ' <em>(available in family mode)</em>';
+
+    const elevatorAlready = player.hasElevator;
+    const canElevator     = !elevatorAlready && player.money >= ELEVATOR_COST;
+    const elevatorNote    = elevatorAlready ? ' <em>(already built)</em>'
+      : player.money < ELEVATOR_COST
+        ? ` <em class="short">(need $${ELEVATOR_COST - player.money} more)</em>` : '';
+    const elevatorCls     = canElevator ? 'shop-item buyable' : 'shop-item disabled';
+
+    this.overlay.innerHTML = `
+      <div class="overlay-header">
+        <h2>🏗️ Construction Worker</h2>
+        <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
+      </div>
+      <p class="shop-balance">Your money: <strong>$${player.money}</strong></p>
+
+      <div class="section-label">HOME EXPANSION</div>
+      <div class="${expandCls}" id="worker-expand-btn">
+        🏠 Expand house (Level ${player.houseLevel} → ${player.houseLevel + 1}) — <span class="price">$${HOUSE_UPGRADE_COST}</span>${expandNote}${expandAvail}
+      </div>
+
+      <div class="section-label">ELEVATOR</div>
+      <div class="${elevatorCls}" id="worker-elevator-btn">
+        🛗 Build elevator shaft (x=21) — <span class="price">$${ELEVATOR_COST}</span>${elevatorNote}
+        <br><small>Pre-digs a shaft next to the mine entrance for fast vertical travel.</small>
+      </div>
+    `;
+    this._openOverlay(onClose);
+
+    const expandBtn = document.getElementById('worker-expand-btn');
+    if (expandBtn && expandBtn.classList.contains('buyable')) {
+      expandBtn.addEventListener('click', () => {
+        if (!player.familyMode || player.money < HOUSE_UPGRADE_COST || player.houseLevel >= HOUSE_MAX_LEVEL) return;
+        player.money      -= HOUSE_UPGRADE_COST;
+        player.houseLevel += 1;
+        player.setMessage(`🏠 House expanded to level ${player.houseLevel}!`);
+        sounds.playTransaction();
+        this._closeOverlay();
+      });
+    }
+
+    const elevatorBtn = document.getElementById('worker-elevator-btn');
+    if (elevatorBtn && elevatorBtn.classList.contains('buyable')) {
+      elevatorBtn.addEventListener('click', () => {
+        if (player.hasElevator || player.money < ELEVATOR_COST) return;
+        this._closeOverlay();
+        if (onBuildElevator) onBuildElevator();
+      });
+    }
+  }
+
+  // -------------------------------------------------------------------------
   // House overlay (family mode)
   // -------------------------------------------------------------------------
 
@@ -615,28 +680,25 @@ class UI {
     const supBar  = '█'.repeat(barFull) + '░'.repeat(10 - barFull);
     const supColor = supPct > 40 ? '#88cc44' : supPct > 15 ? '#f5c842' : '#ff4444';
 
-    // House expand
-    const canExpand      = player.houseLevel < HOUSE_MAX_LEVEL && player.money >= HOUSE_UPGRADE_COST;
-    const maxLevel       = player.houseLevel >= HOUSE_MAX_LEVEL;
-    const expandNote     = maxLevel ? ' <em>(maximum size reached)</em>'
-      : player.money < HOUSE_UPGRADE_COST
-        ? ` <em class="short">(need $${HOUSE_UPGRADE_COST - player.money} more)</em>` : '';
-    const expandCls      = canExpand ? 'shop-item buyable' : 'shop-item disabled';
+    // House expand is now at the construction worker — only show status here
+    const maxLevel = player.houseLevel >= HOUSE_MAX_LEVEL;
 
-    // Baby
-    const canHaveBaby    = player.babyCount < MAX_BABIES && player.money >= BABY_COST;
-    const maxBabies      = player.babyCount >= MAX_BABIES;
-    const babyNote       = maxBabies ? ' <em>(maximum babies reached)</em>'
-      : player.money < BABY_COST
-        ? ` <em class="short">(need $${BABY_COST - player.money} more)</em>` : '';
-    const babyCls        = canHaveBaby ? 'shop-item buyable' : 'shop-item disabled';
+    // Baby – necklaces are delivered automatically on house entry; show status only
+    const maxBabies = player.babyCount >= MAX_BABIES;
 
-    // Supplies refill
+    // Supplies refill – label changes based on whether there are babies
+    const foodLabel      = player.babyCount > 0 ? 'food and diapers' : 'food';
+    const foodLabelCap   = player.babyCount > 0 ? 'Food & diapers'   : 'Food';
     const canRefill      = player.suppliesMeter < 100 && player.money >= SUPPLIES_REFILL_COST;
-    const refillNote     = player.suppliesMeter >= 100 ? ' <em>(supplies full)</em>'
+    const refillNote     = player.suppliesMeter >= 100 ? ` <em>(${foodLabel} fully stocked)</em>`
       : player.money < SUPPLIES_REFILL_COST
         ? ` <em class="short">(need $${SUPPLIES_REFILL_COST - player.money} more)</em>` : '';
     const refillCls      = canRefill ? 'shop-item buyable' : 'shop-item disabled';
+
+    // Wife message depends on how well-stocked the house is
+    const wifeMsg = supPct > 50
+      ? `"You're such a great provider. We have plenty of ${foodLabel}!"`
+      : `"We need more ${foodLabel}!"`;
 
     const houseEmoji = ['🏠', '🏡', '🏘️', '🏰'][Math.min(player.houseLevel - 1, 3)];
     const babyEmojis = ['👶', '👶👶', '👶👶👶', '👶👶👶👶'][Math.max(0, player.babyCount - 1)] || '—';
@@ -656,25 +718,20 @@ class UI {
         <small style="color:#888"> (paid from bank account)</small>
       </p>
 
-      <div class="section-label">SUPPLIES</div>
+      <div class="section-label">${player.babyCount > 0 ? 'FOOD &amp; DIAPERS' : 'FOOD'}</div>
       <p style="font-size:0.88em;margin:4px 0 6px">
-        👱‍♀️ <em>"We need food and supplies!"</em><br>
-        Supplies: <strong style="color:${supColor}">[${supBar}] ${supPct}%</strong>
+        👱‍♀️ <em>${wifeMsg}</em><br>
+        ${foodLabelCap}: <strong style="color:${supColor}">[${supBar}] ${supPct}%</strong>
       </p>
       <div class="${refillCls}" id="refill-btn">
-        🛒 Buy supplies (+${SUPPLIES_REFILL_AMOUNT}%) — <span class="price">$${SUPPLIES_REFILL_COST}</span>${refillNote}
-      </div>
-
-      <div class="section-label">EXPAND HOME</div>
-      <div class="${expandCls}" id="expand-house-btn">
-        🏠 Expand house (Level ${player.houseLevel} → ${player.houseLevel + 1}) — <span class="price">$${HOUSE_UPGRADE_COST}</span>${expandNote}
+        🛒 Buy ${foodLabel} (+${SUPPLIES_REFILL_AMOUNT}%) — <span class="price">$${SUPPLIES_REFILL_COST}</span>${refillNote}
       </div>
 
       <div class="section-label">FAMILY</div>
-      <div class="${babyCls}" id="baby-btn">
-        👶 Have a baby (${player.babyCount}/${MAX_BABIES}) — <span class="price">$${BABY_COST}</span>${babyNote}
-        <br><small>Each baby speeds up supply depletion.</small>
-      </div>
+      <p style="font-size:0.88em;margin:4px 0 6px">
+        Babies: <strong>${player.babyCount} / ${MAX_BABIES}</strong>
+        ${player.babyCount > 0 ? babyEmojis : ''}
+      </p>
     `;
     this._openOverlay(onClose);
 
@@ -682,33 +739,14 @@ class UI {
     if (refillBtn && refillBtn.classList.contains('buyable')) {
       refillBtn.addEventListener('click', () => {
         if (player.money < SUPPLIES_REFILL_COST) return;
+        const wasAlreadyFull = player.suppliesMeter + SUPPLIES_REFILL_AMOUNT > 100;
         player.money        -= SUPPLIES_REFILL_COST;
         player.suppliesMeter = Math.min(100, player.suppliesMeter + SUPPLIES_REFILL_AMOUNT);
-        player.setMessage(`🛒 Supplies restocked! (${Math.round(player.suppliesMeter)}% full)`);
-        sounds.playTransaction();
-        this._closeOverlay();
-      });
-    }
-
-    const expandBtn = document.getElementById('expand-house-btn');
-    if (expandBtn && expandBtn.classList.contains('buyable')) {
-      expandBtn.addEventListener('click', () => {
-        if (player.money < HOUSE_UPGRADE_COST || player.houseLevel >= HOUSE_MAX_LEVEL) return;
-        player.money      -= HOUSE_UPGRADE_COST;
-        player.houseLevel += 1;
-        player.setMessage(`🏠 House expanded to level ${player.houseLevel}!`);
-        sounds.playTransaction();
-        this._closeOverlay();
-      });
-    }
-
-    const babyBtn = document.getElementById('baby-btn');
-    if (babyBtn && babyBtn.classList.contains('buyable')) {
-      babyBtn.addEventListener('click', () => {
-        if (player.money < BABY_COST || player.babyCount >= MAX_BABIES) return;
-        player.money     -= BABY_COST;
-        player.babyCount += 1;
-        player.setMessage(`👶 Baby #${player.babyCount} welcomed to the family!`);
+        if (wasAlreadyFull) {
+          player.setMessage(`👱‍♀️ "What? You think we're made of money?!"`);
+        } else {
+          player.setMessage(`🛒 Stocked up on ${foodLabel}! (${Math.round(player.suppliesMeter)}% full)`);
+        }
         sounds.playTransaction();
         this._closeOverlay();
       });
@@ -771,8 +809,9 @@ class UI {
       <div class="overlay-centered">
         <p class="overlay-emoji">💔</p>
         <h2 class="overlay-title" style="color:#ff4444">DIVORCED!</h2>
-        <p>You let the supplies run dry for too long.</p>
+        <p>You let the food run out for too long.</p>
         <p style="color:#ff8888"><em>"I can't do this anymore. The kids are hungry. We're done."</em></p>
+        <p style="color:#ff8888"><em>"I'm moving in with the construction worker."</em></p>
         ${timeHtml}
         ${this._familyStatsHtml(stats)}
         <button class="close-btn" onclick="location.reload()">
@@ -798,22 +837,59 @@ class UI {
   }
 
   // -------------------------------------------------------------------------
-  // Outhouse overlay
-  openOuthouse(onClose) {
+  // Outhouse overlay (settings menu)
+  openOuthouse({ familyUnlocked, onClose, onEarthquake, onJumpFamily }) {
+    const familyBtn = familyUnlocked
+      ? `<div class="shop-item buyable" id="jump-family-btn" style="border-color:#f5c842;color:#f5c842">
+           👨‍👩‍👧‍👦 Jump to Family Mode
+           <br><small>Start a new game already in family mode</small>
+         </div>`
+      : '';
+
     this.overlay.innerHTML = `
       <div class="overlay-header">
         <h2>🚽 Outhouse</h2>
         <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
       </div>
-      <p style="text-align:center;font-size:2.5em;margin:24px 0 12px">🚽</p>
-      <p style="text-align:center;font-size:0.95em"><em>"You feel relieved."</em></p>
-      <div style="text-align:center;margin-top:20px">
-        <button class="close-btn" id="new-game-btn" style="color:#ff8888;border-color:#aa3333">
-          🗑️ New Game
-        </button>
+      <p style="text-align:center;font-size:2.5em;margin:16px 0 4px">🚽</p>
+      <p style="text-align:center;font-size:0.95em;margin:0 0 16px"><em>"You feel relieved."</em></p>
+
+      <div class="section-label">SETTINGS</div>
+
+      <div class="shop-item buyable" id="earthquake-btn">
+        🌋 Earthquake
+        <br><small>Refill the mine with fresh dirt and minerals</small>
+      </div>
+
+      ${familyBtn}
+
+      <div class="section-label">DANGER ZONE</div>
+
+      <div class="shop-item buyable" id="new-game-btn" style="border-color:#aa3333;color:#ff8888">
+        🗑️ New Game
+        <br><small>Erase all progress and start over</small>
       </div>
     `;
     this._openOverlay(onClose);
+
+    const earthquakeBtn = document.getElementById('earthquake-btn');
+    if (earthquakeBtn) {
+      earthquakeBtn.addEventListener('click', () => {
+        if (confirm('Trigger an earthquake? All minerals and items in the mine will be replaced.')) {
+          this._closeOverlay();
+          if (onEarthquake) onEarthquake();
+        }
+      });
+    }
+
+    const jumpFamilyBtn = document.getElementById('jump-family-btn');
+    if (jumpFamilyBtn) {
+      jumpFamilyBtn.addEventListener('click', () => {
+        if (confirm('Jump straight to Family Mode? Current progress will be lost.')) {
+          if (onJumpFamily) onJumpFamily();
+        }
+      });
+    }
 
     const newGameBtn = document.getElementById('new-game-btn');
     if (newGameBtn) {

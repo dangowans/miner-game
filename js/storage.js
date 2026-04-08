@@ -11,8 +11,10 @@
  * Format version: 2
  */
 
-const SAVE_KEY     = 'minerGameSave';
-const SAVE_VERSION = 3;
+const SAVE_KEY            = 'minerGameSave';
+const SAVE_VERSION        = 3;
+const FAMILY_UNLOCKED_KEY = 'minerGameFamilyUnlocked';
+const START_FAMILY_KEY    = 'minerGameStartFamily';
 
 const Storage = {
 
@@ -58,6 +60,34 @@ const Storage = {
   /** Remove the save from localStorage. */
   clear() {
     try { localStorage.removeItem(SAVE_KEY); } catch (_e) { /* ignore */ }
+  },
+
+  // -------------------------------------------------------------------------
+  // Family-mode unlock (persists across game resets)
+  // -------------------------------------------------------------------------
+
+  /** Mark that the player has reached family mode at least once. */
+  setFamilyModeUnlocked() {
+    try { localStorage.setItem(FAMILY_UNLOCKED_KEY, '1'); } catch (_e) { /* ignore */ }
+  },
+
+  /** Returns true if family mode has been unlocked in a prior run. */
+  getFamilyModeUnlocked() {
+    try { return localStorage.getItem(FAMILY_UNLOCKED_KEY) === '1'; } catch (_e) { return false; }
+  },
+
+  /** Queue a family-mode start for the next page load. */
+  setStartInFamilyMode() {
+    try { localStorage.setItem(START_FAMILY_KEY, '1'); } catch (_e) { /* ignore */ }
+  },
+
+  /** Consume and clear the start-in-family-mode flag; returns true if it was set. */
+  popStartInFamilyMode() {
+    try {
+      const was = localStorage.getItem(START_FAMILY_KEY) === '1';
+      localStorage.removeItem(START_FAMILY_KEY);
+      return was;
+    } catch (_e) { return false; }
   },
 
   // -------------------------------------------------------------------------
@@ -107,6 +137,8 @@ const Storage = {
     p.babyCount     = data.babyCount     ?? 0;
     p.houseLevel    = data.houseLevel    ?? 1;
     p.suppliesMeter = data.suppliesMeter ?? 100;
+    p.necklaceCount = data.necklaceCount ?? 0;
+    p.hasElevator   = data.hasElevator   ?? false;
   },
 
   /** Overwrite a freshly constructed World with saved state. */
@@ -130,6 +162,7 @@ const Storage = {
     // Restore RNG state so newly generated chunks are consistent with the
     // original seed sequence.
     w._rng.setState(data.rngState);
+    w.elevatorBuilt = data.elevatorBuilt ?? false;
   },
 
   /** Restore game-level transient state (active dynamites, dragon warnings). */
@@ -193,6 +226,8 @@ function _serializePlayer(p) {
     babyCount:     p.babyCount,
     houseLevel:    p.houseLevel,
     suppliesMeter: p.suppliesMeter,
+    necklaceCount: p.necklaceCount,
+    hasElevator:   p.hasElevator,
   };
 }
 
@@ -217,6 +252,7 @@ function _serializeWorld(w) {
     lavaSources:         Array.from(w.lavaSources),
     uniqueItemPositions: w.uniqueItemPositions.map(p => Object.assign({}, p)),
     rngState:            w._rng.getState(),
+    elevatorBuilt:       w.elevatorBuilt,
   };
 }
 

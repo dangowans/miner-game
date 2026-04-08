@@ -393,7 +393,7 @@ class Renderer {
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         ctx.font      = '20px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('⛏', cx, cy + 8);
+        ctx.fillText('🪏', cx, cy + 8);
         break;
       }
 
@@ -402,7 +402,7 @@ class Renderer {
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         ctx.font      = '20px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('⚒', cx, cy + 8);
+        ctx.fillText('⛏', cx, cy + 8);
         break;
       }
 
@@ -562,6 +562,53 @@ class Renderer {
         ctx.fillText('🍱', cx, cy + 8);
         break;
       }
+
+      case TILE.TIN_CAN: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🥫', cx, cy + 8);
+        break;
+      }
+
+      case TILE.NECKLACE: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('📿', cx, cy + 8);
+        break;
+      }
+
+      case TILE.WORKER: {
+        // Sky background
+        ctx.fillStyle = '#7ab8e8';
+        ctx.fillRect(px, py, ts, ts);
+        // Body (orange hi-vis vest)
+        ctx.fillStyle = '#e07820';
+        ctx.fillRect(cx - 5, py + 17, 10, 11);
+        // Head
+        ctx.fillStyle = '#f0c890';
+        ctx.beginPath();
+        ctx.arc(cx, py + 13, 5, 0, Math.PI * 2);
+        ctx.fill();
+        // Hard hat (yellow)
+        ctx.fillStyle = '#f5d800';
+        ctx.beginPath();
+        ctx.arc(cx, py + 11, 5, Math.PI, 0);
+        ctx.fill();
+        ctx.fillRect(cx - 7, py + 10, 14, 3);
+        // Arms
+        ctx.fillStyle = '#e07820';
+        ctx.fillRect(cx - 9, py + 18, 4, 7);
+        ctx.fillRect(cx + 5, py + 18, 4, 7);
+        // Legs
+        ctx.fillStyle = '#4466aa';
+        ctx.fillRect(cx - 5, py + 28, 4, ts - 28);
+        ctx.fillRect(cx + 1, py + 28, 4, ts - 28);
+        break;
+      }
     }
 
     // ── Sky horizon for the building-facade row ───────────────────────────────
@@ -585,9 +632,10 @@ class Renderer {
    * @param {string} label  - short chemical symbol (Ag, Au, Pt)
    */
   _drawOreVein(ctx, px, py, ts, tx, ty, dark, light, label) {
-    // Rock background
+    // Rock background – fill full tile to prevent the coloured TILE_COLOR
+    // border from showing through after the ore is mined.
     ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+    ctx.fillRect(px, py, ts, ts);
 
     // Seed deterministic layout from tile position using small coprime multipliers
     // so adjacent tiles produce visually distinct vein patterns.
@@ -627,9 +675,9 @@ class Renderer {
    */
   _drawDiamond(ctx, px, py, ts, cx, cy, hs,
                faceColor = '#6ab8d8', edgeColor = '#2a6888') {
-    // Dark rock background
+    // Dark rock background – fill full tile to prevent TILE_COLOR border artefacts.
     ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+    ctx.fillRect(px, py, ts, ts);
 
     const s = Math.round(hs * 0.48);
 

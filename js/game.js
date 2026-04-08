@@ -66,6 +66,10 @@ class Game {
       Storage.restoreWorld(this.world, saved.world);
       Storage.restoreGame(this, saved.game);
       this.ui.updateHUD(this.player);
+    } else if (Storage.popStartInFamilyMode()) {
+      // Player chose "Jump to Family Mode" from the outhouse shortcut
+      this.player.money = 100;   // Starter funds for convenience
+      this._activateFamilyMode(true);
     }
 
     requestAnimationFrame((t) => this._loop(t));
@@ -240,10 +244,10 @@ class Game {
         if (p.pickUses <= 0) {
           p.hasPick   = false;
           p.pickUses  = 0;
-          p.setMessage('⚒ Stone broken! Pick broke — buy a new one.');
+          p.setMessage('⛏ Stone broken! Pick broke — buy a new one.');
           sounds.playToolBreak();
         } else {
-          p.setMessage(`⚒ Stone broken! (${p.pickUses} use${p.pickUses !== 1 ? 's' : ''} left)`);
+          p.setMessage(`⛏ Stone broken! (${p.pickUses} use${p.pickUses !== 1 ? 's' : ''} left)`);
         }
         this._afterMove(nx, ny);
       } else {
@@ -427,7 +431,7 @@ class Game {
       return;
     }
     p.x = MINE_ENT_X_MIN;
-    p.y = 1;
+    p.y = 2;
     p.setMessage('📻 Radio crackles — you\'re teleported to the mine entrance!');
     sounds.playItemPickup();
     this.ui.updateHUD(p);
@@ -722,6 +726,24 @@ class Game {
         break;
       }
 
+      case TILE.TIN_CAN: {
+        if (!p.specialItems.has('tin_can')) {
+          p.specialItems.add('tin_can');
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          this._showItemPickupOverlay('🥫', 'A dented tin can. "Best before 1987."');
+        }
+        break;
+      }
+
+      case TILE.NECKLACE: {
+        p.necklaceCount++;
+        this.world.setTile(x, y, TILE.EMPTY);
+        sounds.playItemPickup();
+        this._showItemPickupOverlay('📿', `You found a necklace! Your wife will love it! (You have ${p.necklaceCount})`);
+        break;
+      }
+
       // ── Ring – the proposal item ───────────────────────────────────────
       case TILE.RING: {
         if (!p.hasRing) {
@@ -739,7 +761,7 @@ class Game {
           p.hasShovel = true;
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
-          this._showItemPickupOverlay('⛏', 'Found a Shovel! Digging dirt is easier now.');
+          this._showItemPickupOverlay('🪏', 'Found a Shovel! Digging dirt is easier now.');
         }
         break;
       }
@@ -750,7 +772,7 @@ class Game {
           p.pickUses = TOOL_USES;
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
-          this._showItemPickupOverlay('⚒', `Found a Pick! Walk into stone to break it. (${TOOL_USES} uses)`);
+          this._showItemPickupOverlay('⛏', `Found a Pick! Walk into stone to break it. (${TOOL_USES} uses)`);
         }
         break;
       }
@@ -795,7 +817,16 @@ class Game {
 
     if (checkTile(TILE.OUTHOUSE)) {
       this.state = 'overlay';
-      this.ui.openOuthouse(() => { this.state = 'playing'; this.input.clear(); });
+      this.ui.openOuthouse({
+        familyUnlocked: Storage.getFamilyModeUnlocked(),
+        onClose:      () => { this.state = 'playing'; this.input.clear(); },
+        onEarthquake: () => this._doEarthquake(),
+        onJumpFamily: () => {
+          Storage.setStartInFamilyMode();
+          Storage.clear();
+          location.reload();
+        },
+      });
       return;
     }
 
@@ -812,6 +843,13 @@ class Game {
     if (checkTile(TILE.BAR) || checkTile(TILE.HOUSE)) {
       // In family mode the house stands where the bar was – ignore re-entry to the bar
       if (checkTile(TILE.HOUSE)) {
+        // Auto-deliver any necklaces in the player's pocket
+        while (p.necklaceCount > 0 && p.babyCount < MAX_BABIES) {
+          p.necklaceCount--;
+          p.babyCount++;
+          p.setMessage(`👶 Baby #${p.babyCount} welcomed to the family!`);
+          sounds.playTransaction();
+        }
         this.state = 'overlay';
         this.ui.openHouse(p, () => {
           this.state = 'playing';
@@ -857,8 +895,39 @@ class Game {
       return;
     }
 
+    if (checkTile(TILE.WORKER)) {
+      this.state = 'overlay';
+      this.ui.openWorker(p, {
+        onClose: () => { this.state = 'playing'; this.input.clear(); this.ui.updateHUD(p); },
+        onBuildElevator: () => {
+          p.money -= ELEVATOR_COST;
+          p.hasElevator = true;
+          this.world.buildElevator();
+          p.setMessage('🏗️ Elevator shaft built! Use it at x=21 to travel the mine quickly.');
+          this.ui.updateHUD(p);
+          Storage.save(p, this.world, this);
+        },
+      });
+      return;
+    }
+
     if (checkTile(TILE.MINE_ENT)) {
-      p.setMessage('⛏ Walk down (↓ / S) to enter the mine.');
+      if (p.hasElevator && p.y >= 3) {
+        // Player is in the mine at the elevator shaft entrance — offer fast travel to surface
+        p.x = ELEVATOR_X;
+        p.y = PLAYER_START_Y;
+        p.setMessage('🛗 Elevator: back at the surface!');
+        this.ui.updateHUD(p);
+      } else if (p.hasElevator && p.y === PLAYER_START_Y && p.x === ELEVATOR_X) {
+        // Player is on the surface at the elevator — descend to deepest point
+        const targetY = Math.max(3, this.world.deepestGenY - 2);
+        p.x = ELEVATOR_X;
+        p.y = targetY;
+        p.setMessage(`🛗 Elevator: descended to depth ${targetY - 2} m.`);
+        this.ui.updateHUD(p);
+      } else {
+        p.setMessage('⛏ Walk down (↓ / S) to enter the mine.');
+      }
     }
   }
 
@@ -866,8 +935,9 @@ class Game {
   // Family Mode
   // -------------------------------------------------------------------------
 
-  /** Activate family mode: replace the bar with a house, init timers. */
-  _activateFamilyMode() {
+  /** Activate family mode: replace the bar with a house, init timers.
+   *  skipPayment – pass true when jumping straight to family mode from outhouse. */
+  _activateFamilyMode(skipPayment = false) {
     const p = this.player;
     p.familyMode    = true;
     p.bankBalance   = 0;
@@ -875,8 +945,10 @@ class Game {
     p.houseLevel    = 1;
     p.suppliesMeter = 100;
 
-    // Deduct marriage payment
-    p.money -= JEWELER_MONEY_COST;
+    // Deduct marriage payment (skipped when jumping from the outhouse shortcut)
+    if (!skipPayment) {
+      p.money -= JEWELER_MONEY_COST;
+    }
 
     // Replace bar with house tile
     this.world.setTile(BAR_X, 1, TILE.HOUSE);
@@ -889,6 +961,12 @@ class Game {
     this._lastSuppliesTickTime = now;
     this._suppliesGraceStart   = 0;
     this._suppliesInGrace      = false;
+
+    // Mark that family mode has been reached (persists across resets)
+    Storage.setFamilyModeUnlocked();
+
+    // Place necklaces in the mine for baby deliveries
+    this.world.addFamilyJewelry();
 
     // Place player on pavement near the house
     p.x = BAR_X + 1;
@@ -934,7 +1012,8 @@ class Game {
         if (p.suppliesMeter <= 0 && !this._suppliesInGrace) {
           this._suppliesInGrace    = true;
           this._suppliesGraceStart = now;
-          p.setMessage('⚠️ You are out of supplies! Visit your home and pay your wife — 10 minutes before divorce!');
+          const runOut = p.babyCount > 0 ? 'food and diapers' : 'food';
+          p.setMessage(`⚠️ You are out of ${runOut}! Visit your home — 10 minutes before divorce!`);
         }
       }
     }
@@ -980,8 +1059,8 @@ class Game {
     const p       = this.player;
     const gemTotal = p.gems.reduce((s, g) => s + (GEM_VALUE[g] || 0), 0);
     const items   = [];
-    if (p.hasShovel)       items.push('⛏ Shovel');
-    if (p.hasPick)         items.push(`⚒ Pick (×${p.pickUses})`);
+    if (p.hasShovel)       items.push('🪏 Shovel');
+    if (p.hasPick)         items.push(`⛏ Pick (×${p.pickUses})`);
     if (p.hasBucket)       items.push(`🪣 Bucket (×${p.bucketUses})`);
     if (p.hasExtinguisher) items.push(`🧯 Extinguisher (×${p.extinguisherUses})`);
     if (p.hasBag)          items.push('🎒 Large Bag');
@@ -991,7 +1070,7 @@ class Game {
     if (p.dynamiteCount)   items.push(`💣 Dynamite ×${p.dynamiteCount}`);
     if (p.firstAidKits)    items.push(`🩹 First Aid ×${p.firstAidKits}`);
     for (const si of p.specialItems) {
-      const icons = { rubber_boot: '🥾', pocket_watch: '⌚', glasses: '🕶️', skull: '💀', canteen: '🧴', lunchbox: '🍱' };
+      const icons = { rubber_boot: '🥾', pocket_watch: '⌚', glasses: '🕶️', skull: '💀', canteen: '🧴', lunchbox: '🍱', tin_can: '🥫' };
       if (icons[si]) items.push(icons[si]);
     }
     return {
@@ -1017,6 +1096,33 @@ class Game {
     } else {
       this.ui.showDivorce(stats);
     }
+  }
+
+  // -------------------------------------------------------------------------
+  // Earthquake
+  // -------------------------------------------------------------------------
+
+  /** Refill the mine with fresh dirt and minerals (triggered via the outhouse). */
+  _doEarthquake() {
+    const p = this.player;
+
+    // Regenerate the mine, excluding items the player already has
+    this.world.regenerateMine(p);
+
+    // Clear any live dynamites (they're in the old mine)
+    this._dynamites = [];
+
+    // If the player is underground, surface them
+    if (p.y >= 3) {
+      p.x = PLAYER_START_X;
+      p.y = PLAYER_START_Y;
+    }
+
+    p.setMessage('🌋 EARTHQUAKE! The mine has been refilled with fresh dirt and minerals!');
+    this.state = 'playing';
+    this.input.clear();
+    this.ui.updateHUD(p);
+    Storage.save(p, this.world, this);
   }
 
   // -------------------------------------------------------------------------

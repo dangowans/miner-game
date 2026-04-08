@@ -58,6 +58,9 @@ const TILE = Object.freeze({
   CANTEEN:     34,   // Hidden canteen – novelty collectible
   LUNCHBOX:    35,   // Hidden lunch box – novelty collectible
   HOUSE:       36,   // Family home – replaces bar in family mode
+  TIN_CAN:     37,   // Hidden tin can – novelty collectible
+  NECKLACE:    38,   // Hidden necklace – found in mine during family mode; deliver home to have a baby
+  WORKER:      39,   // Construction worker building on the surface
 });
 
 // ---------------------------------------------------------------------------
@@ -85,6 +88,8 @@ const HIDDEN = Object.freeze({
   SKULL:        'skull',        // Unique – novelty collectible
   CANTEEN:      'canteen',      // Unique – novelty collectible
   LUNCHBOX:     'lunchbox',     // Unique – novelty collectible
+  TIN_CAN:      'tin_can',      // Unique – novelty collectible
+  NECKLACE:     'necklace',     // Family-mode item – deliver home to have a baby
 });
 
 // ---------------------------------------------------------------------------
@@ -128,7 +133,7 @@ const SHOP_ITEMS = [
   {
     id:      'shovel',
     name:    'Shovel',
-    icon:    '⛏',
+    icon:    '🪏',
     price:   50,
     desc:    'Reduces effort to reveal dirt tiles',
     oneTime: true,
@@ -136,7 +141,7 @@ const SHOP_ITEMS = [
   {
     id:      'pick',
     name:    'Pick',
-    icon:    '⚒',
+    icon:    '⛏',
     price:   100,
     desc:    `Break stone blocks found in the mine (walk into them) — lasts ${TOOL_USES} uses`,
     oneTime: false,
@@ -252,6 +257,9 @@ const HAZARD_SPREAD = 12;  // Max EMPTY tiles a water/lava spring floods when tr
 // ---------------------------------------------------------------------------
 // Elevator
 // ---------------------------------------------------------------------------
+const WORKER_X        = 20;   // Construction worker building x-column
+const ELEVATOR_X      = 21;   // Elevator shaft x-column (adjacent to mine entrance)
+const ELEVATOR_COST   = 500;  // One-time cost to build the elevator
 
 // ---------------------------------------------------------------------------
 // Surface building x-positions in the building facade row (y=0)
@@ -333,6 +341,9 @@ const TILE_COLOR = {
   [TILE.CANTEEN]:      '#556644',
   [TILE.LUNCHBOX]:     '#884422',
   [TILE.HOUSE]:        '#8b5e3c',
+  [TILE.TIN_CAN]:      '#708090',
+  [TILE.NECKLACE]:     '#f0c040',
+  [TILE.WORKER]:       '#c87840',
 };
 
 // Ore tile types that can be destroyed when a hazard spreads over them
