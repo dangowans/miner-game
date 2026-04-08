@@ -582,28 +582,31 @@ class Renderer {
       }
 
       case TILE.WORKER: {
-        // Orange-brown shed façade
-        ctx.fillStyle = '#c87840';
-        ctx.fillRect(px + 4, py + 8, ts - 8, ts - 8);
-        // Roof triangle
-        ctx.fillStyle = '#7a4010';
+        // Sky background
+        ctx.fillStyle = '#7ab8e8';
+        ctx.fillRect(px, py, ts, ts);
+        // Body (orange hi-vis vest)
+        ctx.fillStyle = '#e07820';
+        ctx.fillRect(cx - 5, py + 17, 10, 11);
+        // Head
+        ctx.fillStyle = '#f0c890';
         ctx.beginPath();
-        ctx.moveTo(px, py + 10);
-        ctx.lineTo(cx, py + 2);
-        ctx.lineTo(px + ts, py + 10);
+        ctx.arc(cx, py + 13, 5, 0, Math.PI * 2);
         ctx.fill();
-        // Door
-        ctx.fillStyle = '#4a2200';
-        ctx.fillRect(cx - 3, py + 20, 7, ts - 20);
-        // Hard-hat icon
-        ctx.font      = 'bold 6px monospace';
-        ctx.fillStyle = '#fff';
-        ctx.textAlign = 'center';
-        ctx.fillText('🏗️', cx, py + 17);
-        // Label
-        ctx.fillStyle = '#4a2200';
-        ctx.font      = 'bold 5px monospace';
-        ctx.fillText('WORKER', cx, py + ts - 3);
+        // Hard hat (yellow)
+        ctx.fillStyle = '#f5d800';
+        ctx.beginPath();
+        ctx.arc(cx, py + 11, 5, Math.PI, 0);
+        ctx.fill();
+        ctx.fillRect(cx - 7, py + 10, 14, 3);
+        // Arms
+        ctx.fillStyle = '#e07820';
+        ctx.fillRect(cx - 9, py + 18, 4, 7);
+        ctx.fillRect(cx + 5, py + 18, 4, 7);
+        // Legs
+        ctx.fillStyle = '#4466aa';
+        ctx.fillRect(cx - 5, py + 28, 4, ts - 28);
+        ctx.fillRect(cx + 1, py + 28, 4, ts - 28);
         break;
       }
     }

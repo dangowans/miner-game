@@ -225,8 +225,7 @@ class UI {
           <h2>🍺 The Bar</h2>
           <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
         </div>
-        <p class="bar-girl">👱‍♀️ <em>${line}</em></p>
-        <p class="hint">Pick the 🌸 flower to the left of the outhouse and bring it to her.</p>`;
+        <p class="bar-girl">👱‍♀️ <em>${line}</em></p>`;
 
     // ── Proposal: drinks done, ring in hand, $1000 available ─────────────
     } else if (unlockedByDrinks && hasRingAndMoney) {
@@ -685,9 +684,6 @@ class UI {
 
     // Baby – necklaces are delivered automatically on house entry; show status only
     const maxBabies = player.babyCount >= MAX_BABIES;
-    const babyHint  = maxBabies
-      ? '<em>(maximum babies reached)</em>'
-      : `<em>Find a 📿 necklace in the mine — it's delivered automatically when you visit home.</em>`;
 
     // Supplies refill – label changes based on whether there are babies
     const foodLabel      = player.babyCount > 0 ? 'food and diapers' : 'food';
@@ -697,6 +693,11 @@ class UI {
       : player.money < SUPPLIES_REFILL_COST
         ? ` <em class="short">(need $${SUPPLIES_REFILL_COST - player.money} more)</em>` : '';
     const refillCls      = canRefill ? 'shop-item buyable' : 'shop-item disabled';
+
+    // Wife message depends on how well-stocked the house is
+    const wifeMsg = supPct > 50
+      ? `"You're such a great provider. We have plenty of ${foodLabel}!"`
+      : `"We need more ${foodLabel}!"`;
 
     const houseEmoji = ['🏠', '🏡', '🏘️', '🏰'][Math.min(player.houseLevel - 1, 3)];
     const babyEmojis = ['👶', '👶👶', '👶👶👶', '👶👶👶👶'][Math.max(0, player.babyCount - 1)] || '—';
@@ -718,7 +719,7 @@ class UI {
 
       <div class="section-label">${player.babyCount > 0 ? 'FOOD &amp; DIAPERS' : 'FOOD'}</div>
       <p style="font-size:0.88em;margin:4px 0 6px">
-        👱‍♀️ <em>"We need ${foodLabel}!"</em><br>
+        👱‍♀️ <em>${wifeMsg}</em><br>
         ${foodLabelCap}: <strong style="color:${supColor}">[${supBar}] ${supPct}%</strong>
       </p>
       <div class="${refillCls}" id="refill-btn">
@@ -729,8 +730,6 @@ class UI {
       <p style="font-size:0.88em;margin:4px 0 6px">
         Babies: <strong>${player.babyCount} / ${MAX_BABIES}</strong>
         ${player.babyCount > 0 ? babyEmojis : ''}
-        <br>${babyHint}
-        <br><small>Each baby speeds up food &amp; diaper depletion.</small>
       </p>
     `;
     this._openOverlay(onClose);
@@ -739,9 +738,14 @@ class UI {
     if (refillBtn && refillBtn.classList.contains('buyable')) {
       refillBtn.addEventListener('click', () => {
         if (player.money < SUPPLIES_REFILL_COST) return;
+        const wasAlreadyFull = player.suppliesMeter + SUPPLIES_REFILL_AMOUNT > 100;
         player.money        -= SUPPLIES_REFILL_COST;
         player.suppliesMeter = Math.min(100, player.suppliesMeter + SUPPLIES_REFILL_AMOUNT);
-        player.setMessage(`🛒 Stocked up on ${foodLabel}! (${Math.round(player.suppliesMeter)}% full)`);
+        if (wasAlreadyFull) {
+          player.setMessage(`👱‍♀️ "What? You think we're made of money?!"`);
+        } else {
+          player.setMessage(`🛒 Stocked up on ${foodLabel}! (${Math.round(player.suppliesMeter)}% full)`);
+        }
         sounds.playTransaction();
         this._closeOverlay();
       });
