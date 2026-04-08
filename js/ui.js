@@ -72,6 +72,7 @@ class UI {
     if (player.specialItems.has('skull'))        tools.push('💀');
     if (player.specialItems.has('canteen'))      tools.push('🧴');
     if (player.specialItems.has('lunchbox'))     tools.push('🍱');
+    if (player.specialItems.has('tin_can'))      tools.push('🥫');
     if (player.dynamiteCount > 0) {
       tools.push(player.placingDynamite
         ? `💣×${player.dynamiteCount} [PLACING]`

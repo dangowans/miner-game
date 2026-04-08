@@ -78,6 +78,7 @@ class World {
       { content: HIDDEN.CANTEEN,      y:  6 + Math.floor(rng() * 25),  x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.LUNCHBOX,     y:  8 + Math.floor(rng() * 28),  x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.RADIO,        y: 16 + Math.floor(rng() * 35),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.TIN_CAN,      y:  5 + Math.floor(rng() * 30),  x: 1 + Math.floor(rng() * xRange) },
       // Glasses at fixed depth directly below the outhouse
       { content: HIDDEN.GLASSES,      y: GLASSES_DEPTH + 2,            x: GLASSES_X },
       // Ring at random depth 50-60 m below the outhouse (world-y = depth + 2)
@@ -331,6 +332,7 @@ class World {
       case HIDDEN.SKULL:        this.setTile(x, y, TILE.SKULL);        break;
       case HIDDEN.CANTEEN:      this.setTile(x, y, TILE.CANTEEN);      break;
       case HIDDEN.LUNCHBOX:     this.setTile(x, y, TILE.LUNCHBOX);     break;
+      case HIDDEN.TIN_CAN:      this.setTile(x, y, TILE.TIN_CAN);      break;
       default:                  this.setTile(x, y, TILE.EMPTY);        break;
     }
     return hidden;
@@ -407,6 +409,7 @@ class World {
       case TILE.SKULL:
       case TILE.CANTEEN:
       case TILE.LUNCHBOX:
+      case TILE.TIN_CAN:
         return true;
       case TILE.BUILDING:
       case TILE.DIRT:

@@ -722,6 +722,16 @@ class Game {
         break;
       }
 
+      case TILE.TIN_CAN: {
+        if (!p.specialItems.has('tin_can')) {
+          p.specialItems.add('tin_can');
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          this._showItemPickupOverlay('🥫', 'A dented tin can. "Best before 1987."');
+        }
+        break;
+      }
+
       // ── Ring – the proposal item ───────────────────────────────────────
       case TILE.RING: {
         if (!p.hasRing) {
@@ -991,7 +1001,7 @@ class Game {
     if (p.dynamiteCount)   items.push(`💣 Dynamite ×${p.dynamiteCount}`);
     if (p.firstAidKits)    items.push(`🩹 First Aid ×${p.firstAidKits}`);
     for (const si of p.specialItems) {
-      const icons = { rubber_boot: '🥾', pocket_watch: '⌚', glasses: '🕶️', skull: '💀', canteen: '🧴', lunchbox: '🍱' };
+      const icons = { rubber_boot: '🥾', pocket_watch: '⌚', glasses: '🕶️', skull: '💀', canteen: '🧴', lunchbox: '🍱', tin_can: '🥫' };
       if (icons[si]) items.push(icons[si]);
     }
     return {

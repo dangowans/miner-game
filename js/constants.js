@@ -58,6 +58,7 @@ const TILE = Object.freeze({
   CANTEEN:     34,   // Hidden canteen – novelty collectible
   LUNCHBOX:    35,   // Hidden lunch box – novelty collectible
   HOUSE:       36,   // Family home – replaces bar in family mode
+  TIN_CAN:     37,   // Hidden tin can – novelty collectible
 });
 
 // ---------------------------------------------------------------------------
@@ -85,6 +86,7 @@ const HIDDEN = Object.freeze({
   SKULL:        'skull',        // Unique – novelty collectible
   CANTEEN:      'canteen',      // Unique – novelty collectible
   LUNCHBOX:     'lunchbox',     // Unique – novelty collectible
+  TIN_CAN:      'tin_can',      // Unique – novelty collectible
 });
 
 // ---------------------------------------------------------------------------
@@ -333,6 +335,7 @@ const TILE_COLOR = {
   [TILE.CANTEEN]:      '#556644',
   [TILE.LUNCHBOX]:     '#884422',
   [TILE.HOUSE]:        '#8b5e3c',
+  [TILE.TIN_CAN]:      '#708090',
 };
 
 // Ore tile types that can be destroyed when a hazard spreads over them
