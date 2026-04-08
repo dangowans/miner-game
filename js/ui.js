@@ -58,7 +58,7 @@ class UI {
 
     const tools = [];
     if (player.hasShovel)       tools.push('🪏');
-    if (player.hasPick)         tools.push(`⚒×${player.pickUses}`);
+    if (player.hasPick)         tools.push(`⛏×${player.pickUses}`);
     if (player.hasBucket)       tools.push(`🪣×${player.bucketUses}`);
     if (player.hasExtinguisher) tools.push(`🧯×${player.extinguisherUses}`);
     if (player.hasBag)          tools.push('🎒×2');

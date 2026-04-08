@@ -244,10 +244,10 @@ class Game {
         if (p.pickUses <= 0) {
           p.hasPick   = false;
           p.pickUses  = 0;
-          p.setMessage('⚒ Stone broken! Pick broke — buy a new one.');
+          p.setMessage('⛏ Stone broken! Pick broke — buy a new one.');
           sounds.playToolBreak();
         } else {
-          p.setMessage(`⚒ Stone broken! (${p.pickUses} use${p.pickUses !== 1 ? 's' : ''} left)`);
+          p.setMessage(`⛏ Stone broken! (${p.pickUses} use${p.pickUses !== 1 ? 's' : ''} left)`);
         }
         this._afterMove(nx, ny);
       } else {
@@ -772,7 +772,7 @@ class Game {
           p.pickUses = TOOL_USES;
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
-          this._showItemPickupOverlay('⚒', `Found a Pick! Walk into stone to break it. (${TOOL_USES} uses)`);
+          this._showItemPickupOverlay('⛏', `Found a Pick! Walk into stone to break it. (${TOOL_USES} uses)`);
         }
         break;
       }
@@ -1060,7 +1060,7 @@ class Game {
     const gemTotal = p.gems.reduce((s, g) => s + (GEM_VALUE[g] || 0), 0);
     const items   = [];
     if (p.hasShovel)       items.push('🪏 Shovel');
-    if (p.hasPick)         items.push(`⚒ Pick (×${p.pickUses})`);
+    if (p.hasPick)         items.push(`⛏ Pick (×${p.pickUses})`);
     if (p.hasBucket)       items.push(`🪣 Bucket (×${p.bucketUses})`);
     if (p.hasExtinguisher) items.push(`🧯 Extinguisher (×${p.extinguisherUses})`);
     if (p.hasBag)          items.push('🎒 Large Bag');

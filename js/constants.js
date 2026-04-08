@@ -141,7 +141,7 @@ const SHOP_ITEMS = [
   {
     id:      'pick',
     name:    'Pick',
-    icon:    '⚒',
+    icon:    '⛏',
     price:   100,
     desc:    `Break stone blocks found in the mine (walk into them) — lasts ${TOOL_USES} uses`,
     oneTime: false,
