@@ -979,14 +979,14 @@ class UI {
         <br><small>Refill the mine with fresh dirt and minerals</small>
       </div>
 
-      ${familyBtn}
-
       <div class="section-label">DANGER ZONE</div>
 
       <div class="shop-item buyable" id="new-game-btn" style="border-color:#aa3333;color:#ff8888">
         🗑️ New Game
         <br><small>Erase all progress and start over</small>
       </div>
+
+      ${familyBtn}
     `;
     this._openOverlay(onClose);
 
