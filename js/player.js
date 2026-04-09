@@ -70,6 +70,8 @@ class Player {
     this.suppliesMeter  = 100;   // Household supplies 0–100 %
     this.necklaceCount  = 0;     // Necklaces found in the mine (deliver at home for a baby)
     this.hasElevator    = false; // True once the elevator shaft has been built
+    this.inElevator     = false; // True while the player is riding in the elevator cabin
+    this.unlockedDepth  = MAX_MINE_DEPTH; // Mine depth limit in metres (expandable)
 
     // HUD message
     this.message      = '';

@@ -65,10 +65,18 @@ class Game {
       Storage.restorePlayer(this.player, saved.player);
       Storage.restoreWorld(this.world, saved.world);
       Storage.restoreGame(this, saved.game);
-      // Ensure construction worker tile is present in family mode saves that
+      // Ensure Contractor Mike tile is present in family mode saves that
       // predate the worker tile addition (older version-3 saves may lack it).
       if (this.player.familyMode) {
         this.world.setTile(WORKER_X, 1, TILE.WORKER);
+        // Reapply expansion tiles so saves that predate this feature are correct.
+        this._applyHouseExpansionTiles(this.player.houseLevel);
+      }
+      // Migrate old saves: if the elevator was already built but the surface
+      // entrance tile (x=23, y=2) is still MINE_ENT, rebuild to place ELEV_ENT there.
+      if (this.player.hasElevator &&
+          this.world.getTile(ELEVATOR_X, PLAYER_START_Y) !== TILE.ELEV_ENT) {
+        this.world.buildElevator();
       }
       this.ui.updateHUD(this.player);
     } else if (Storage.popStartInFamilyMode()) {
@@ -169,7 +177,8 @@ class Game {
     if (this._dragonWarnings >= 10) {
       Storage.clear();
       this.state = 'dead';
-      this.ui.showWarned(this._elapsedTimeLabel());
+      const stats = this.player.familyMode ? this._collectFamilyStats() : null;
+      this.ui.showWarned(this._elapsedTimeLabel(), stats);
     } else {
       this.state = 'overlay';
       this.ui.openDragons(() => { this.state = 'playing'; this.input.clear(); });
@@ -184,6 +193,25 @@ class Game {
     // ── Dynamite placement mode ───────────────────────────────────────────
     if (p.placingDynamite) {
       this._placeDynamite(dx, dy);
+      return;
+    }
+
+    // ── Elevator cabin mode ───────────────────────────────────────────────
+    if (p.inElevator) {
+      if (dx < 0) {
+        this._tryExitElevator();
+      } else if (dy !== 0) {
+        // Move up or down to the next elevator door
+        const nextY = this._nextElevEntry(p.y, dy);
+        if (nextY === PLAYER_START_Y) {
+          // Reached the surface – stay in the cabin; player exits manually (← or E)
+          p.y = PLAYER_START_Y;
+          p.setMessage('🛗 Elevator: back at the surface.');
+        } else if (nextY !== null) {
+          p.y = nextY;
+          p.setMessage(`🛗 Elevator: ${nextY - 2} m deep.`);
+        }
+      }
       return;
     }
 
@@ -205,8 +233,8 @@ class Game {
     }
 
     // ── Max mine depth ────────────────────────────────────────────────────
-    // depth in metres = ny - 2; block movement beyond MAX_MINE_DEPTH
-    if (ny - 2 > MAX_MINE_DEPTH) {
+    // depth in metres = ny - 2; block movement beyond the player's unlocked depth
+    if (ny - 2 > p.unlockedDepth) {
       this._warnDragons();
       return;
     }
@@ -274,7 +302,15 @@ class Game {
       return;
     }
 
-    // ── 5. Normal passable tile ───────────────────────────────────────────
+    // ── 5. Elevator door – right-approach opens ride prompt ──────────────
+    if (targetTile === TILE.ELEV_ENT) {
+      // Only the rightward approach (dx=1) is the entry gesture; other directions
+      // just treat the door as an impassable wall (silent).
+      if (dx === 1) this._showElevatorRidePrompt(ny);
+      return;
+    }
+
+    // ── 6. Normal passable tile ───────────────────────────────────────────
     if (this.world.isPassable(nx, ny)) {
       p.x = nx; p.y = ny;
       this._afterMove(nx, ny);
@@ -369,6 +405,138 @@ class Game {
   }
 
   // -------------------------------------------------------------------------
+  // Elevator helpers
+  // -------------------------------------------------------------------------
+
+  /**
+   * Show the elevator ride prompt overlay.  Only shown when approaching an
+   * ELEV_ENT tile by pressing right (dx=1).  If the player cannot afford the
+   * ride a HUD message is shown instead; the game does not pause.
+   * @param {number} targetY  - world-row of the elevator door being approached
+   */
+  _showElevatorRidePrompt(targetY) {
+    const p = this.player;
+    if (p.money < ELEVATOR_RIDE_COST) {
+      p.setMessage(`🛗 Need $${ELEVATOR_RIDE_COST} to ride. (You have $${p.money})`);
+      return;
+    }
+    this.input.clear();
+    this.state = 'overlay';
+    this.ui.showElevatorRidePrompt(ELEVATOR_RIDE_COST, () => {
+      // Pay and board
+      p.money -= ELEVATOR_RIDE_COST;
+      p.inElevator = true;
+      p.x = ELEVATOR_X;
+      p.y = targetY;
+      p.setMessage('🛗 In the elevator. ↑↓ to move between floors, ← to exit.');
+      this.ui.updateHUD(p);
+      this.state = 'playing';
+      this.input.clear();
+    }, () => {
+      // Decline
+      this.state = 'playing';
+      this.input.clear();
+    });
+  }
+
+  /**
+   * Return the world-row y of the next elevator entry point when traveling in
+   * direction dy (−1 = up, +1 = down) from the given row.
+   *
+   * Entry rows obey: (y − 2) % 5 === 0  (y = 7, 12, 17 … inside the shaft).
+   * y = PLAYER_START_Y (2) is returned when going up past the first door
+   * to signal a surface exit.  null is returned when there is nowhere to go
+   * (already at surface going up, or beyond depth limit going down).
+   */
+  _nextElevEntry(currentY, dy) {
+    if (dy < 0) {
+      // Going up – find the previous entry row.
+      // Entry rows satisfy (y − 2) % 5 === 0, i.e. y = 2 + 5k (k = 0,1,2,…).
+      // The largest entry row strictly below currentY is:
+      //   floor((currentY − 3) / 5) * 5 + 2
+      // (subtract 3 so that currentY itself — which may be an entry row — is excluded).
+      const prev = Math.floor((currentY - 3) / 5) * 5 + 2;
+      if (prev >= 7) return prev;          // another underground door above
+      if (currentY >= 7) return PLAYER_START_Y;  // surface exit
+      return null;                          // already at surface
+    } else {
+      // Going down – find the next entry row.
+      // The smallest entry row strictly above currentY is:
+      //   floor((currentY − 2) / 5 + 1) * 5 + 2
+      // (add 1 before flooring so currentY itself is excluded).
+      const next = Math.floor((currentY - 2) / 5 + 1) * 5 + 2;
+      if (next - 2 > this.player.unlockedDepth) return null;
+      // Ensure the target row (and a lookahead buffer) has been generated
+      this.world.ensureGenerated(next + GEN_LOOKAHEAD);
+      return this.world.getTile(ELEVATOR_X, next) === TILE.ELEV_ENT ? next : null;
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Elevator exit helper
+  // -------------------------------------------------------------------------
+
+  /**
+   * Attempt to exit the elevator cabin to the left.
+   * - If the adjacent tile is passable: step out immediately.
+   * - If it's DIRT: dig it (revealing any hidden content) then step out if passable.
+   * - If it's STONE and the player has a pick: break it then step out.
+   * - Otherwise: show a "blocked" message and stay in the cabin.
+   */
+  _tryExitElevator() {
+    const p     = this.player;
+    const exitX = ELEVATOR_X - 1;
+    const tile  = this.world.getTile(exitX, p.y);
+
+    if (tile === TILE.DIRT) {
+      const content = this.world.digInto(exitX, p.y);
+      this._onContentRevealed(content, exitX, p.y);
+      const newTile = this.world.getTile(exitX, p.y);
+      if (newTile === TILE.STONE) { sounds.playTinkStone(); return; }
+      if (newTile === TILE.LAVA)  { this._enterLava(p, exitX, p.y);  return; }
+      if (newTile === TILE.WATER) { this._enterWater(p, exitX, p.y); return; }
+      if (this.world.isPassable(exitX, p.y)) {
+        p.inElevator = false;
+        p.x = exitX;
+        this._afterMove(p.x, p.y);
+      }
+      return;
+    }
+
+    if (tile === TILE.STONE) {
+      if (p.hasPick) {
+        this.world.setTile(exitX, p.y, TILE.EMPTY);
+        p.pickUses--;
+        sounds.playCrumbleStone();
+        if (p.pickUses <= 0) {
+          p.hasPick  = false;
+          p.pickUses = 0;
+          p.setMessage('⛏ Stone broken! Pick broke — buy a new one.');
+          sounds.playToolBreak();
+        } else {
+          p.setMessage(`⛏ Stone broken! (${p.pickUses} use${p.pickUses !== 1 ? 's' : ''} left)`);
+        }
+        p.inElevator = false;
+        p.x = exitX;
+        this._afterMove(p.x, p.y);
+      } else {
+        p.setMessage('🪨 You need a Pick to break stone.');
+        sounds.playTinkStone();
+      }
+      return;
+    }
+
+    if (!this.world.isPassable(exitX, p.y)) {
+      p.setMessage('🛗 Cannot exit here — the adjacent tile is blocked.');
+      return;
+    }
+
+    p.inElevator = false;
+    p.x = exitX;
+    this._afterMove(p.x, p.y);
+  }
+
+  // -------------------------------------------------------------------------
   // Hazard damage
   // -------------------------------------------------------------------------
 
@@ -380,7 +548,7 @@ class Game {
     if (died) {
       Storage.clear();
       this.state = 'dead';
-      this.ui.showDead(this._elapsedTimeLabel());
+      this.ui.showDead(this._elapsedTimeLabel(), p.familyMode ? this._collectFamilyStats() : null);
     } else {
       const what = hazardType === 'lava'         ? '🔥 Lava burn'
                  : hazardType === 'lava_source'  ? '🔥 Lava source — can\'t pass'
@@ -507,7 +675,8 @@ class Game {
     if (by < 3) {
       Storage.clear();
       this.state = 'dead';
-      this.ui.showPoliceArrest(this._elapsedTimeLabel());
+      const stats = this.player.familyMode ? this._collectFamilyStats() : null;
+      this.ui.showPoliceArrest(this._elapsedTimeLabel(), stats);
       return;
     }
 
@@ -544,7 +713,8 @@ class Game {
     if (blastTouchesSurface) {
       Storage.clear();
       this.state = 'dead';
-      this.ui.showMineCollapse(this._elapsedTimeLabel());
+      const stats = this.player.familyMode ? this._collectFamilyStats() : null;
+      this.ui.showMineCollapse(this._elapsedTimeLabel(), stats);
       return;
     }
 
@@ -557,7 +727,7 @@ class Game {
       if (died) {
         Storage.clear();
         this.state = 'dead';
-        this.ui.showDead(this._elapsedTimeLabel());
+        this.ui.showDead(this._elapsedTimeLabel(), p.familyMode ? this._collectFamilyStats() : null);
         return;
       }
       p.setMessage(`💥 Too close to the blast! 2 damage (${p.hearts}/${p.maxHearts} ♥)`);
@@ -567,7 +737,7 @@ class Game {
       if (died) {
         Storage.clear();
         this.state = 'dead';
-        this.ui.showDead(this._elapsedTimeLabel());
+        this.ui.showDead(this._elapsedTimeLabel(), p.familyMode ? this._collectFamilyStats() : null);
         return;
       }
       p.setMessage(`💥 Caught in the blast! 1 damage (${p.hearts}/${p.maxHearts} ♥)`);
@@ -801,6 +971,13 @@ class Game {
 
   _handleInteract() {
     const p = this.player;
+
+    // ── Exit elevator on interact ─────────────────────────────────────────
+    if (p.inElevator) {
+      this._tryExitElevator();
+      return;
+    }
+
     const checkTile = (type) =>
       this.world.getTile(p.x, p.y)     === type ||
       this.world.getTile(p.x, p.y - 1) === type;
@@ -908,7 +1085,19 @@ class Game {
           p.money -= ELEVATOR_COST;
           p.hasElevator = true;
           this.world.buildElevator();
-          p.setMessage('🏗️ Elevator shaft built! Use it at x=21 to travel the mine quickly.');
+          p.setMessage('🏗️ Elevator built! Approach the door at x=23 from the left to ride ($5/boarding).');
+          this.ui.updateHUD(p);
+          Storage.save(p, this.world, this);
+        },
+        onExpandElevatorDepth: () => {
+          p.unlockedDepth += ELEVATOR_DEPTH_INCREMENT;
+          p.money -= ELEVATOR_DEPTH_COST;
+          p.setMessage(`⛏ Mine expanded to ${p.unlockedDepth} m! Deeper ore awaits.`);
+          this.ui.updateHUD(p);
+          Storage.save(p, this.world, this);
+        },
+        onExpandHouse: (level) => {
+          this._applyHouseExpansionTiles(level);
           this.ui.updateHUD(p);
           Storage.save(p, this.world, this);
         },
@@ -917,22 +1106,10 @@ class Game {
     }
 
     if (checkTile(TILE.MINE_ENT)) {
-      if (p.hasElevator && p.y >= 3) {
-        // Player is in the mine at the elevator shaft entrance — offer fast travel to surface
-        p.x = ELEVATOR_X;
-        p.y = PLAYER_START_Y;
-        p.setMessage('🛗 Elevator: back at the surface!');
-        this.ui.updateHUD(p);
-      } else if (p.hasElevator && p.y === PLAYER_START_Y && p.x === ELEVATOR_X) {
-        // Player is on the surface at the elevator — descend to deepest point
-        const targetY = Math.max(3, this.world.deepestGenY - 2);
-        p.x = ELEVATOR_X;
-        p.y = targetY;
-        p.setMessage(`🛗 Elevator: descended to depth ${targetY - 2} m.`);
-        this.ui.updateHUD(p);
-      } else {
-        p.setMessage('⛏ Walk down (↓ / S) to enter the mine.');
-      }
+      // Entering the elevator via right-approach now handles boarding; E just
+      // shows a hint to walk down for the standard mine entrance.
+      p.setMessage('⛏ Walk down (↓ / S) to enter the mine, or approach the elevator door from the left.');
+      return;
     }
   }
 
@@ -955,10 +1132,11 @@ class Game {
       p.money -= JEWELER_MONEY_COST;
     }
 
-    // Replace bar with house tile
+    // Replace bar with house tile and apply any expansion tiles for this level
     this.world.setTile(BAR_X, 1, TILE.HOUSE);
+    this._applyHouseExpansionTiles(p.houseLevel);
 
-    // Ensure construction worker is present for house upgrades
+    // Ensure Contractor Mike is present for house upgrades
     this.world.setTile(WORKER_X, 1, TILE.WORKER);
 
     // Initialise wall-clock timers
@@ -985,6 +1163,25 @@ class Game {
     p.setMessage('👨‍👩‍👧‍👦 Family Mode! Visit your new home and the bank to get started.');
     this.ui.updateHUD(p);
     Storage.save(p, this.world, this);
+  }
+
+  /** Set world tiles for all house levels up to and including `level`.
+   *  Level 1 = main facade only (already placed by _activateFamilyMode).
+   *  Level 2 = side-wall extensions left and right.
+   *  Level 3 = top-floor tile above the main facade.
+   *  Level 4 = top-floor tiles above the two side walls. */
+  _applyHouseExpansionTiles(level) {
+    if (level >= 2) {
+      this.world.setTile(BAR_X - 1, 1, TILE.HOUSE);
+      this.world.setTile(BAR_X + 1, 1, TILE.HOUSE);
+    }
+    if (level >= 3) {
+      this.world.setTile(BAR_X, 0, TILE.HOUSE);
+    }
+    if (level >= 4) {
+      this.world.setTile(BAR_X - 1, 0, TILE.HOUSE);
+      this.world.setTile(BAR_X + 1, 0, TILE.HOUSE);
+    }
   }
 
   /** Compute the current tax bill based on house level. */

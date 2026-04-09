@@ -180,9 +180,13 @@ class World {
    */
   buildElevator() {
     this.elevatorBuilt = true;
-    for (let y = 3; y <= this.deepestGenY; y++) {
+    // Start from y=2 (pavement row) so the surface entrance column also becomes an
+    // ELEV_ENT door tile, replacing the regular mine-entrance tile there.
+    for (let y = 2; y <= this.deepestGenY; y++) {
       if (this.getTile(ELEVATOR_X, y) !== null) {
-        this.setTile(ELEVATOR_X, y, TILE.EMPTY);
+        // Place an entry-point tile every 5 m (depth = y-2, multiple of 5)
+        const isEntry = isElevEntryRow(y);
+        this.setTile(ELEVATOR_X, y, isEntry ? TILE.ELEV_ENT : TILE.ELEV_SHAFT);
         this.setData(ELEVATOR_X, y, null);
       }
     }
@@ -245,7 +249,7 @@ class World {
     top[9]          = TILE.BAR;        // Bar
     top[13]         = TILE.DOCTOR;     // Doctor
     top[BANK_X]     = TILE.BANK;       // Town bank (x=17)
-    top[WORKER_X]   = TILE.WORKER;     // Construction worker (x=20)
+    top[WORKER_X]   = TILE.SKY;        // Contractor Mike only visible in family mode
     // Jeweler removed – x=19 remains SKY
 
     // Mine entrance arch at x=22-24 (decorative upper; actual entrance at y=2)
@@ -317,7 +321,8 @@ class World {
 
         // Keep the elevator shaft open if it has been built
         if (this.elevatorBuilt && x === ELEVATOR_X) {
-          tiles[x] = TILE.EMPTY;
+          // Place an entry-point tile every 5 m (depth = y-2, multiple of 5)
+          tiles[x] = isElevEntryRow(y) ? TILE.ELEV_ENT : TILE.ELEV_SHAFT;
           data[x]  = null;
           continue;
         }

@@ -47,6 +47,8 @@ class Renderer {
 
     for (let screenRow = 0; screenRow < VIEWPORT_ROWS; screenRow++) {
       const worldY = this.cameraY + screenRow;
+      // Tiles below the player's unlocked depth limit are not rendered
+      if (worldY > player.unlockedDepth + 2) continue;
       for (let x = 0; x < VIEWPORT_COLS; x++) {
         const tile = world.getTile(x, worldY);
         if (tile === null) continue;
@@ -66,6 +68,15 @@ class Renderer {
     const hs = ts / 2;
     const cx = px + hs;
     const cy = py + hs;
+
+    // ── Sky horizon for the building-facade row ───────────────────────────────
+    // Draw a sky-blue strip across the top of every y=1 building tile BEFORE
+    // tile detail so that peaked roofs (house, outhouse) render above it.
+    // SKY, FLOWER and MINE_ENT tiles are excluded.
+    if (ty === 1 && tile !== TILE.MINE_ENT && tile !== TILE.SKY && tile !== TILE.FLOWER) {
+      ctx.fillStyle = '#7ab8e8';
+      ctx.fillRect(px, py, ts, 8);
+    }
 
     switch (tile) {
 
@@ -142,67 +153,108 @@ class Renderer {
       }
 
       case TILE.HOUSE: {
-        // Small family house – visually expands with player.houseLevel
+        // Small family house – visually expands with player.houseLevel.
+        // Three rendering modes based on tile position:
+        //   ty === 0              → top-floor (upper storey, no sky-horizon strip)
+        //   ty === 1, tx !== BAR_X → side wall extension
+        //   ty === 1, tx === BAR_X → main facade
         const lvl = (player && player.houseLevel) || 1;
 
-        // Wall
-        ctx.fillStyle = '#c8956a';
-        ctx.fillRect(px + 4, py + 10, ts - 8, ts - 10);
-
-        // Roof (triangle)
-        ctx.fillStyle = '#6a3a18';
-        ctx.beginPath();
-        ctx.moveTo(px + 1,      py + 10);
-        ctx.lineTo(cx,          py + 2);
-        ctx.lineTo(px + ts - 1, py + 10);
-        ctx.closePath();
-        ctx.fill();
-
-        // Level 3+: dormer window on the roof (above door)
-        if (lvl >= 3) {
+        if (ty === 0) {
+          // ── Top-floor tile (upper storey above the ground-floor row) ────────
+          // Wall
+          ctx.fillStyle = '#c8956a';
+          ctx.fillRect(px, py + 12, ts, ts - 12);
+          // Roof triangle
           ctx.fillStyle = '#6a3a18';
           ctx.beginPath();
-          ctx.moveTo(cx - 4, py + 10);
-          ctx.lineTo(cx,     py + 5);
-          ctx.lineTo(cx + 4, py + 10);
+          ctx.moveTo(px,      py + 12);
+          ctx.lineTo(cx,      py + 2);
+          ctx.lineTo(px + ts, py + 12);
           ctx.closePath();
           ctx.fill();
+          // Window
           ctx.fillStyle = '#aaddff';
-          ctx.fillRect(cx - 2, py + 7, 5, 3);
-        }
-
-        // Door
-        ctx.fillStyle = '#4a2200';
-        ctx.fillRect(cx - 3, py + 20, 7, ts - 20);
-
-        // Left window (always present)
-        ctx.fillStyle = '#aaddff';
-        ctx.fillRect(px + 6, py + 13, 5, 5);
-        ctx.fillStyle = '#88bbdd';
-        ctx.fillRect(px + 7, py + 14, 3, 1);
-        ctx.fillRect(px + 8, py + 13, 1, 3);
-
-        // Level 2+: right window beside the door
-        if (lvl >= 2) {
-          ctx.fillStyle = '#aaddff';
-          ctx.fillRect(px + ts - 11, py + 13, 5, 5);
+          ctx.fillRect(cx - 3, py + 17, 7, 7);
           ctx.fillStyle = '#88bbdd';
-          ctx.fillRect(px + ts - 10, py + 14, 3, 1);
-          ctx.fillRect(px + ts - 9,  py + 13, 1, 3);
-        }
+          ctx.fillRect(cx - 2, py + 19, 5, 1);
+          ctx.fillRect(cx,     py + 17, 1, 5);
 
-        // Level 4: upper-storey windows (above ground-floor windows)
-        if (lvl >= 4) {
+        } else if (tx !== BAR_X) {
+          // ── Side wall extension (ground-floor row, adjacent to main facade) ─
+          // Full-width wall so it connects flush to neighbouring tiles.
+          // Sky-horizon strip (py+0..py+8) was already drawn above the switch.
+          ctx.fillStyle = '#c8956a';
+          ctx.fillRect(px, py + 8, ts, ts - 8);
+          // Window
           ctx.fillStyle = '#aaddff';
-          ctx.fillRect(px + 6, py + 11, 4, 3);
-          ctx.fillRect(px + ts - 11, py + 11, 4, 3);
-        }
+          ctx.fillRect(cx - 3, py + 14, 7, 7);
+          ctx.fillStyle = '#88bbdd';
+          ctx.fillRect(cx - 2, py + 16, 5, 1);
+          ctx.fillRect(cx,     py + 14, 1, 5);
 
-        // Label
-        ctx.fillStyle = '#4a2200';
-        ctx.font      = 'bold 5px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('HOME', cx, py + ts - 3);
+        } else {
+          // ── Main house facade ───────────────────────────────────────────────
+          // Wall
+          ctx.fillStyle = '#c8956a';
+          ctx.fillRect(px + 4, py + 10, ts - 8, ts - 10);
+
+          // Roof (triangle) – drawn on top of the sky-horizon strip so the peak
+          // is visible above the sky line.
+          ctx.fillStyle = '#6a3a18';
+          ctx.beginPath();
+          ctx.moveTo(px + 1,      py + 10);
+          ctx.lineTo(cx,          py + 2);
+          ctx.lineTo(px + ts - 1, py + 10);
+          ctx.closePath();
+          ctx.fill();
+
+          // Level 3+: dormer window on the roof (above door)
+          if (lvl >= 3) {
+            ctx.fillStyle = '#6a3a18';
+            ctx.beginPath();
+            ctx.moveTo(cx - 4, py + 10);
+            ctx.lineTo(cx,     py + 5);
+            ctx.lineTo(cx + 4, py + 10);
+            ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = '#aaddff';
+            ctx.fillRect(cx - 2, py + 7, 5, 3);
+          }
+
+          // Door
+          ctx.fillStyle = '#4a2200';
+          ctx.fillRect(cx - 3, py + 20, 7, ts - 20);
+
+          // Left window (always present)
+          ctx.fillStyle = '#aaddff';
+          ctx.fillRect(px + 6, py + 13, 5, 5);
+          ctx.fillStyle = '#88bbdd';
+          ctx.fillRect(px + 7, py + 14, 3, 1);
+          ctx.fillRect(px + 8, py + 13, 1, 3);
+
+          // Level 2+: right window beside the door
+          if (lvl >= 2) {
+            ctx.fillStyle = '#aaddff';
+            ctx.fillRect(px + ts - 11, py + 13, 5, 5);
+            ctx.fillStyle = '#88bbdd';
+            ctx.fillRect(px + ts - 10, py + 14, 3, 1);
+            ctx.fillRect(px + ts - 9,  py + 13, 1, 3);
+          }
+
+          // Level 4: upper-storey windows (above ground-floor windows)
+          if (lvl >= 4) {
+            ctx.fillStyle = '#aaddff';
+            ctx.fillRect(px + 6, py + 11, 4, 3);
+            ctx.fillRect(px + ts - 11, py + 11, 4, 3);
+          }
+
+          // Label
+          ctx.fillStyle = '#4a2200';
+          ctx.font      = 'bold 5px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('HOME', cx, py + ts - 3);
+        }
         break;
       }
 
@@ -609,14 +661,42 @@ class Renderer {
         ctx.fillRect(cx + 1, py + 28, 4, ts - 28);
         break;
       }
-    }
 
-    // ── Sky horizon for the building-facade row ───────────────────────────────
-    // Draw a sky-blue strip across the top of every y=1 building tile (SHOP,
-    // BAR, DOCTOR, BANK, OUTHOUSE).  SKY, FLOWER and MINE_ENT tiles are excluded.
-    if (ty === 1 && tile !== TILE.MINE_ENT && tile !== TILE.SKY && tile !== TILE.FLOWER) {
-      ctx.fillStyle = '#7ab8e8';
-      ctx.fillRect(px, py, ts, 8);
+      case TILE.ELEV_SHAFT: {
+        // Continuous shaft rails between elevator doors – not interactive
+        ctx.fillStyle = '#0e1520';
+        ctx.fillRect(px, py, ts, ts);
+        ctx.fillStyle = '#3a5070';
+        // Left rail
+        ctx.fillRect(px + 2, py, 4, ts);
+        // Right rail
+        ctx.fillRect(px + ts - 6, py, 4, ts);
+        break;
+      }
+
+      case TILE.ELEV_ENT: {
+        // Elevator door – steel-framed with up/down arrow indicating interior navigation
+        // Dark background
+        ctx.fillStyle = '#0e1520';
+        ctx.fillRect(px, py, ts, ts);
+        // Left rail
+        ctx.fillStyle = '#3a5070';
+        ctx.fillRect(px + 2, py, 4, ts);
+        // Right rail
+        ctx.fillRect(px + ts - 6, py, 4, ts);
+        // Horizontal bar (door lintel)
+        ctx.fillRect(px + 2, py + 4, ts - 4, 3);
+        // ↕ arrow (ride elevator)
+        ctx.fillStyle = '#88ccff';
+        ctx.font      = 'bold 14px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('↕', cx, cy + 6);
+        // "$N" ride-cost label
+        ctx.fillStyle = '#aaddff';
+        ctx.font      = 'bold 7px monospace';
+        ctx.fillText(`$${ELEVATOR_RIDE_COST}`, cx, cy + 16);
+        break;
+      }
     }
   }
 

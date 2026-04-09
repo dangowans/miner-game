@@ -60,7 +60,9 @@ const TILE = Object.freeze({
   HOUSE:       36,   // Family home – replaces bar in family mode
   TIN_CAN:     37,   // Hidden tin can – novelty collectible
   NECKLACE:    38,   // Hidden necklace – found in mine during family mode; deliver home to have a baby
-  WORKER:      39,   // Construction worker building on the surface
+  WORKER:      39,   // Contractor Mike building on the surface
+  ELEV_ENT:    40,   // Elevator door in the shaft (every 5 m) – impassable, interactive
+  ELEV_SHAFT:  41,   // Elevator shaft fill between doors – impassable solid
 });
 
 // ---------------------------------------------------------------------------
@@ -257,9 +259,19 @@ const HAZARD_SPREAD = 12;  // Max EMPTY tiles a water/lava spring floods when tr
 // ---------------------------------------------------------------------------
 // Elevator
 // ---------------------------------------------------------------------------
-const WORKER_X        = 20;   // Construction worker building x-column
-const ELEVATOR_X      = 21;   // Elevator shaft x-column (adjacent to mine entrance)
-const ELEVATOR_COST   = 500;  // One-time cost to build the elevator
+const WORKER_X        = 20;   // Contractor Mike building x-column
+const ELEVATOR_X      = 23;   // Elevator shaft x-column (rightmost mine-entrance column)
+const ELEVATOR_COST   = 500;  // One-time cost to build the elevator shaft
+const ELEVATOR_RIDE_COST = 5; // Cost per elevator ride (enter the cabin)
+const ELEVATOR_DEPTH_INCREMENT = 50;   // Metres added per depth expansion purchase
+const ELEVATOR_DEPTH_MAX       = 300;  // Maximum purchasable mine depth (metres)
+const ELEVATOR_DEPTH_COST      = 200;  // Cost per 50 m depth expansion
+
+/** True when world-row y should hold an elevator entry-point tile (every 5 m). */
+const isElevEntryRow = (y) => (y - 2) % 5 === 0;
+
+/** Deepest elevator entry-point world-row at or above maxY. */
+const deepestElevEntry = (maxY) => Math.floor((maxY - 2) / 5) * 5 + 2;
 
 // ---------------------------------------------------------------------------
 // Surface building x-positions in the building facade row (y=0)
@@ -344,6 +356,8 @@ const TILE_COLOR = {
   [TILE.TIN_CAN]:      '#708090',
   [TILE.NECKLACE]:     '#f0c040',
   [TILE.WORKER]:       '#c87840',
+  [TILE.ELEV_ENT]:     '#1a2233',   // Elevator door – dark steel blue
+  [TILE.ELEV_SHAFT]:   '#3a5070',   // Elevator shaft fill – steel blue rails
 };
 
 // Ore tile types that can be destroyed when a hazard spreads over them
