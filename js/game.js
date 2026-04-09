@@ -199,17 +199,7 @@ class Game {
     // ── Elevator cabin mode ───────────────────────────────────────────────
     if (p.inElevator) {
       if (dx < 0) {
-        // Step out of the elevator to the left (back into the mine).
-        // ELEVATOR_X - 1 = 22 is always the mine column adjacent to the shaft.
-        // If for any reason it is impassable (e.g. hazard tiles), stay and warn.
-        const exitX = ELEVATOR_X - 1;
-        if (!this.world.isPassable(exitX, p.y)) {
-          p.setMessage('🛗 Cannot exit here — the adjacent tile is blocked.');
-          return;
-        }
-        p.inElevator = false;
-        p.x = exitX;
-        this._afterMove(p.x, p.y);
+        this._tryExitElevator();
       } else if (dy !== 0) {
         // Move up or down to the next elevator door
         const nextY = this._nextElevEntry(p.y, dy);
@@ -482,6 +472,70 @@ class Game {
       this.world.ensureGenerated(next + GEN_LOOKAHEAD);
       return this.world.getTile(ELEVATOR_X, next) === TILE.ELEV_ENT ? next : null;
     }
+  }
+
+  // -------------------------------------------------------------------------
+  // Elevator exit helper
+  // -------------------------------------------------------------------------
+
+  /**
+   * Attempt to exit the elevator cabin to the left.
+   * - If the adjacent tile is passable: step out immediately.
+   * - If it's DIRT: dig it (revealing any hidden content) then step out if passable.
+   * - If it's STONE and the player has a pick: break it then step out.
+   * - Otherwise: show a "blocked" message and stay in the cabin.
+   */
+  _tryExitElevator() {
+    const p     = this.player;
+    const exitX = ELEVATOR_X - 1;
+    const tile  = this.world.getTile(exitX, p.y);
+
+    if (tile === TILE.DIRT) {
+      const content = this.world.digInto(exitX, p.y);
+      this._onContentRevealed(content, exitX, p.y);
+      const newTile = this.world.getTile(exitX, p.y);
+      if (newTile === TILE.STONE) { sounds.playTinkStone(); return; }
+      if (newTile === TILE.LAVA)  { this._enterLava(p, exitX, p.y);  return; }
+      if (newTile === TILE.WATER) { this._enterWater(p, exitX, p.y); return; }
+      if (this.world.isPassable(exitX, p.y)) {
+        p.inElevator = false;
+        p.x = exitX;
+        this._afterMove(p.x, p.y);
+      }
+      return;
+    }
+
+    if (tile === TILE.STONE) {
+      if (p.hasPick) {
+        this.world.setTile(exitX, p.y, TILE.EMPTY);
+        p.pickUses--;
+        sounds.playCrumbleStone();
+        if (p.pickUses <= 0) {
+          p.hasPick  = false;
+          p.pickUses = 0;
+          p.setMessage('⛏ Stone broken! Pick broke — buy a new one.');
+          sounds.playToolBreak();
+        } else {
+          p.setMessage(`⛏ Stone broken! (${p.pickUses} use${p.pickUses !== 1 ? 's' : ''} left)`);
+        }
+        p.inElevator = false;
+        p.x = exitX;
+        this._afterMove(p.x, p.y);
+      } else {
+        p.setMessage('🪨 You need a Pick to break stone.');
+        sounds.playTinkStone();
+      }
+      return;
+    }
+
+    if (!this.world.isPassable(exitX, p.y)) {
+      p.setMessage('🛗 Cannot exit here — the adjacent tile is blocked.');
+      return;
+    }
+
+    p.inElevator = false;
+    p.x = exitX;
+    this._afterMove(p.x, p.y);
   }
 
   // -------------------------------------------------------------------------
@@ -922,14 +976,7 @@ class Game {
 
     // ── Exit elevator on interact ─────────────────────────────────────────
     if (p.inElevator) {
-      const exitX = ELEVATOR_X - 1;
-      if (!this.world.isPassable(exitX, p.y)) {
-        p.setMessage('🛗 Cannot exit here — the adjacent tile is blocked.');
-        return;
-      }
-      p.inElevator = false;
-      p.x = exitX;
-      this._afterMove(p.x, p.y);
+      this._tryExitElevator();
       return;
     }
 
