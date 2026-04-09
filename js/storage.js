@@ -125,6 +125,7 @@ const Storage = {
     p.hasRadio      = data.hasRadio;
 
     p.firstAidKits = data.firstAidKits;
+    p.hasMineCart  = data.hasMineCart  ?? false;
 
     p.hearts    = data.hearts;
     p.maxHearts = data.maxHearts;
@@ -215,6 +216,7 @@ function _serializePlayer(p) {
     hasRadio:      p.hasRadio,
 
     firstAidKits: p.firstAidKits,
+    hasMineCart:  p.hasMineCart,
 
     hearts:    p.hearts,
     maxHearts: p.maxHearts,

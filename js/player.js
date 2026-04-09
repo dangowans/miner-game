@@ -53,6 +53,7 @@ class Player {
 
     // Consumable items
     this.firstAidKits  = 0;       // First Aid Kits in inventory (bought at shop)
+    this.hasMineCart   = false;   // Mine cart purchased from Contractor Mike
 
     // Health
     this.hearts    = START_HEARTS;
