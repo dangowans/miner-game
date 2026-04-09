@@ -198,7 +198,7 @@ class Game {
 
     // ── Elevator cabin mode ───────────────────────────────────────────────
     if (p.inElevator) {
-      if (dx !== 0) {
+      if (dx < 0) {
         // Step out of the elevator to the left (back into the mine).
         // ELEVATOR_X - 1 = 22 is always the mine column adjacent to the shaft.
         // If for any reason it is impassable (e.g. hazard tiles), stay and warn.
@@ -210,7 +210,7 @@ class Game {
         p.inElevator = false;
         p.x = exitX;
         this._afterMove(p.x, p.y);
-      } else {
+      } else if (dy !== 0) {
         // Move up or down to the next elevator door
         const nextY = this._nextElevEntry(p.y, dy);
         if (nextY === PLAYER_START_Y) {
@@ -440,7 +440,7 @@ class Game {
       p.inElevator = true;
       p.x = ELEVATOR_X;
       p.y = targetY;
-      p.setMessage('🛗 In the elevator. ↑↓ to move between floors, ← → or E to exit.');
+      p.setMessage('🛗 In the elevator. ↑↓ to move between floors, ← to exit.');
       this.ui.updateHUD(p);
       this.state = 'playing';
       this.input.clear();
