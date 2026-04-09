@@ -613,7 +613,7 @@ class UI {
   // Contractor Mike overlay
   // -------------------------------------------------------------------------
 
-  openWorker(player, { onClose, onBuildElevator, onExpandHouse }) {
+  openWorker(player, { onClose, onBuildElevator, onExpandElevatorDepth, onExpandHouse }) {
     const canExpand   = player.houseLevel < HOUSE_MAX_LEVEL && player.money >= HOUSE_UPGRADE_COST;
     const maxLevel    = player.houseLevel >= HOUSE_MAX_LEVEL;
     const expandNote  = maxLevel ? ' <em>(maximum size reached)</em>'
@@ -628,6 +628,31 @@ class UI {
       : player.money < ELEVATOR_COST
         ? ` <em class="short">(need $${ELEVATOR_COST - player.money} more)</em>` : '';
     const elevatorCls     = canElevator ? 'shop-item buyable' : 'shop-item disabled';
+
+    // ── Depth expansion tiers (only when elevator is built) ────────────────
+    let depthSectionHtml = '';
+    if (player.hasElevator) {
+      let tiersHtml = '';
+      for (let d = MAX_MINE_DEPTH + ELEVATOR_DEPTH_INCREMENT; d <= ELEVATOR_DEPTH_MAX; d += ELEVATOR_DEPTH_INCREMENT) {
+        if (player.unlockedDepth >= d) {
+          tiersHtml += `<div class="shop-item disabled">✅ ${d} m <em>(unlocked)</em></div>`;
+        } else if (player.unlockedDepth === d - ELEVATOR_DEPTH_INCREMENT) {
+          const canBuy = player.money >= ELEVATOR_DEPTH_COST;
+          const depthNote = canBuy ? '' : ` <em class="short">(need $${ELEVATOR_DEPTH_COST - player.money} more)</em>`;
+          const depthCls  = canBuy ? 'shop-item buyable' : 'shop-item disabled';
+          tiersHtml += `<div class="${depthCls}" id="worker-depth-btn">
+            ⛏ Expand mine to ${d} m — <span class="price">$${ELEVATOR_DEPTH_COST}</span>${depthNote}
+            <br><small>Unlocks deeper ore and extends the elevator shaft.</small>
+          </div>`;
+        } else {
+          tiersHtml += `<div class="shop-item disabled">🔒 ${d} m <em>(unlock previous tier first)</em></div>`;
+        }
+      }
+      depthSectionHtml = `
+        <div class="section-label">MINE DEPTH EXPANSION</div>
+        <p style="font-size:0.85em;margin:2px 0 6px">Current depth limit: <strong>${player.unlockedDepth} m</strong></p>
+        ${tiersHtml}`;
+    }
 
     this.overlay.innerHTML = `
       <div class="overlay-header">
@@ -646,6 +671,7 @@ class UI {
         🛗 Build elevator shaft (right mine entrance column) — <span class="price">$${ELEVATOR_COST}</span>${elevatorNote}
         <br><small>Digs a shaft in the rightmost mine column. Entry points every 5 m. $${ELEVATOR_RIDE_COST}/ride.</small>
       </div>
+      ${depthSectionHtml}
     `;
     this._openOverlay(onClose);
 
@@ -668,6 +694,15 @@ class UI {
         if (player.hasElevator || player.money < ELEVATOR_COST) return;
         this._closeOverlay();
         if (onBuildElevator) onBuildElevator();
+      });
+    }
+
+    const depthBtn = document.getElementById('worker-depth-btn');
+    if (depthBtn && depthBtn.classList.contains('buyable')) {
+      depthBtn.addEventListener('click', () => {
+        if (player.money < ELEVATOR_DEPTH_COST) return;
+        this._closeOverlay();
+        if (onExpandElevatorDepth) onExpandElevatorDepth();
       });
     }
   }
@@ -910,6 +945,31 @@ class UI {
   // -------------------------------------------------------------------------
   // Item pickup overlay (non-ore items found in the mine)
   // -------------------------------------------------------------------------
+
+  showElevatorRidePrompt(cost, onPay, onDecline) {
+    this.overlay.innerHTML = `
+      <div class="overlay-centered">
+        <p class="overlay-emoji">🛗</p>
+        <p class="overlay-title">Use the elevator?</p>
+        <p style="font-size:0.9em">Ride the elevator — <strong>$${cost}</strong> per boarding.</p>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:12px">
+          <button class="close-btn" id="elevator-pay-btn">✅ Pay $${cost}</button>
+          <button class="close-btn" id="elevator-decline-btn">❌ No thanks</button>
+        </div>
+      </div>`;
+    // Esc / close = decline
+    this._openOverlay(() => { if (onDecline) onDecline(); });
+
+    document.getElementById('elevator-pay-btn').addEventListener('click', () => {
+      // Prevent the default _onCloseCallback from calling onDecline
+      this._onCloseCallback = null;
+      this._closeOverlay();
+      if (onPay) onPay();
+    });
+    document.getElementById('elevator-decline-btn').addEventListener('click', () => {
+      this._closeOverlay();
+    });
+  }
 
   showItemPickup(emoji, message, onClose) {
     this.overlay.innerHTML = `

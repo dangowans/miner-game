@@ -262,7 +262,10 @@ const HAZARD_SPREAD = 12;  // Max EMPTY tiles a water/lava spring floods when tr
 const WORKER_X        = 20;   // Contractor Mike building x-column
 const ELEVATOR_X      = 23;   // Elevator shaft x-column (rightmost mine-entrance column)
 const ELEVATOR_COST   = 500;  // One-time cost to build the elevator shaft
-const ELEVATOR_RIDE_COST = 5; // Cost per elevator ride (ascend or descend)
+const ELEVATOR_RIDE_COST = 5; // Cost per elevator ride (enter the cabin)
+const ELEVATOR_DEPTH_INCREMENT = 50;   // Metres added per depth expansion purchase
+const ELEVATOR_DEPTH_MAX       = 300;  // Maximum purchasable mine depth (metres)
+const ELEVATOR_DEPTH_COST      = 200;  // Cost per 50 m depth expansion
 
 /** True when world-row y should hold an elevator entry-point tile (every 5 m). */
 const isElevEntryRow = (y) => (y - 2) % 5 === 0;

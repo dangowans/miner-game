@@ -139,6 +139,7 @@ const Storage = {
     p.suppliesMeter = data.suppliesMeter ?? 100;
     p.necklaceCount = data.necklaceCount ?? 0;
     p.hasElevator   = data.hasElevator   ?? false;
+    p.unlockedDepth = data.unlockedDepth ?? MAX_MINE_DEPTH;
   },
 
   /** Overwrite a freshly constructed World with saved state. */
@@ -228,6 +229,7 @@ function _serializePlayer(p) {
     suppliesMeter: p.suppliesMeter,
     necklaceCount: p.necklaceCount,
     hasElevator:   p.hasElevator,
+    unlockedDepth: p.unlockedDepth,
   };
 }
 

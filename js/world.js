@@ -180,7 +180,9 @@ class World {
    */
   buildElevator() {
     this.elevatorBuilt = true;
-    for (let y = 3; y <= this.deepestGenY; y++) {
+    // Start from y=2 (pavement row) so the surface entrance column also becomes an
+    // ELEV_ENT door tile, replacing the regular mine-entrance tile there.
+    for (let y = 2; y <= this.deepestGenY; y++) {
       if (this.getTile(ELEVATOR_X, y) !== null) {
         // Place an entry-point tile every 5 m (depth = y-2, multiple of 5)
         const isEntry = isElevEntryRow(y);

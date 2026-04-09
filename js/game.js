@@ -72,6 +72,12 @@ class Game {
         // Reapply expansion tiles so saves that predate this feature are correct.
         this._applyHouseExpansionTiles(this.player.houseLevel);
       }
+      // Migrate old saves: if the elevator was already built but the surface
+      // entrance tile (x=23, y=2) is still MINE_ENT, rebuild to place ELEV_ENT there.
+      if (this.player.hasElevator &&
+          this.world.getTile(ELEVATOR_X, PLAYER_START_Y) !== TILE.ELEV_ENT) {
+        this.world.buildElevator();
+      }
       this.ui.updateHUD(this.player);
     } else if (Storage.popStartInFamilyMode()) {
       // Player chose "Jump to Family Mode" from the outhouse shortcut
@@ -194,10 +200,8 @@ class Game {
     if (p.inElevator) {
       if (dx !== 0) {
         // Step out of the elevator to the left (back into the mine).
-        // ELEVATOR_X - 1 = 22 is always the mine column adjacent to the shaft;
-        // in the cleared entrance zone it is TILE.EMPTY, deeper it is whatever
-        // the player has already dug open. If for any reason it is impassable
-        // (e.g. hazard tiles), stay in the elevator and warn.
+        // ELEVATOR_X - 1 = 22 is always the mine column adjacent to the shaft.
+        // If for any reason it is impassable (e.g. hazard tiles), stay and warn.
         const exitX = ELEVATOR_X - 1;
         if (!this.world.isPassable(exitX, p.y)) {
           p.setMessage('🛗 Cannot exit here — the adjacent tile is blocked.');
@@ -210,9 +214,9 @@ class Game {
         // Move up or down to the next elevator door
         const nextY = this._nextElevEntry(p.y, dy);
         if (nextY === PLAYER_START_Y) {
-          // Reached the surface
+          // Reached the surface – exit left so the surface ELEV_ENT tile is not occupied
           p.inElevator = false;
-          p.x = ELEVATOR_X;
+          p.x = ELEVATOR_X - 1;
           p.y = PLAYER_START_Y;
           p.setMessage('🛗 Elevator: back at the surface.');
         } else if (nextY !== null) {
@@ -241,8 +245,8 @@ class Game {
     }
 
     // ── Max mine depth ────────────────────────────────────────────────────
-    // depth in metres = ny - 2; block movement beyond MAX_MINE_DEPTH
-    if (ny - 2 > MAX_MINE_DEPTH) {
+    // depth in metres = ny - 2; block movement beyond the player's unlocked depth
+    if (ny - 2 > p.unlockedDepth) {
       this._warnDragons();
       return;
     }
@@ -310,9 +314,11 @@ class Game {
       return;
     }
 
-    // ── 5. Elevator door – prompt to ride ────────────────────────────────
+    // ── 5. Elevator door – right-approach opens ride prompt ──────────────
     if (targetTile === TILE.ELEV_ENT) {
-      p.setMessage(`🛗 Elevator door. Press E to pay $${ELEVATOR_RIDE_COST} and ride.`);
+      // Only the rightward approach (dx=1) is the entry gesture; other directions
+      // just treat the door as an impassable wall (silent).
+      if (dx === 1) this._showElevatorRidePrompt(ny);
       return;
     }
 
@@ -415,6 +421,37 @@ class Game {
   // -------------------------------------------------------------------------
 
   /**
+   * Show the elevator ride prompt overlay.  Only shown when approaching an
+   * ELEV_ENT tile by pressing right (dx=1).  If the player cannot afford the
+   * ride a HUD message is shown instead; the game does not pause.
+   * @param {number} targetY  - world-row of the elevator door being approached
+   */
+  _showElevatorRidePrompt(targetY) {
+    const p = this.player;
+    if (p.money < ELEVATOR_RIDE_COST) {
+      p.setMessage(`🛗 Need $${ELEVATOR_RIDE_COST} to ride. (You have $${p.money})`);
+      return;
+    }
+    this.input.clear();
+    this.state = 'overlay';
+    this.ui.showElevatorRidePrompt(ELEVATOR_RIDE_COST, () => {
+      // Pay and board
+      p.money -= ELEVATOR_RIDE_COST;
+      p.inElevator = true;
+      p.x = ELEVATOR_X;
+      p.y = targetY;
+      p.setMessage('🛗 In the elevator. ↑↓ to move between floors, ← or E to exit.');
+      this.ui.updateHUD(p);
+      this.state = 'playing';
+      this.input.clear();
+    }, () => {
+      // Decline
+      this.state = 'playing';
+      this.input.clear();
+    });
+  }
+
+  /**
    * Return the world-row y of the next elevator entry point when traveling in
    * direction dy (−1 = up, +1 = down) from the given row.
    *
@@ -440,7 +477,7 @@ class Game {
       //   floor((currentY − 2) / 5 + 1) * 5 + 2
       // (add 1 before flooring so currentY itself is excluded).
       const next = Math.floor((currentY - 2) / 5 + 1) * 5 + 2;
-      if (next - 2 > MAX_MINE_DEPTH) return null;
+      if (next - 2 > this.player.unlockedDepth) return null;
       // Ensure the target row (and a lookahead buffer) has been generated
       this.world.ensureGenerated(next + GEN_LOOKAHEAD);
       return this.world.getTile(ELEVATOR_X, next) === TILE.ELEV_ENT ? next : null;
@@ -1003,7 +1040,14 @@ class Game {
           p.money -= ELEVATOR_COST;
           p.hasElevator = true;
           this.world.buildElevator();
-          p.setMessage('🏗️ Elevator shaft built! Enter the right mine-entrance column to ride ($5/trip).');
+          p.setMessage('🏗️ Elevator built! Approach the door at x=23 from the left to ride ($5/boarding).');
+          this.ui.updateHUD(p);
+          Storage.save(p, this.world, this);
+        },
+        onExpandElevatorDepth: () => {
+          p.unlockedDepth += ELEVATOR_DEPTH_INCREMENT;
+          p.money -= ELEVATOR_DEPTH_COST;
+          p.setMessage(`⛏ Mine expanded to ${p.unlockedDepth} m! Deeper ore awaits.`);
           this.ui.updateHUD(p);
           Storage.save(p, this.world, this);
         },
@@ -1017,36 +1061,9 @@ class Game {
     }
 
     if (checkTile(TILE.MINE_ENT)) {
-      if (p.hasElevator && p.y === PLAYER_START_Y && p.x === ELEVATOR_X) {
-        // Surface elevator entrance – enter the elevator cabin
-        if (p.money < ELEVATOR_RIDE_COST) {
-          p.setMessage(`🛗 Elevator needs $${ELEVATOR_RIDE_COST} to ride. (You have $${p.money})`);
-        } else {
-          p.money -= ELEVATOR_RIDE_COST;
-          p.inElevator = true;
-          p.x = ELEVATOR_X;
-          // p.y stays at PLAYER_START_Y (surface level of the cabin)
-          p.setMessage(`🛗 In the elevator. ↑↓ to move between floors, ← or E to exit. ($${ELEVATOR_RIDE_COST} charged)`);
-        }
-        this.ui.updateHUD(p);
-      } else {
-        p.setMessage('⛏ Walk down (↓ / S) to enter the mine.');
-      }
-      return;
-    }
-
-    // ── Underground elevator door (player is directly left of an ELEV_ENT) ─
-    if (p.hasElevator && p.x === ELEVATOR_X - 1 &&
-        this.world.getTile(ELEVATOR_X, p.y) === TILE.ELEV_ENT) {
-      if (p.money < ELEVATOR_RIDE_COST) {
-        p.setMessage(`🛗 Elevator needs $${ELEVATOR_RIDE_COST} to ride. (You have $${p.money})`);
-      } else {
-        p.money -= ELEVATOR_RIDE_COST;
-        p.inElevator = true;
-        p.x = ELEVATOR_X;
-        p.setMessage(`🛗 In the elevator at ${p.y - 2} m. ↑↓ to move between floors, ← or E to exit. ($${ELEVATOR_RIDE_COST} charged)`);
-      }
-      this.ui.updateHUD(p);
+      // Entering the elevator via right-approach now handles boarding; E just
+      // shows a hint to walk down for the standard mine entrance.
+      p.setMessage('⛏ Walk down (↓ / S) to enter the mine, or approach the elevator door from the left.');
       return;
     }
   }
