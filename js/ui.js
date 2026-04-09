@@ -81,6 +81,11 @@ class UI {
     }
     if (player.firstAidKits > 0) tools.push(`🩹×${player.firstAidKits}`);
 
+    // Bank balance — show whenever the mine cart has been purchased
+    if (player.hasMineCart && !player.familyMode) {
+      tools.push(`| 🏦$${player.bankBalance}`);
+    }
+
     // Family mode status (appended to tool row)
     if (player.familyMode) {
       const supPct  = Math.round(player.suppliesMeter);
@@ -103,6 +108,13 @@ class UI {
     const btnFirstAid = document.getElementById('btn-firstaid');
     if (btnFirstAid) {
       btnFirstAid.disabled = player.firstAidKits <= 0 || player.hearts >= player.maxHearts;
+    }
+
+    // Mine Cart button: visible when purchased, enabled when carrying ore
+    const btnMineCart = document.getElementById('btn-minecart');
+    if (btnMineCart) {
+      btnMineCart.style.display = player.hasMineCart ? '' : 'none';
+      btnMineCart.disabled = !player.hasMineCart || player.gemCount === 0;
     }
 
     // Radio button: hidden until found, then always enabled
@@ -536,28 +548,32 @@ class UI {
       itemsHtml = `<div class="shop-item disabled">No ore to sell — go mining!</div>`;
     }
 
-    // Bank account section (family mode only)
+    // Bank account section — visible when mine cart is owned or in family mode
     let accountHtml = '';
-    if (player.familyMode) {
+    if (player.familyMode || player.hasMineCart) {
       const depositStep  = 50;
-      const canDeposit   = player.money >= depositStep;
-      const canWithdraw  = player.bankBalance >= depositStep;
+      const canDeposit   = player.familyMode && player.money >= depositStep;
+      const canWithdraw  = player.familyMode && player.bankBalance >= depositStep;
       const depositCls   = canDeposit  ? 'shop-item buyable' : 'shop-item disabled';
       const withdrawCls  = canWithdraw ? 'shop-item buyable' : 'shop-item disabled';
-      const depositNote  = canDeposit  ? '' : ` <em class="short">(need $${depositStep - player.money} more)</em>`;
-      const withdrawNote = canWithdraw ? '' : ` <em class="short">(balance too low)</em>`;
+      const depositNote  = canDeposit  ? '' : player.familyMode ? ` <em class="short">(need $${depositStep - player.money} more)</em>` : '';
+      const withdrawNote = canWithdraw ? '' : player.familyMode ? ` <em class="short">(balance too low)</em>` : '';
+      const balanceNote  = player.familyMode
+        ? '<small style="color:#888"> — taxes are debited from here automatically</small>'
+        : '<small style="color:#888"> — mine cart deposits go here</small>';
       accountHtml = `
         <div class="section-label">BANK ACCOUNT</div>
         <p style="font-size:0.88em;margin:4px 0 8px">
           Account balance: <strong style="color:#f5c842">$${player.bankBalance}</strong>
-          <small style="color:#888"> — taxes are debited from here automatically</small>
+          ${balanceNote}
         </p>
+        ${player.familyMode ? `
         <div class="${depositCls}" id="deposit-btn" data-amount="${depositStep}">
           💳 Deposit $${depositStep}${depositNote}
         </div>
         <div class="${withdrawCls}" id="withdraw-btn" data-amount="${depositStep}">
           💸 Withdraw $${depositStep}${withdrawNote}
-        </div>`;
+        </div>` : ''}`;
     }
 
     this.overlay.innerHTML = `
@@ -613,7 +629,7 @@ class UI {
   // Contractor Mike overlay
   // -------------------------------------------------------------------------
 
-  openWorker(player, { onClose, onBuildElevator, onExpandElevatorDepth, onExpandHouse }) {
+  openWorker(player, { onClose, onBuildElevator, onExpandElevatorDepth, onExpandHouse, onBuyMineCart }) {
     const canExpand   = player.houseLevel < HOUSE_MAX_LEVEL && player.money >= HOUSE_UPGRADE_COST;
     const maxLevel    = player.houseLevel >= HOUSE_MAX_LEVEL;
     const expandNote  = maxLevel ? ' <em>(maximum size reached)</em>'
@@ -656,6 +672,14 @@ class UI {
         ${tiersHtml}`;
     }
 
+    // ── Mine Cart ──────────────────────────────────────────────────────────
+    const cartAlready = player.hasMineCart;
+    const canCart     = !cartAlready && player.money >= MINE_CART_COST;
+    const cartNote    = cartAlready ? ' <em>(already owned)</em>'
+      : player.money < MINE_CART_COST
+        ? ` <em class="short">(need $${MINE_CART_COST - player.money} more)</em>` : '';
+    const cartCls     = canCart ? 'shop-item buyable' : 'shop-item disabled';
+
     this.overlay.innerHTML = `
       <div class="overlay-header">
         <h2>🏗️ Contractor Mike</h2>
@@ -674,6 +698,12 @@ class UI {
         <br><small>Digs a shaft in the rightmost mine column. Entry points every 5 m. $${ELEVATOR_RIDE_COST}/ride.</small>
       </div>
       ${depthSectionHtml}
+
+      <div class="section-label">MINE CART</div>
+      <div class="${cartCls}" id="worker-cart-btn">
+        🛒 Mine cart — <span class="price">$${MINE_CART_COST}</span>${cartNote}
+        <br><small>Press 🛒 (or C) to instantly deposit all carried ore at bank value — requires a clear path to the mine exit (no water or lava blocking the way; cannot use elevator).</small>
+      </div>
     `;
     this._openOverlay(onClose);
 
@@ -705,6 +735,19 @@ class UI {
         if (player.money < ELEVATOR_DEPTH_COST) return;
         this._closeOverlay();
         if (onExpandElevatorDepth) onExpandElevatorDepth();
+      });
+    }
+
+    const cartBtn = document.getElementById('worker-cart-btn');
+    if (cartBtn && cartBtn.classList.contains('buyable')) {
+      cartBtn.addEventListener('click', () => {
+        if (player.hasMineCart || player.money < MINE_CART_COST) return;
+        player.money       -= MINE_CART_COST;
+        player.hasMineCart  = true;
+        player.setMessage('🛒 Mine cart purchased! Press 🛒 (or C) to send ore to the bank.');
+        sounds.playTransaction();
+        if (onBuyMineCart) onBuyMineCart();
+        this._closeOverlay();
       });
     }
   }

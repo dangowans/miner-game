@@ -79,6 +79,17 @@ The pavement **cannot be crossed** downward except at the mine entrance (x=22–
 | 💣 Dynamite | $75 | Place a charge with a 5-second fuse; blasts open dirt tiles in a 3-tile radius |
 | 🩹 First Aid Kit | $65 | Restore health to full from inventory |
 
+## Contractor Mike
+
+Available in Family Mode (stand at x=20 and press E):
+
+| Item | Price | Effect |
+|------|------:|-------|
+| 🏠 House Expansion | $1000 | Upgrade the house level (up to level 4) |
+| 🛗 Elevator Shaft | $500 | Build a shaft at x=23 with entry points every 5 m ($5/ride) |
+| ⛏ Mine Depth | $200 | Expand elevator depth by 50 m (up to 300 m) |
+| 🛒 Mine Cart | $200 | Press 🛒 (or **C**) to instantly deposit all carried ore at bank value — requires a clear walkable path from your location to the mine exit; cannot use the elevator; blocked by water or lava |
+
 ---
 
 ## Hazards

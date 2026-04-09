@@ -257,6 +257,11 @@ const SHOVEL_REDUCTION  = 12;  // Shovel reduces dirt reveal threshold by this a
 const HAZARD_SPREAD = 12;  // Max EMPTY tiles a water/lava spring floods when triggered
 
 // ---------------------------------------------------------------------------
+// Mine Cart
+// ---------------------------------------------------------------------------
+const MINE_CART_COST = 200;  // One-time purchase from Contractor Mike
+
+// ---------------------------------------------------------------------------
 // Elevator
 // ---------------------------------------------------------------------------
 const WORKER_X        = 20;   // Contractor Mike building x-column

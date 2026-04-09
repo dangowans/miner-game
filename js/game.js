@@ -143,6 +143,7 @@ class Game {
       case 'interact': this._handleInteract(); break;
       case 'dynamite': this._toggleDynamitePlacement(); break;
       case 'firstaid': this._useFirstAidKit(); break;
+      case 'minecart': this._useMineCart();    break;
       case 'radio':    this._useRadio();       break;
     }
 
@@ -608,6 +609,80 @@ class Game {
     p.setMessage('📻 Radio crackles — you\'re teleported to the mine entrance!');
     sounds.playItemPickup();
     this.ui.updateHUD(p);
+  }
+
+  /**
+   * Use the mine cart to instantly deposit all carried ore at bank value.
+   * Requires a walkable path from the player's position to the mine exit
+   * (water, lava, and the elevator shaft all block the cart).
+   */
+  _useMineCart() {
+    const p = this.player;
+    if (!p.hasMineCart) {
+      p.setMessage('🛒 No mine cart — buy one from Contractor Mike.');
+      return;
+    }
+    if (p.gemCount === 0) {
+      p.setMessage('🛒 No ore to transport!');
+      return;
+    }
+    if (!this._cartPathExists()) {
+      p.setMessage('🛒 Cart blocked! No clear path to the mine exit — water or lava is in the way.');
+      return;
+    }
+    const total = p.gems.reduce((s, g) => s + (GEM_VALUE[g] || 0), 0);
+    p.gems = [];
+    p.bankBalance += total;
+    p.setMessage(`🛒 Mine cart delivered! $${total} deposited to bank account.`);
+    sounds.playTransaction();
+    this.ui.updateHUD(p);
+  }
+
+  /**
+   * BFS check: returns true if there is a walkable path from the player's
+   * position to the mine exit (surface, y≤2) using only cart-passable tiles.
+   *
+   * The cart cannot travel through water, lava, dirt, stone, or the elevator
+   * shaft.  The mine ↔ surface boundary may only be crossed at the mine
+   * entrance columns (x ∈ [MINE_ENT_X_MIN, MINE_ENT_X_MAX]).
+   */
+  _cartPathExists() {
+    const p = this.player;
+    // Already on the surface — trivially reachable
+    if (p.y <= 2) return true;
+
+    const width   = this.world.width;
+    const visited = new Set();
+    const queue   = [[p.x, p.y]];
+    visited.add(p.x + ',' + p.y);
+
+    while (queue.length > 0) {
+      const [cx, cy] = queue.shift();
+
+      for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
+        const nx = cx + dx;
+        const ny = cy + dy;
+
+        if (nx < 0 || nx >= width || ny < 2) continue;
+
+        // Mine ↔ surface boundary: y=3 is the first mine row, y=2 is the
+        // surface pavement row — only crossable at mine entrance columns.
+        if (cy === 3 && ny === 2 && (nx < MINE_ENT_X_MIN || nx > MINE_ENT_X_MAX)) continue;
+
+        const key = nx + ',' + ny;
+        if (visited.has(key)) continue;
+
+        if (!this.world.isPassable(nx, ny)) continue;
+
+        // Reached the surface — path exists!
+        if (ny <= 2) return true;
+
+        visited.add(key);
+        queue.push([nx, ny]);
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -1098,6 +1173,10 @@ class Game {
         },
         onExpandHouse: (level) => {
           this._applyHouseExpansionTiles(level);
+          this.ui.updateHUD(p);
+          Storage.save(p, this.world, this);
+        },
+        onBuyMineCart: () => {
           this.ui.updateHUD(p);
           Storage.save(p, this.world, this);
         },
