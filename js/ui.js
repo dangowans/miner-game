@@ -606,7 +606,7 @@ class UI {
   }
 
   // -------------------------------------------------------------------------
-  // Construction worker overlay
+  // Contractor Mike overlay
   // -------------------------------------------------------------------------
 
   openWorker(player, { onClose, onBuildElevator }) {
@@ -627,7 +627,7 @@ class UI {
 
     this.overlay.innerHTML = `
       <div class="overlay-header">
-        <h2>🏗️ Construction Worker</h2>
+        <h2>🏗️ Contractor Mike</h2>
         <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
       </div>
       <p class="shop-balance">Your money: <strong>$${player.money}</strong></p>
@@ -680,7 +680,7 @@ class UI {
     const supBar  = '█'.repeat(barFull) + '░'.repeat(10 - barFull);
     const supColor = supPct > 40 ? '#88cc44' : supPct > 15 ? '#f5c842' : '#ff4444';
 
-    // House expand is now at the construction worker — only show status here
+    // House expand is now at Contractor Mike — only show status here
     const maxLevel = player.houseLevel >= HOUSE_MAX_LEVEL;
 
     // Baby – necklaces are delivered automatically on house entry; show status only
@@ -811,7 +811,7 @@ class UI {
         <h2 class="overlay-title" style="color:#ff4444">DIVORCED!</h2>
         <p>You let the food run out for too long.</p>
         <p style="color:#ff8888"><em>"I can't do this anymore. The kids are hungry. We're done."</em></p>
-        <p style="color:#ff8888"><em>"I'm moving in with the construction worker."</em></p>
+        <p style="color:#ff8888"><em>"I'm moving in with Contractor Mike."</em></p>
         ${timeHtml}
         ${this._familyStatsHtml(stats)}
         <button class="close-btn" onclick="location.reload()">

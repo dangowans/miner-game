@@ -60,7 +60,7 @@ const TILE = Object.freeze({
   HOUSE:       36,   // Family home – replaces bar in family mode
   TIN_CAN:     37,   // Hidden tin can – novelty collectible
   NECKLACE:    38,   // Hidden necklace – found in mine during family mode; deliver home to have a baby
-  WORKER:      39,   // Construction worker building on the surface
+  WORKER:      39,   // Contractor Mike building on the surface
 });
 
 // ---------------------------------------------------------------------------
@@ -257,7 +257,7 @@ const HAZARD_SPREAD = 12;  // Max EMPTY tiles a water/lava spring floods when tr
 // ---------------------------------------------------------------------------
 // Elevator
 // ---------------------------------------------------------------------------
-const WORKER_X        = 20;   // Construction worker building x-column
+const WORKER_X        = 20;   // Contractor Mike building x-column
 const ELEVATOR_X      = 21;   // Elevator shaft x-column (adjacent to mine entrance)
 const ELEVATOR_COST   = 500;  // One-time cost to build the elevator
 
