@@ -440,7 +440,7 @@ class Game {
       p.inElevator = true;
       p.x = ELEVATOR_X;
       p.y = targetY;
-      p.setMessage('🛗 In the elevator. ↑↓ to move between floors, ← or E to exit.');
+      p.setMessage('🛗 In the elevator. ↑↓ to move between floors, ← → or E to exit.');
       this.ui.updateHUD(p);
       this.state = 'playing';
       this.input.clear();

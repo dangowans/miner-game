@@ -633,6 +633,8 @@ class UI {
     let depthSectionHtml = '';
     if (player.hasElevator) {
       let tiersHtml = '';
+      // Iterate purchasable tiers: 150 m, 200 m, … up to ELEVATOR_DEPTH_MAX.
+      // Tiers start one increment above the base (MAX_MINE_DEPTH + ELEVATOR_DEPTH_INCREMENT).
       for (let d = MAX_MINE_DEPTH + ELEVATOR_DEPTH_INCREMENT; d <= ELEVATOR_DEPTH_MAX; d += ELEVATOR_DEPTH_INCREMENT) {
         if (player.unlockedDepth >= d) {
           tiersHtml += `<div class="shop-item disabled">✅ ${d} m <em>(unlocked)</em></div>`;
