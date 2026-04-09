@@ -69,7 +69,9 @@ class World {
     const rng    = this._rng;
     const xRange = MINE_ENT_X_MIN - 2;   // 20 safe columns (x ∈ [1, 20])
     // Mine starts at y=3, so world-y = mine_depth + 2.
+    // Extended mine starts beyond depth 100 (world-y > 102).
     return [
+      // ── Existing unique items ──────────────────────────────────────────────
       { content: HIDDEN.RUBY,         y: 21 + Math.floor(rng() * 80),  x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.RUBBER_BOOT,  y:  9 + Math.floor(rng() * 40),  x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.POCKET_WATCH, y: 13 + Math.floor(rng() * 60),  x: 1 + Math.floor(rng() * xRange) },
@@ -83,6 +85,21 @@ class World {
       { content: HIDDEN.GLASSES,      y: GLASSES_DEPTH + 2,            x: GLASSES_X },
       // Ring at random depth 50-60 m below the outhouse (world-y = depth + 2)
       { content: HIDDEN.RING,         y: 50 + Math.floor(rng() * 11) + 2, x: RING_X },
+
+      // ── New items (main mine) ──────────────────────────────────────────────
+      { content: HIDDEN.CASH_BAG,     y:  5 + Math.floor(rng() * 30),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.SCROLL,       y: 10 + Math.floor(rng() * 40),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.FOSSIL,       y: 15 + Math.floor(rng() * 50),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.NEWSPAPER,    y:  8 + Math.floor(rng() * 35),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.BROKEN_CHAIN, y: 12 + Math.floor(rng() * 40),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.OLD_COIN,     y: 20 + Math.floor(rng() * 50),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.BOTTLE,       y:  7 + Math.floor(rng() * 30),  x: 1 + Math.floor(rng() * xRange) },
+
+      // ── Knight items (extended mine only – depth > 100 m, world-y > 102) ──
+      { content: HIDDEN.HELMET,       y: 115 + Math.floor(rng() * 60), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.ARMOR,        y: 135 + Math.floor(rng() * 60), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.SHIELD,       y: 155 + Math.floor(rng() * 60), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.SWORD,        y: 175 + Math.floor(rng() * 80), x: 1 + Math.floor(rng() * xRange) },
     ];
   }
 
@@ -129,6 +146,17 @@ class World {
           case HIDDEN.SKULL:        return !player.specialItems.has(HIDDEN.SKULL);
           case HIDDEN.CANTEEN:      return !player.specialItems.has(HIDDEN.CANTEEN);
           case HIDDEN.LUNCHBOX:     return !player.specialItems.has(HIDDEN.LUNCHBOX);
+          case HIDDEN.CASH_BAG:     return !player.specialItems.has(HIDDEN.CASH_BAG);
+          case HIDDEN.SCROLL:       return !player.specialItems.has(HIDDEN.SCROLL);
+          case HIDDEN.FOSSIL:       return !player.specialItems.has(HIDDEN.FOSSIL);
+          case HIDDEN.NEWSPAPER:    return !player.specialItems.has(HIDDEN.NEWSPAPER);
+          case HIDDEN.BROKEN_CHAIN: return !player.specialItems.has(HIDDEN.BROKEN_CHAIN);
+          case HIDDEN.OLD_COIN:     return !player.specialItems.has(HIDDEN.OLD_COIN);
+          case HIDDEN.BOTTLE:       return !player.specialItems.has(HIDDEN.BOTTLE);
+          case HIDDEN.HELMET:       return !player.specialItems.has(HIDDEN.HELMET);
+          case HIDDEN.ARMOR:        return !player.specialItems.has(HIDDEN.ARMOR);
+          case HIDDEN.SHIELD:       return !player.specialItems.has(HIDDEN.SHIELD);
+          case HIDDEN.SWORD:        return !player.specialItems.has(HIDDEN.SWORD);
           case HIDDEN.RING:         return !player.hasRing;
           case HIDDEN.LANTERN:      return !player.hasLantern;
           case HIDDEN.RADIO:        return !player.hasRadio;
@@ -155,7 +183,9 @@ class World {
    */
   addFamilyJewelry() {
     const xRange = MINE_ENT_X_MIN - 2;   // x ∈ [1, 20]
-    const depths = [35, 50, 65, 80];     // One necklace per depth band (world-y = depth + 2)
+    // 5 necklaces in the main mine (depth 15–80 m) and
+    // 5 necklaces in the extended mine (depth 110–190 m, requires elevator expansion)
+    const depths = [15, 30, 45, 60, 80, 110, 130, 150, 170, 190];
     for (const d of depths) {
       const x = 1 + Math.floor(this._rng() * xRange);
       const y = d + 2;
@@ -449,6 +479,17 @@ class World {
       case HIDDEN.LUNCHBOX:     this.setTile(x, y, TILE.LUNCHBOX);     break;
       case HIDDEN.TIN_CAN:      this.setTile(x, y, TILE.TIN_CAN);      break;
       case HIDDEN.NECKLACE:     this.setTile(x, y, TILE.NECKLACE);     break;
+      case HIDDEN.CASH_BAG:     this.setTile(x, y, TILE.CASH_BAG);     break;
+      case HIDDEN.SCROLL:       this.setTile(x, y, TILE.SCROLL);       break;
+      case HIDDEN.FOSSIL:       this.setTile(x, y, TILE.FOSSIL);       break;
+      case HIDDEN.NEWSPAPER:    this.setTile(x, y, TILE.NEWSPAPER);    break;
+      case HIDDEN.BROKEN_CHAIN: this.setTile(x, y, TILE.BROKEN_CHAIN); break;
+      case HIDDEN.OLD_COIN:     this.setTile(x, y, TILE.OLD_COIN);     break;
+      case HIDDEN.BOTTLE:       this.setTile(x, y, TILE.BOTTLE);       break;
+      case HIDDEN.HELMET:       this.setTile(x, y, TILE.HELMET);       break;
+      case HIDDEN.ARMOR:        this.setTile(x, y, TILE.ARMOR);        break;
+      case HIDDEN.SHIELD:       this.setTile(x, y, TILE.SHIELD);       break;
+      case HIDDEN.SWORD:        this.setTile(x, y, TILE.SWORD);        break;
       default:                  this.setTile(x, y, TILE.EMPTY);        break;
     }
     return hidden;
@@ -528,6 +569,17 @@ class World {
       case TILE.LUNCHBOX:
       case TILE.TIN_CAN:
       case TILE.NECKLACE:
+      case TILE.CASH_BAG:
+      case TILE.SCROLL:
+      case TILE.FOSSIL:
+      case TILE.NEWSPAPER:
+      case TILE.BROKEN_CHAIN:
+      case TILE.OLD_COIN:
+      case TILE.BOTTLE:
+      case TILE.HELMET:
+      case TILE.ARMOR:
+      case TILE.SHIELD:
+      case TILE.SWORD:
         return true;
       case TILE.BUILDING:
       case TILE.DIRT:

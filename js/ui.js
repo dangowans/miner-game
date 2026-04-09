@@ -73,6 +73,18 @@ class UI {
     if (player.specialItems.has('canteen'))      tools.push('🧴');
     if (player.specialItems.has('lunchbox'))     tools.push('🍱');
     if (player.specialItems.has('tin_can'))      tools.push('🥫');
+    if (player.specialItems.has('cash_bag'))     tools.push('💰');
+    if (player.specialItems.has('scroll'))       tools.push('📜');
+    if (player.specialItems.has('fossil'))       tools.push('🦴');
+    if (player.specialItems.has('newspaper'))    tools.push('📰');
+    if (player.specialItems.has('broken_chain')) tools.push('⛓️');
+    if (player.specialItems.has('old_coin'))     tools.push('🪙');
+    if (player.specialItems.has('bottle'))       tools.push('🍾');
+    // Knight set
+    if (player.specialItems.has('helmet'))  tools.push('⛑️');
+    if (player.specialItems.has('armor'))   tools.push('🪬');
+    if (player.specialItems.has('shield'))  tools.push('🛡️');
+    if (player.specialItems.has('sword'))   tools.push('⚔️');
     if (player.necklaceCount > 0)                tools.push(`📿×${player.necklaceCount}`);
     if (player.dynamiteCount > 0) {
       tools.push(player.placingDynamite
@@ -701,8 +713,8 @@ class UI {
 
       <div class="section-label">MINE CART</div>
       <div class="${cartCls}" id="worker-cart-btn">
-        🛒 Mine cart — <span class="price">$${MINE_CART_COST}</span>${cartNote}
-        <br><small>Press 🛒 (or C) to instantly deposit all carried ore at bank value — requires a clear path to the mine exit (no water or lava blocking the way; cannot use elevator).</small>
+        🚃 Mine cart — <span class="price">$${MINE_CART_COST}</span>${cartNote}
+        <br><small>Press 🚃 (or C) to instantly deposit all carried ore at bank value — requires a clear path to the mine exit (no water or lava blocking the way; cannot use elevator).</small>
       </div>
     `;
     this._openOverlay(onClose);
@@ -744,7 +756,7 @@ class UI {
         if (player.hasMineCart || player.money < MINE_CART_COST) return;
         player.money       -= MINE_CART_COST;
         player.hasMineCart  = true;
-        player.setMessage('🛒 Mine cart purchased! Press 🛒 (or C) to send ore to the bank.');
+        player.setMessage('🚃 Mine cart purchased! Press 🚃 (or C) to send ore to the bank.');
         sounds.playTransaction();
         if (onBuyMineCart) onBuyMineCart();
         this._closeOverlay();
@@ -765,28 +777,44 @@ class UI {
     const supBar  = '█'.repeat(barFull) + '░'.repeat(10 - barFull);
     const supColor = supPct > 40 ? '#88cc44' : supPct > 15 ? '#f5c842' : '#ff4444';
 
-    // House expand is now at Contractor Mike — only show status here
-    const maxLevel = player.houseLevel >= HOUSE_MAX_LEVEL;
-
-    // Baby – necklaces are delivered automatically on house entry; show status only
-    const maxBabies = player.babyCount >= MAX_BABIES;
-
-    // Supplies refill – label changes based on whether there are babies
-    const foodLabel      = player.babyCount > 0 ? 'food and diapers' : 'food';
-    const foodLabelCap   = player.babyCount > 0 ? 'Food & diapers'   : 'Food';
-    const canRefill      = player.suppliesMeter < 100 && player.money >= SUPPLIES_REFILL_COST;
-    const refillNote     = player.suppliesMeter >= 100 ? ` <em>(${foodLabel} fully stocked)</em>`
-      : player.money < SUPPLIES_REFILL_COST
-        ? ` <em class="short">(need $${SUPPLIES_REFILL_COST - player.money} more)</em>` : '';
-    const refillCls      = canRefill ? 'shop-item buyable' : 'shop-item disabled';
-
-    // Wife message depends on how well-stocked the house is
-    const wifeMsg = supPct > 50
-      ? `"You're such a great provider. We have plenty of ${foodLabel}!"`
-      : `"We need more ${foodLabel}!"`;
-
     const houseEmoji = ['🏠', '🏡', '🏘️', '🏰'][Math.min(player.houseLevel - 1, 3)];
-    const babyEmojis = ['👶', '👶👶', '👶👶👶', '👶👶👶👶'][Math.max(0, player.babyCount - 1)] || '—';
+    const babyEmojis = player.babyCount > 0
+      ? '👶'.repeat(Math.min(player.babyCount, 10))
+      : '—';
+
+    let foodSectionHtml;
+    if (player.slayedDragon) {
+      // Dragon slayed: lifetime supply — no buy button needed
+      foodSectionHtml = `
+      <div class="section-label">FOOD</div>
+      <p style="font-size:0.88em;margin:4px 0 6px">
+        👱‍♀️ <em>"We have a lifetime supply of meat! You slayed the beast — I'll never worry about food again!"</em><br>
+        Supplies: <strong style="color:#88cc44">[██████████] 100% ∞</strong>
+      </p>`;
+    } else {
+      // Normal food section
+      const foodLabel      = player.babyCount > 0 ? 'food and diapers' : 'food';
+      const foodLabelCap   = player.babyCount > 0 ? 'Food & diapers'   : 'Food';
+      const canRefill      = player.suppliesMeter < 100 && player.money >= SUPPLIES_REFILL_COST;
+      const refillNote     = player.suppliesMeter >= 100 ? ` <em>(${foodLabel} fully stocked)</em>`
+        : player.money < SUPPLIES_REFILL_COST
+          ? ` <em class="short">(need $${SUPPLIES_REFILL_COST - player.money} more)</em>` : '';
+      const refillCls      = canRefill ? 'shop-item buyable' : 'shop-item disabled';
+
+      const wifeMsg = supPct > 50
+        ? `"You're such a great provider. We have plenty of ${foodLabel}!"`
+        : `"We need more ${foodLabel}!"`;
+
+      foodSectionHtml = `
+      <div class="section-label">${player.babyCount > 0 ? 'FOOD &amp; DIAPERS' : 'FOOD'}</div>
+      <p style="font-size:0.88em;margin:4px 0 6px">
+        👱‍♀️ <em>${wifeMsg}</em><br>
+        ${foodLabelCap}: <strong style="color:${supColor}">[${supBar}] ${supPct}%</strong>
+      </p>
+      <div class="${refillCls}" id="refill-btn">
+        🛒 Buy ${foodLabel} (+${SUPPLIES_REFILL_AMOUNT}%) — <span class="price">$${SUPPLIES_REFILL_COST}</span>${refillNote}
+      </div>`;
+    }
 
     this.overlay.innerHTML = `
       <div class="overlay-header">
@@ -802,19 +830,11 @@ class UI {
         Taxes every 30 min: <span class="price">$${taxAmount}</span>
         <small style="color:#888"> (paid from bank account)</small>
       </p>
-
-      <div class="section-label">${player.babyCount > 0 ? 'FOOD &amp; DIAPERS' : 'FOOD'}</div>
-      <p style="font-size:0.88em;margin:4px 0 6px">
-        👱‍♀️ <em>${wifeMsg}</em><br>
-        ${foodLabelCap}: <strong style="color:${supColor}">[${supBar}] ${supPct}%</strong>
-      </p>
-      <div class="${refillCls}" id="refill-btn">
-        🛒 Buy ${foodLabel} (+${SUPPLIES_REFILL_AMOUNT}%) — <span class="price">$${SUPPLIES_REFILL_COST}</span>${refillNote}
-      </div>
+      ${foodSectionHtml}
 
       <div class="section-label">FAMILY</div>
       <p style="font-size:0.88em;margin:4px 0 6px">
-        Babies: <strong>${player.babyCount} / ${MAX_BABIES}</strong>
+        Babies: <strong>${player.babyCount}</strong>
         ${player.babyCount > 0 ? babyEmojis : ''}
       </p>
     `;
@@ -822,6 +842,7 @@ class UI {
 
     const refillBtn = document.getElementById('refill-btn');
     if (refillBtn && refillBtn.classList.contains('buyable')) {
+      const foodLabel = player.babyCount > 0 ? 'food and diapers' : 'food';
       refillBtn.addEventListener('click', () => {
         if (player.money < SUPPLIES_REFILL_COST) return;
         const wasAlreadyFull = player.suppliesMeter + SUPPLIES_REFILL_AMOUNT > 100;
@@ -909,15 +930,27 @@ class UI {
   // -------------------------------------------------------------------------
   // -------------------------------------------------------------------------
 
-  openDragons(onClose) {
-    this.overlay.innerHTML = `
-      <div class="overlay-centered">
-        <p class="overlay-emoji">🐉</p>
-        <p class="overlay-title"><em>"There be dragons!"</em></p>
-        <button class="close-btn" id="overlay-close">
-          Turn Back
-        </button>
-      </div>`;
+  openDragons(slayedDragon, onClose) {
+    if (slayedDragon) {
+      this.overlay.innerHTML = `
+        <div class="overlay-centered">
+          <p class="overlay-emoji">🐉⚔️</p>
+          <p class="overlay-title" style="color:#f5c842"><em>"You slayed the enormous beast!"</em></p>
+          <p style="color:#88cc44"><em>"You have a lifetime supply of meat!"</em></p>
+          <button class="close-btn" id="overlay-close" style="border-color:#f5c842;color:#f5c842">
+            Turn Back (Victorious)
+          </button>
+        </div>`;
+    } else {
+      this.overlay.innerHTML = `
+        <div class="overlay-centered">
+          <p class="overlay-emoji">🐉</p>
+          <p class="overlay-title"><em>"There be dragons!"</em></p>
+          <button class="close-btn" id="overlay-close">
+            Turn Back
+          </button>
+        </div>`;
+    }
     this._openOverlay(onClose);
   }
 

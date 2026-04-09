@@ -12,7 +12,7 @@
  */
 
 const SAVE_KEY            = 'minerGameSave';
-const SAVE_VERSION        = 3;
+const SAVE_VERSION        = 4;
 const FAMILY_UNLOCKED_KEY = 'minerGameFamilyUnlocked';
 const START_FAMILY_KEY    = 'minerGameStartFamily';
 
@@ -141,6 +141,7 @@ const Storage = {
     p.necklaceCount = data.necklaceCount ?? 0;
     p.hasElevator   = data.hasElevator   ?? false;
     p.unlockedDepth = data.unlockedDepth ?? MAX_MINE_DEPTH;
+    p.slayedDragon  = data.slayedDragon  ?? false;
   },
 
   /** Overwrite a freshly constructed World with saved state. */
@@ -232,6 +233,7 @@ function _serializePlayer(p) {
     necklaceCount: p.necklaceCount,
     hasElevator:   p.hasElevator,
     unlockedDepth: p.unlockedDepth,
+    slayedDragon:  p.slayedDragon,
   };
 }
 

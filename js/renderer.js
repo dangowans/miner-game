@@ -633,6 +633,125 @@ class Renderer {
         break;
       }
 
+      case TILE.CASH_BAG: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('💰', cx, cy + 8);
+        // Golden star marker to indicate value
+        ctx.fillStyle = '#ffd700';
+        ctx.font      = 'bold 8px monospace';
+        ctx.fillText('★', cx, py + 9);
+        break;
+      }
+
+      case TILE.SCROLL: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('📜', cx, cy + 8);
+        break;
+      }
+
+      case TILE.FOSSIL: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🦴', cx, cy + 8);
+        break;
+      }
+
+      case TILE.NEWSPAPER: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('📰', cx, cy + 8);
+        break;
+      }
+
+      case TILE.BROKEN_CHAIN: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('⛓️', cx, cy + 8);
+        break;
+      }
+
+      case TILE.OLD_COIN: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🪙', cx, cy + 8);
+        break;
+      }
+
+      case TILE.BOTTLE: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🍾', cx, cy + 8);
+        break;
+      }
+
+      case TILE.HELMET: {
+        ctx.fillStyle = '#101820';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('⛑️', cx, cy + 8);
+        // Silver star marker for knight items
+        ctx.fillStyle = '#c0c0c0';
+        ctx.font      = 'bold 8px monospace';
+        ctx.fillText('★', cx, py + 9);
+        break;
+      }
+
+      case TILE.ARMOR: {
+        ctx.fillStyle = '#101820';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🪬', cx, cy + 8);
+        // Silver star marker for knight items
+        ctx.fillStyle = '#c0c0c0';
+        ctx.font      = 'bold 8px monospace';
+        ctx.fillText('★', cx, py + 9);
+        break;
+      }
+
+      case TILE.SHIELD: {
+        ctx.fillStyle = '#101820';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🛡️', cx, cy + 8);
+        // Silver star marker for knight items
+        ctx.fillStyle = '#c0c0c0';
+        ctx.font      = 'bold 8px monospace';
+        ctx.fillText('★', cx, py + 9);
+        break;
+      }
+
+      case TILE.SWORD: {
+        ctx.fillStyle = '#101820';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('⚔️', cx, cy + 8);
+        // Silver star marker for knight items
+        ctx.fillStyle = '#c0c0c0';
+        ctx.font      = 'bold 8px monospace';
+        ctx.fillText('★', cx, py + 9);
+        break;
+      }
+
       case TILE.WORKER: {
         // Sky background
         ctx.fillStyle = '#7ab8e8';
