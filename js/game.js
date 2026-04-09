@@ -69,6 +69,8 @@ class Game {
       // predate the worker tile addition (older version-3 saves may lack it).
       if (this.player.familyMode) {
         this.world.setTile(WORKER_X, 1, TILE.WORKER);
+        // Reapply expansion tiles so saves that predate this feature are correct.
+        this._applyHouseExpansionTiles(this.player.houseLevel);
       }
       this.ui.updateHUD(this.player);
     } else if (Storage.popStartInFamilyMode()) {
@@ -169,7 +171,8 @@ class Game {
     if (this._dragonWarnings >= 10) {
       Storage.clear();
       this.state = 'dead';
-      this.ui.showWarned(this._elapsedTimeLabel());
+      const stats = this.player.familyMode ? this._collectFamilyStats() : null;
+      this.ui.showWarned(this._elapsedTimeLabel(), stats);
     } else {
       this.state = 'overlay';
       this.ui.openDragons(() => { this.state = 'playing'; this.input.clear(); });
@@ -380,9 +383,7 @@ class Game {
     if (died) {
       Storage.clear();
       this.state = 'dead';
-      this.ui.showDead(this._elapsedTimeLabel());
-    } else {
-      const what = hazardType === 'lava'         ? '🔥 Lava burn'
+      this.ui.showDead(this._elapsedTimeLabel(), p.familyMode ? this._collectFamilyStats() : null);         ? '🔥 Lava burn'
                  : hazardType === 'lava_source'  ? '🔥 Lava source — can\'t pass'
                  : hazardType === 'water'        ? '💧 Waded through water'
                  : hazardType === 'water_source' ? '💧 Spring source — can\'t pass'
@@ -507,7 +508,8 @@ class Game {
     if (by < 3) {
       Storage.clear();
       this.state = 'dead';
-      this.ui.showPoliceArrest(this._elapsedTimeLabel());
+      const stats = this.player.familyMode ? this._collectFamilyStats() : null;
+      this.ui.showPoliceArrest(this._elapsedTimeLabel(), stats);
       return;
     }
 
@@ -544,7 +546,8 @@ class Game {
     if (blastTouchesSurface) {
       Storage.clear();
       this.state = 'dead';
-      this.ui.showMineCollapse(this._elapsedTimeLabel());
+      const stats = this.player.familyMode ? this._collectFamilyStats() : null;
+      this.ui.showMineCollapse(this._elapsedTimeLabel(), stats);
       return;
     }
 
@@ -557,7 +560,7 @@ class Game {
       if (died) {
         Storage.clear();
         this.state = 'dead';
-        this.ui.showDead(this._elapsedTimeLabel());
+        this.ui.showDead(this._elapsedTimeLabel(), p.familyMode ? this._collectFamilyStats() : null);
         return;
       }
       p.setMessage(`💥 Too close to the blast! 2 damage (${p.hearts}/${p.maxHearts} ♥)`);
@@ -567,7 +570,7 @@ class Game {
       if (died) {
         Storage.clear();
         this.state = 'dead';
-        this.ui.showDead(this._elapsedTimeLabel());
+        this.ui.showDead(this._elapsedTimeLabel(), p.familyMode ? this._collectFamilyStats() : null);
         return;
       }
       p.setMessage(`💥 Caught in the blast! 1 damage (${p.hearts}/${p.maxHearts} ♥)`);
@@ -912,6 +915,11 @@ class Game {
           this.ui.updateHUD(p);
           Storage.save(p, this.world, this);
         },
+        onExpandHouse: (level) => {
+          this._applyHouseExpansionTiles(level);
+          this.ui.updateHUD(p);
+          Storage.save(p, this.world, this);
+        },
       });
       return;
     }
@@ -955,8 +963,9 @@ class Game {
       p.money -= JEWELER_MONEY_COST;
     }
 
-    // Replace bar with house tile
+    // Replace bar with house tile and apply any expansion tiles for this level
     this.world.setTile(BAR_X, 1, TILE.HOUSE);
+    this._applyHouseExpansionTiles(p.houseLevel);
 
     // Ensure Contractor Mike is present for house upgrades
     this.world.setTile(WORKER_X, 1, TILE.WORKER);
@@ -985,6 +994,25 @@ class Game {
     p.setMessage('👨‍👩‍👧‍👦 Family Mode! Visit your new home and the bank to get started.');
     this.ui.updateHUD(p);
     Storage.save(p, this.world, this);
+  }
+
+  /** Set world tiles for all house levels up to and including `level`.
+   *  Level 1 = main facade only (already placed by _activateFamilyMode).
+   *  Level 2 = side-wall extensions left and right.
+   *  Level 3 = top-floor tile above the main facade.
+   *  Level 4 = top-floor tiles above the two side walls. */
+  _applyHouseExpansionTiles(level) {
+    if (level >= 2) {
+      this.world.setTile(BAR_X - 1, 1, TILE.HOUSE);
+      this.world.setTile(BAR_X + 1, 1, TILE.HOUSE);
+    }
+    if (level >= 3) {
+      this.world.setTile(BAR_X, 0, TILE.HOUSE);
+    }
+    if (level >= 4) {
+      this.world.setTile(BAR_X - 1, 0, TILE.HOUSE);
+      this.world.setTile(BAR_X + 1, 0, TILE.HOUSE);
+    }
   }
 
   /** Compute the current tax bill based on house level. */

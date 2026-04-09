@@ -426,16 +426,18 @@ class UI {
     this._openOverlay(() => {});
   }
 
-  showPoliceArrest(elapsedTime) {
-    const timeHtml = elapsedTime
+  showPoliceArrest(elapsedTime, stats = null) {
+    const timeHtml  = elapsedTime
       ? `<p class="overlay-time">Time: ${elapsedTime}</p>`
       : '';
+    const statsHtml = stats ? this._familyStatsHtml(stats) : '';
     this.overlay.innerHTML = `
       <div class="overlay-centered">
         <p class="overlay-emoji">👮</p>
         <h2 class="overlay-title" style="color:#ff4444">BUSTED!</h2>
         <p>You set off dynamite in town! A police officer arrested you on the spot.</p>
         ${timeHtml}
+        ${statsHtml}
         <button class="close-btn" onclick="location.reload()">
           🔄 Try Again
         </button>
@@ -443,16 +445,18 @@ class UI {
     this._openOverlay(() => {});
   }
 
-  showMineCollapse(elapsedTime) {
-    const timeHtml = elapsedTime
+  showMineCollapse(elapsedTime, stats = null) {
+    const timeHtml  = elapsedTime
       ? `<p class="overlay-time">Time: ${elapsedTime}</p>`
       : '';
+    const statsHtml = stats ? this._familyStatsHtml(stats) : '';
     this.overlay.innerHTML = `
       <div class="overlay-centered">
         <p class="overlay-emoji">⛏️💥</p>
         <h2 class="overlay-title" style="color:#ff4444">MINE COLLAPSE!</h2>
         <p>The blast reached the surface and caused a catastrophic mine collapse. You didn't make it out.</p>
         ${timeHtml}
+        ${statsHtml}
         <button class="close-btn" onclick="location.reload()">
           🔄 Try Again
         </button>
@@ -609,7 +613,7 @@ class UI {
   // Contractor Mike overlay
   // -------------------------------------------------------------------------
 
-  openWorker(player, { onClose, onBuildElevator }) {
+  openWorker(player, { onClose, onBuildElevator, onExpandHouse }) {
     const canExpand   = player.houseLevel < HOUSE_MAX_LEVEL && player.money >= HOUSE_UPGRADE_COST;
     const maxLevel    = player.houseLevel >= HOUSE_MAX_LEVEL;
     const expandNote  = maxLevel ? ' <em>(maximum size reached)</em>'
@@ -653,6 +657,7 @@ class UI {
         player.houseLevel += 1;
         player.setMessage(`🏠 House expanded to level ${player.houseLevel}!`);
         sounds.playTransaction();
+        if (onExpandHouse) onExpandHouse(player.houseLevel);
         this._closeOverlay();
       });
     }
@@ -922,16 +927,18 @@ class UI {
   // "You were warned" game over screen (10 dragon warnings)
   // -------------------------------------------------------------------------
 
-  showWarned(elapsedTime) {
-    const timeHtml = elapsedTime
+  showWarned(elapsedTime, stats = null) {
+    const timeHtml  = elapsedTime
       ? `<p class="overlay-time">Time: ${elapsedTime}</p>`
       : '';
+    const statsHtml = stats ? this._familyStatsHtml(stats) : '';
     this.overlay.innerHTML = `
       <div class="overlay-centered">
         <p class="overlay-emoji">🐉</p>
         <h2 class="overlay-title" style="color:#ff4444">GAME OVER</h2>
         <p>You were warned.</p>
         ${timeHtml}
+        ${statsHtml}
         <button class="close-btn" onclick="location.reload()">
           🔄 Try Again
         </button>
