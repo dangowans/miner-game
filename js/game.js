@@ -630,8 +630,10 @@ class Game {
       p.setMessage('🛒 Cart blocked! No clear path to the mine exit — water or lava is in the way.');
       return;
     }
-    const total = p.sellGems();
-    p.setMessage(`🛒 Mine cart delivered! $${total} deposited.`);
+    const total = p.gems.reduce((s, g) => s + (GEM_VALUE[g] || 0), 0);
+    p.gems = [];
+    p.bankBalance += total;
+    p.setMessage(`🛒 Mine cart delivered! $${total} deposited to bank account.`);
     sounds.playTransaction();
     this.ui.updateHUD(p);
   }
