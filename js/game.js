@@ -663,7 +663,8 @@ class Game {
 
         if (nx < 0 || nx >= width || ny < 2) continue;
 
-        // Mine ↔ surface boundary only crossable at mine entrance columns
+        // Mine ↔ surface boundary: y=3 is the first mine row, y=2 is the
+        // surface pavement row — only crossable at mine entrance columns.
         if (cy === 3 && ny === 2 && (nx < MINE_ENT_X_MIN || nx > MINE_ENT_X_MAX)) continue;
 
         const key = nx + ',' + ny;
