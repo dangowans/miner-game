@@ -63,6 +63,17 @@ const TILE = Object.freeze({
   WORKER:      39,   // Contractor Mike building on the surface
   ELEV_ENT:    40,   // Elevator door in the shaft (every 5 m) – impassable, interactive
   ELEV_SHAFT:  41,   // Elevator shaft fill between doors – impassable solid
+  CASH_BAG:    42,   // Hidden bag of cash from a previous miner – adds $750
+  SCROLL:      43,   // Hidden ancient scroll – novelty collectible
+  FOSSIL:      44,   // Hidden fossilized footprints – novelty collectible
+  NEWSPAPER:   45,   // Hidden old newspaper – novelty collectible
+  BROKEN_CHAIN:46,   // Hidden broken chain – novelty collectible
+  OLD_COIN:    47,   // Hidden old coin – novelty collectible
+  BOTTLE:      48,   // Hidden bottle of alcohol – novelty collectible
+  HELMET:      49,   // Knight's helmet – only in extended mine (part of knight set)
+  ARMOR:       50,   // Knight's armor – only in extended mine (part of knight set)
+  SHIELD:      51,   // Knight's shield – only in extended mine (part of knight set)
+  SWORD:       52,   // Knight's sword – only in extended mine (part of knight set)
 });
 
 // ---------------------------------------------------------------------------
@@ -92,6 +103,17 @@ const HIDDEN = Object.freeze({
   LUNCHBOX:     'lunchbox',     // Unique – novelty collectible
   TIN_CAN:      'tin_can',      // Unique – novelty collectible
   NECKLACE:     'necklace',     // Family-mode item – deliver home to have a baby
+  CASH_BAG:     'cash_bag',     // Unique – adds $750 to cash on pickup
+  SCROLL:       'scroll',       // Unique – novelty collectible
+  FOSSIL:       'fossil',       // Unique – novelty collectible
+  NEWSPAPER:    'newspaper',    // Unique – novelty collectible
+  BROKEN_CHAIN: 'broken_chain', // Unique – novelty collectible
+  OLD_COIN:     'old_coin',     // Unique – novelty collectible
+  BOTTLE:       'bottle',       // Unique – novelty collectible
+  HELMET:       'helmet',       // Knight set – extended mine only
+  ARMOR:        'armor',        // Knight set – extended mine only
+  SHIELD:       'shield',       // Knight set – extended mine only
+  SWORD:        'sword',        // Knight set – extended mine only
 });
 
 // ---------------------------------------------------------------------------
@@ -221,7 +243,7 @@ const FAMILY_SUPPLIES_PER_BABY = 0.5;              // Extra % depletion per minu
 const HOUSE_UPGRADE_COST       = 1000;  // Cost to expand house (per level)
 const HOUSE_MAX_LEVEL          = 4;     // Maximum house expansion level
 const BABY_COST                = 500;   // Cost to have each baby
-const MAX_BABIES               = 4;     // Maximum number of babies
+const MAX_BABIES               = 10;     // Maximum number of babies
 const SUPPLIES_REFILL_COST     = 40;    // Cost to refill supplies by 25 %
 const SUPPLIES_REFILL_AMOUNT   = 25;    // Percent refilled per payment
 
@@ -363,9 +385,30 @@ const TILE_COLOR = {
   [TILE.WORKER]:       '#c87840',
   [TILE.ELEV_ENT]:     '#1a2233',   // Elevator door – dark steel blue
   [TILE.ELEV_SHAFT]:   '#3a5070',   // Elevator shaft fill – steel blue rails
+  [TILE.CASH_BAG]:     '#1a1a0a',   // Hidden bag of cash – dark with gold tint
+  [TILE.SCROLL]:       '#1a0a00',   // Hidden scroll – dark parchment background
+  [TILE.FOSSIL]:       '#0a0a0a',   // Hidden fossil – very dark
+  [TILE.NEWSPAPER]:    '#0a0a0a',   // Hidden newspaper – very dark
+  [TILE.BROKEN_CHAIN]: '#0a0a0a',   // Hidden broken chain – very dark
+  [TILE.OLD_COIN]:     '#0a0a0a',   // Hidden old coin – very dark
+  [TILE.BOTTLE]:       '#0a0a0a',   // Hidden bottle – very dark
+  [TILE.HELMET]:       '#101820',   // Knight helmet – dark steel
+  [TILE.ARMOR]:        '#101820',   // Knight armor – dark steel
+  [TILE.SHIELD]:       '#101820',   // Knight shield – dark steel
+  [TILE.SWORD]:        '#101820',   // Knight sword – dark steel
 };
 
 // Ore tile types that can be destroyed when a hazard spreads over them
 const HAZARD_DESTROYABLE_TILES = new Set([
   TILE.SILVER, TILE.GOLD, TILE.PLATINUM, TILE.DIAMOND, TILE.RUBY,
 ]);
+
+// ---------------------------------------------------------------------------
+// Cash bag reward
+// ---------------------------------------------------------------------------
+const CASH_BAG_VALUE = 750;  // Cash added to player wallet when bag of cash is found
+
+// ---------------------------------------------------------------------------
+// Knight item set – collect all four to slay the dragon
+// ---------------------------------------------------------------------------
+const KNIGHT_ITEMS = Object.freeze(['helmet', 'armor', 'shield', 'sword']);

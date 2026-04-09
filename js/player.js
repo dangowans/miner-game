@@ -73,6 +73,7 @@ class Player {
     this.hasElevator    = false; // True once the elevator shaft has been built
     this.inElevator     = false; // True while the player is riding in the elevator cabin
     this.unlockedDepth  = MAX_MINE_DEPTH; // Mine depth limit in metres (expandable)
+    this.slayedDragon   = false; // True after collecting all four knight items and going OOB
 
     // HUD message
     this.message      = '';

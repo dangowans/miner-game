@@ -171,18 +171,36 @@ class Game {
   /**
    * Show the dragons warning overlay. After 10 warnings, show the game-over
    * "You were warned" screen instead.
+   * If the player has collected all four knight items, show the dragon-slaying
+   * victory message instead of the normal warning.
    */
   _warnDragons() {
     this.input.clear();
+    const p = this.player;
+
+    // Check if player has all knight items
+    const hasAllKnightItems = KNIGHT_ITEMS.every(item => p.specialItems.has(item));
+
+    if (hasAllKnightItems) {
+      // Dragon slayed: set flag, fix supplies
+      if (!p.slayedDragon) {
+        p.slayedDragon = true;
+        if (p.familyMode) p.suppliesMeter = 100;
+      }
+      this.state = 'overlay';
+      this.ui.openDragons(true, () => { this.state = 'playing'; this.input.clear(); });
+      return;
+    }
+
     this._dragonWarnings++;
     if (this._dragonWarnings >= 10) {
       Storage.clear();
       this.state = 'dead';
-      const stats = this.player.familyMode ? this._collectFamilyStats() : null;
+      const stats = p.familyMode ? this._collectFamilyStats() : null;
       this.ui.showWarned(this._elapsedTimeLabel(), stats);
     } else {
       this.state = 'overlay';
-      this.ui.openDragons(() => { this.state = 'playing'; this.input.clear(); });
+      this.ui.openDragons(false, () => { this.state = 'playing'; this.input.clear(); });
     }
   }
 
@@ -619,21 +637,21 @@ class Game {
   _useMineCart() {
     const p = this.player;
     if (!p.hasMineCart) {
-      p.setMessage('🛒 No mine cart — buy one from Contractor Mike.');
+      p.setMessage('🚃 No mine cart — buy one from Contractor Mike.');
       return;
     }
     if (p.gemCount === 0) {
-      p.setMessage('🛒 No ore to transport!');
+      p.setMessage('🚃 No ore to transport!');
       return;
     }
     if (!this._cartPathExists()) {
-      p.setMessage('🛒 Cart blocked! No clear path to the mine exit — water or lava is in the way.');
+      p.setMessage('🚃 Cart blocked! No clear path to the mine exit — water or lava is in the way.');
       return;
     }
     const total = p.gems.reduce((s, g) => s + (GEM_VALUE[g] || 0), 0);
     p.gems = [];
     p.bankBalance += total;
-    p.setMessage(`🛒 Mine cart delivered! $${total} deposited to bank account.`);
+    p.setMessage(`🚃 Mine cart delivered! $${total} deposited to bank account.`);
     sounds.playTransaction();
     this.ui.updateHUD(p);
   }
@@ -1037,6 +1055,130 @@ class Game {
         }
         break;
       }
+
+      // ── Bag of cash ────────────────────────────────────────────────────
+      case TILE.CASH_BAG: {
+        if (!p.specialItems.has(HIDDEN.CASH_BAG)) {
+          p.specialItems.add(HIDDEN.CASH_BAG);
+          p.money += CASH_BAG_VALUE;
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          this._showItemPickupOverlay('💰', `You found a bag of cash! A previous miner left it behind. +$${CASH_BAG_VALUE} added to your wallet.`);
+          this.ui.updateHUD(p);
+        }
+        break;
+      }
+
+      // ── New novelty collectibles ───────────────────────────────────────
+      case TILE.SCROLL: {
+        if (!p.specialItems.has(HIDDEN.SCROLL)) {
+          p.specialItems.add(HIDDEN.SCROLL);
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          this._showItemPickupOverlay('📜', 'An ancient scroll! The words are faded but you can make out warnings about "the beast below."');
+        }
+        break;
+      }
+
+      case TILE.FOSSIL: {
+        if (!p.specialItems.has(HIDDEN.FOSSIL)) {
+          p.specialItems.add(HIDDEN.FOSSIL);
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          this._showItemPickupOverlay('🦴', 'Fossilized footprints! Something enormous walked through here a very long time ago.');
+        }
+        break;
+      }
+
+      case TILE.NEWSPAPER: {
+        if (!p.specialItems.has(HIDDEN.NEWSPAPER)) {
+          p.specialItems.add(HIDDEN.NEWSPAPER);
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          this._showItemPickupOverlay('📰', 'An old newspaper! The headline reads: "KNIGHT EXPEDITION VANISHES IN DEEP MINE — 1923."');
+        }
+        break;
+      }
+
+      case TILE.BROKEN_CHAIN: {
+        if (!p.specialItems.has(HIDDEN.BROKEN_CHAIN)) {
+          p.specialItems.add(HIDDEN.BROKEN_CHAIN);
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          this._showItemPickupOverlay('⛓️', 'A broken chain. Someone — or something — snapped it. Best not to think about it.');
+        }
+        break;
+      }
+
+      case TILE.OLD_COIN: {
+        if (!p.specialItems.has(HIDDEN.OLD_COIN)) {
+          p.specialItems.add(HIDDEN.OLD_COIN);
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          this._showItemPickupOverlay('🪙', 'An old coin! The face on it belongs to a forgotten king. Might be worth something someday.');
+        }
+        break;
+      }
+
+      case TILE.BOTTLE: {
+        if (!p.specialItems.has(HIDDEN.BOTTLE)) {
+          p.specialItems.add(HIDDEN.BOTTLE);
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          this._showItemPickupOverlay('🍾', 'A sealed bottle of alcohol! Vintage 1923 and still intact. That\'s impressive.');
+        }
+        break;
+      }
+
+      // ── Knight items (extended mine only) ─────────────────────────────
+      case TILE.HELMET: {
+        if (!p.specialItems.has(HIDDEN.HELMET)) {
+          p.specialItems.add(HIDDEN.HELMET);
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          const count = KNIGHT_ITEMS.filter(i => p.specialItems.has(i)).length;
+          this._showItemPickupOverlay('⛑️', `A knight\'s helmet! You feel more courageous. (Knight item ${count}/4)`);
+        }
+        break;
+      }
+
+      case TILE.ARMOR: {
+        if (!p.specialItems.has(HIDDEN.ARMOR)) {
+          p.specialItems.add(HIDDEN.ARMOR);
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          const count = KNIGHT_ITEMS.filter(i => p.specialItems.has(i)).length;
+          this._showItemPickupOverlay('🪬', `A knight\'s armor! You feel protected. (Knight item ${count}/4)`);
+        }
+        break;
+      }
+
+      case TILE.SHIELD: {
+        if (!p.specialItems.has(HIDDEN.SHIELD)) {
+          p.specialItems.add(HIDDEN.SHIELD);
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          const count = KNIGHT_ITEMS.filter(i => p.specialItems.has(i)).length;
+          this._showItemPickupOverlay('🛡️', `A knight\'s shield! Your defenses are unmatched. (Knight item ${count}/4)`);
+        }
+        break;
+      }
+
+      case TILE.SWORD: {
+        if (!p.specialItems.has(HIDDEN.SWORD)) {
+          p.specialItems.add(HIDDEN.SWORD);
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          const allFour = KNIGHT_ITEMS.every(i => p.specialItems.has(i));
+          if (allFour) {
+            this._showItemPickupOverlay('⚔️', 'A knight\'s sword! You are now fully equipped. Seek the edge of the world — the beast awaits!');
+          } else {
+            const count = KNIGHT_ITEMS.filter(i => p.specialItems.has(i)).length;
+            this._showItemPickupOverlay('⚔️', `A knight\'s sword! You feel ready for battle. (Knight item ${count}/4)`);
+          }
+        }
+        break;
+      }
     }
   }
 
@@ -1283,8 +1425,8 @@ class Game {
       return;
     }
 
-    // ── Supplies depletion ────────────────────────────────────────────────
-    if (this._lastSuppliesTickTime > 0) {
+    // ── Supplies depletion (skipped when dragon is slayed) ────────────────
+    if (!this.player.slayedDragon && this._lastSuppliesTickTime > 0) {
       const elapsed = now - this._lastSuppliesTickTime;
       const ticks   = Math.floor(elapsed / FAMILY_SUPPLIES_TICK_MS);
       if (ticks > 0) {
@@ -1354,7 +1496,13 @@ class Game {
     if (p.dynamiteCount)   items.push(`💣 Dynamite ×${p.dynamiteCount}`);
     if (p.firstAidKits)    items.push(`🩹 First Aid ×${p.firstAidKits}`);
     for (const si of p.specialItems) {
-      const icons = { rubber_boot: '🥾', pocket_watch: '⌚', glasses: '🕶️', skull: '💀', canteen: '🧴', lunchbox: '🍱', tin_can: '🥫' };
+      const icons = {
+        rubber_boot: '🥾', pocket_watch: '⌚', glasses: '🕶️', skull: '💀',
+        canteen: '🧴', lunchbox: '🍱', tin_can: '🥫',
+        cash_bag: '💰', scroll: '📜', fossil: '🦴', newspaper: '📰',
+        broken_chain: '⛓️', old_coin: '🪙', bottle: '🍾',
+        helmet: '⛑️', armor: '🪬', shield: '🛡️', sword: '⚔️',
+      };
       if (icons[si]) items.push(icons[si]);
     }
     return {
