@@ -81,6 +81,11 @@ class UI {
     }
     if (player.firstAidKits > 0) tools.push(`🩹×${player.firstAidKits}`);
 
+    // Bank balance — show whenever the mine cart has been purchased
+    if (player.hasMineCart && !player.familyMode) {
+      tools.push(`| 🏦$${player.bankBalance}`);
+    }
+
     // Family mode status (appended to tool row)
     if (player.familyMode) {
       const supPct  = Math.round(player.suppliesMeter);
@@ -543,28 +548,32 @@ class UI {
       itemsHtml = `<div class="shop-item disabled">No ore to sell — go mining!</div>`;
     }
 
-    // Bank account section (family mode only)
+    // Bank account section — visible when mine cart is owned or in family mode
     let accountHtml = '';
-    if (player.familyMode) {
+    if (player.familyMode || player.hasMineCart) {
       const depositStep  = 50;
-      const canDeposit   = player.money >= depositStep;
-      const canWithdraw  = player.bankBalance >= depositStep;
+      const canDeposit   = player.familyMode && player.money >= depositStep;
+      const canWithdraw  = player.familyMode && player.bankBalance >= depositStep;
       const depositCls   = canDeposit  ? 'shop-item buyable' : 'shop-item disabled';
       const withdrawCls  = canWithdraw ? 'shop-item buyable' : 'shop-item disabled';
-      const depositNote  = canDeposit  ? '' : ` <em class="short">(need $${depositStep - player.money} more)</em>`;
-      const withdrawNote = canWithdraw ? '' : ` <em class="short">(balance too low)</em>`;
+      const depositNote  = canDeposit  ? '' : player.familyMode ? ` <em class="short">(need $${depositStep - player.money} more)</em>` : '';
+      const withdrawNote = canWithdraw ? '' : player.familyMode ? ` <em class="short">(balance too low)</em>` : '';
+      const balanceNote  = player.familyMode
+        ? '<small style="color:#888"> — taxes are debited from here automatically</small>'
+        : '<small style="color:#888"> — mine cart deposits go here</small>';
       accountHtml = `
         <div class="section-label">BANK ACCOUNT</div>
         <p style="font-size:0.88em;margin:4px 0 8px">
           Account balance: <strong style="color:#f5c842">$${player.bankBalance}</strong>
-          <small style="color:#888"> — taxes are debited from here automatically</small>
+          ${balanceNote}
         </p>
+        ${player.familyMode ? `
         <div class="${depositCls}" id="deposit-btn" data-amount="${depositStep}">
           💳 Deposit $${depositStep}${depositNote}
         </div>
         <div class="${withdrawCls}" id="withdraw-btn" data-amount="${depositStep}">
           💸 Withdraw $${depositStep}${withdrawNote}
-        </div>`;
+        </div>` : ''}`;
     }
 
     this.overlay.innerHTML = `
