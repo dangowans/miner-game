@@ -406,19 +406,19 @@ class UI {
   // Death / win screens
   // -------------------------------------------------------------------------
 
-  showDead(elapsedTime) {
-    const timeHtml = elapsedTime
-      ? `<p class="overlay-time">Time: ${elapsedTime}</p>`
-      : '';
+  showDead(elapsedTime, stats = null) {
+    const timeHtml  = elapsedTime ? `<p class="overlay-time">Time: ${elapsedTime}</p>` : '';
+    const statsHtml = stats ? this._familyStatsHtml(stats) : `
+        <p class="overlay-tip">
+          Tip: visit the Doctor to increase your max hearts.
+        </p>`;
     this.overlay.innerHTML = `
       <div class="overlay-centered">
         <p class="overlay-emoji">💀</p>
         <h2 class="overlay-title" style="color:#ff4444">YOU DIED</h2>
         <p>The mine claimed another victim.</p>
         ${timeHtml}
-        <p class="overlay-tip">
-          Tip: visit the Doctor to increase your max hearts.
-        </p>
+        ${statsHtml}
         <button class="close-btn" onclick="location.reload()">
           🔄 Try Again
         </button>

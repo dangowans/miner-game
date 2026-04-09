@@ -245,7 +245,7 @@ class World {
     top[9]          = TILE.BAR;        // Bar
     top[13]         = TILE.DOCTOR;     // Doctor
     top[BANK_X]     = TILE.BANK;       // Town bank (x=17)
-    top[WORKER_X]   = TILE.WORKER;     // Construction worker (x=20)
+    top[WORKER_X]   = TILE.SKY;        // Contractor Mike only visible in family mode
     // Jeweler removed – x=19 remains SKY
 
     // Mine entrance arch at x=22-24 (decorative upper; actual entrance at y=2)
