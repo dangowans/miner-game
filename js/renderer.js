@@ -661,6 +661,27 @@ class Renderer {
         ctx.fillRect(cx + 1, py + 28, 4, ts - 28);
         break;
       }
+
+      case TILE.ELEV_ENT: {
+        // Elevator entry point – steel-framed door with up-arrow indicator
+        // Left rail
+        ctx.fillStyle = '#3a5070';
+        ctx.fillRect(px + 2, py, 4, ts);
+        // Right rail
+        ctx.fillRect(px + ts - 6, py, 4, ts);
+        // Horizontal bar (door lintel)
+        ctx.fillRect(px + 2, py + 4, ts - 4, 3);
+        // Up-arrow (ride to surface)
+        ctx.fillStyle = '#88ccff';
+        ctx.font      = 'bold 14px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('↑', cx, cy + 6);
+        // "$5" label
+        ctx.fillStyle = '#aaddff';
+        ctx.font      = 'bold 7px monospace';
+        ctx.fillText('$5', cx, cy + 16);
+        break;
+      }
     }
   }
 

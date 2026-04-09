@@ -182,7 +182,9 @@ class World {
     this.elevatorBuilt = true;
     for (let y = 3; y <= this.deepestGenY; y++) {
       if (this.getTile(ELEVATOR_X, y) !== null) {
-        this.setTile(ELEVATOR_X, y, TILE.EMPTY);
+        // Place an entry-point tile every 5 m (y where depth = y-2 is a multiple of 5)
+        const isEntry = y >= 5 && (y - 2) % 5 === 0;
+        this.setTile(ELEVATOR_X, y, isEntry ? TILE.ELEV_ENT : TILE.EMPTY);
         this.setData(ELEVATOR_X, y, null);
       }
     }
@@ -317,7 +319,9 @@ class World {
 
         // Keep the elevator shaft open if it has been built
         if (this.elevatorBuilt && x === ELEVATOR_X) {
-          tiles[x] = TILE.EMPTY;
+          // Place an entry-point tile every 5 m (depth = y-2, multiple of 5)
+          const isEntry = (y - 2) % 5 === 0;
+          tiles[x] = isEntry ? TILE.ELEV_ENT : TILE.EMPTY;
           data[x]  = null;
           continue;
         }
@@ -523,6 +527,7 @@ class World {
       case TILE.LUNCHBOX:
       case TILE.TIN_CAN:
       case TILE.NECKLACE:
+      case TILE.ELEV_ENT:
         return true;
       case TILE.BUILDING:
       case TILE.DIRT:

@@ -913,7 +913,7 @@ class Game {
           p.money -= ELEVATOR_COST;
           p.hasElevator = true;
           this.world.buildElevator();
-          p.setMessage('🏗️ Elevator shaft built! Use it at x=21 to travel the mine quickly.');
+          p.setMessage('🏗️ Elevator shaft built! Enter the right mine-entrance column to ride ($5/trip).');
           this.ui.updateHUD(p);
           Storage.save(p, this.world, this);
         },
@@ -927,22 +927,36 @@ class Game {
     }
 
     if (checkTile(TILE.MINE_ENT)) {
-      if (p.hasElevator && p.y >= 3) {
-        // Player is in the mine at the elevator shaft entrance — offer fast travel to surface
-        p.x = ELEVATOR_X;
-        p.y = PLAYER_START_Y;
-        p.setMessage('🛗 Elevator: back at the surface!');
-        this.ui.updateHUD(p);
-      } else if (p.hasElevator && p.y === PLAYER_START_Y && p.x === ELEVATOR_X) {
-        // Player is on the surface at the elevator — descend to deepest point
-        const targetY = Math.max(3, this.world.deepestGenY - 2);
-        p.x = ELEVATOR_X;
-        p.y = targetY;
-        p.setMessage(`🛗 Elevator: descended to depth ${targetY - 2} m.`);
+      if (p.hasElevator && p.y === PLAYER_START_Y && p.x === ELEVATOR_X) {
+        // Player is at the surface elevator entrance — descend to the deepest entry point
+        if (p.money < ELEVATOR_RIDE_COST) {
+          p.setMessage(`🛗 Elevator needs $${ELEVATOR_RIDE_COST} per ride. (You have $${p.money})`);
+        } else {
+          // Find the deepest ELEV_ENT tile in the shaft
+          const deepest = Math.floor((this.world.deepestGenY - 2) / 5) * 5 + 2;
+          const targetY = Math.max(7, deepest);
+          p.money -= ELEVATOR_RIDE_COST;
+          p.x = ELEVATOR_X;
+          p.y = targetY;
+          p.setMessage(`🛗 Elevator: descended to depth ${targetY - 2} m. ($${ELEVATOR_RIDE_COST} charged)`);
+        }
         this.ui.updateHUD(p);
       } else {
         p.setMessage('⛏ Walk down (↓ / S) to enter the mine.');
       }
+    }
+
+    if (checkTile(TILE.ELEV_ENT)) {
+      // Underground elevator entry point — ride up to the surface
+      if (p.money < ELEVATOR_RIDE_COST) {
+        p.setMessage(`🛗 Elevator needs $${ELEVATOR_RIDE_COST} per ride. (You have $${p.money})`);
+      } else {
+        p.money -= ELEVATOR_RIDE_COST;
+        p.x = ELEVATOR_X;
+        p.y = PLAYER_START_Y;
+        p.setMessage(`🛗 Elevator: back at the surface! ($${ELEVATOR_RIDE_COST} charged)`);
+      }
+      this.ui.updateHUD(p);
     }
   }
 

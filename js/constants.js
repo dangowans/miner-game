@@ -61,6 +61,7 @@ const TILE = Object.freeze({
   TIN_CAN:     37,   // Hidden tin can – novelty collectible
   NECKLACE:    38,   // Hidden necklace – found in mine during family mode; deliver home to have a baby
   WORKER:      39,   // Contractor Mike building on the surface
+  ELEV_ENT:    40,   // Elevator entry point in the shaft (every 5 m) – interactive
 });
 
 // ---------------------------------------------------------------------------
@@ -258,8 +259,9 @@ const HAZARD_SPREAD = 12;  // Max EMPTY tiles a water/lava spring floods when tr
 // Elevator
 // ---------------------------------------------------------------------------
 const WORKER_X        = 20;   // Contractor Mike building x-column
-const ELEVATOR_X      = 21;   // Elevator shaft x-column (adjacent to mine entrance)
-const ELEVATOR_COST   = 500;  // One-time cost to build the elevator
+const ELEVATOR_X      = 23;   // Elevator shaft x-column (rightmost mine-entrance column)
+const ELEVATOR_COST   = 500;  // One-time cost to build the elevator shaft
+const ELEVATOR_RIDE_COST = 5; // Cost per elevator ride (ascend or descend)
 
 // ---------------------------------------------------------------------------
 // Surface building x-positions in the building facade row (y=0)
@@ -344,6 +346,7 @@ const TILE_COLOR = {
   [TILE.TIN_CAN]:      '#708090',
   [TILE.NECKLACE]:     '#f0c040',
   [TILE.WORKER]:       '#c87840',
+  [TILE.ELEV_ENT]:     '#1a2233',   // Elevator entry point – dark steel blue
 };
 
 // Ore tile types that can be destroyed when a hazard spreads over them

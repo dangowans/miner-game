@@ -643,8 +643,8 @@ class UI {
 
       <div class="section-label">ELEVATOR</div>
       <div class="${elevatorCls}" id="worker-elevator-btn">
-        🛗 Build elevator shaft (x=21) — <span class="price">$${ELEVATOR_COST}</span>${elevatorNote}
-        <br><small>Pre-digs a shaft next to the mine entrance for fast vertical travel.</small>
+        🛗 Build elevator shaft (right mine entrance column) — <span class="price">$${ELEVATOR_COST}</span>${elevatorNote}
+        <br><small>Digs a shaft in the rightmost mine column. Entry points every 5 m. $${ELEVATOR_RIDE_COST}/ride.</small>
       </div>
     `;
     this._openOverlay(onClose);
