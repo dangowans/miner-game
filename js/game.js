@@ -193,9 +193,18 @@ class Game {
     // ── Elevator cabin mode ───────────────────────────────────────────────
     if (p.inElevator) {
       if (dx !== 0) {
-        // Step out of the elevator to the left (back into the mine)
+        // Step out of the elevator to the left (back into the mine).
+        // ELEVATOR_X - 1 = 22 is always the mine column adjacent to the shaft;
+        // in the cleared entrance zone it is TILE.EMPTY, deeper it is whatever
+        // the player has already dug open. If for any reason it is impassable
+        // (e.g. hazard tiles), stay in the elevator and warn.
+        const exitX = ELEVATOR_X - 1;
+        if (!this.world.isPassable(exitX, p.y)) {
+          p.setMessage('🛗 Cannot exit here — the adjacent tile is blocked.');
+          return;
+        }
         p.inElevator = false;
-        p.x = ELEVATOR_X - 1;
+        p.x = exitX;
         this._afterMove(p.x, p.y);
       } else {
         // Move up or down to the next elevator door
@@ -416,13 +425,20 @@ class Game {
    */
   _nextElevEntry(currentY, dy) {
     if (dy < 0) {
-      // Going up – previous entry row
+      // Going up – find the previous entry row.
+      // Entry rows satisfy (y − 2) % 5 === 0, i.e. y = 2 + 5k (k = 0,1,2,…).
+      // The largest entry row strictly below currentY is:
+      //   floor((currentY − 3) / 5) * 5 + 2
+      // (subtract 3 so that currentY itself — which may be an entry row — is excluded).
       const prev = Math.floor((currentY - 3) / 5) * 5 + 2;
       if (prev >= 7) return prev;          // another underground door above
       if (currentY >= 7) return PLAYER_START_Y;  // surface exit
       return null;                          // already at surface
     } else {
-      // Going down – next entry row
+      // Going down – find the next entry row.
+      // The smallest entry row strictly above currentY is:
+      //   floor((currentY − 2) / 5 + 1) * 5 + 2
+      // (add 1 before flooring so currentY itself is excluded).
       const next = Math.floor((currentY - 2) / 5 + 1) * 5 + 2;
       if (next - 2 > MAX_MINE_DEPTH) return null;
       // Ensure the target row (and a lookahead buffer) has been generated
@@ -869,8 +885,13 @@ class Game {
 
     // ── Exit elevator on interact ─────────────────────────────────────────
     if (p.inElevator) {
+      const exitX = ELEVATOR_X - 1;
+      if (!this.world.isPassable(exitX, p.y)) {
+        p.setMessage('🛗 Cannot exit here — the adjacent tile is blocked.');
+        return;
+      }
       p.inElevator = false;
-      p.x = ELEVATOR_X - 1;
+      p.x = exitX;
       this._afterMove(p.x, p.y);
       return;
     }
@@ -1005,7 +1026,7 @@ class Game {
           p.inElevator = true;
           p.x = ELEVATOR_X;
           // p.y stays at PLAYER_START_Y (surface level of the cabin)
-          p.setMessage(`🛗 In the elevator. ↑↓ to move between floors, ← to exit. ($${ELEVATOR_RIDE_COST} charged)`);
+          p.setMessage(`🛗 In the elevator. ↑↓ to move between floors, ← or E to exit. ($${ELEVATOR_RIDE_COST} charged)`);
         }
         this.ui.updateHUD(p);
       } else {
@@ -1023,7 +1044,7 @@ class Game {
         p.money -= ELEVATOR_RIDE_COST;
         p.inElevator = true;
         p.x = ELEVATOR_X;
-        p.setMessage(`🛗 In the elevator at ${p.y - 2} m. ↑↓ to move between floors, ← to exit. ($${ELEVATOR_RIDE_COST} charged)`);
+        p.setMessage(`🛗 In the elevator at ${p.y - 2} m. ↑↓ to move between floors, ← or E to exit. ($${ELEVATOR_RIDE_COST} charged)`);
       }
       this.ui.updateHUD(p);
       return;
