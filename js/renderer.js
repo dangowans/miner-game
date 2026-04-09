@@ -47,8 +47,8 @@ class Renderer {
 
     for (let screenRow = 0; screenRow < VIEWPORT_ROWS; screenRow++) {
       const worldY = this.cameraY + screenRow;
-      // Tiles below the mine depth limit are not rendered
-      if (worldY > MAX_MINE_DEPTH + 2) continue;
+      // Tiles below the player's unlocked depth limit are not rendered
+      if (worldY > player.unlockedDepth + 2) continue;
       for (let x = 0; x < VIEWPORT_COLS; x++) {
         const tile = world.getTile(x, worldY);
         if (tile === null) continue;
