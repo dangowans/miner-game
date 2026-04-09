@@ -184,7 +184,7 @@ class World {
       if (this.getTile(ELEVATOR_X, y) !== null) {
         // Place an entry-point tile every 5 m (depth = y-2, multiple of 5)
         const isEntry = isElevEntryRow(y);
-        this.setTile(ELEVATOR_X, y, isEntry ? TILE.ELEV_ENT : TILE.EMPTY);
+        this.setTile(ELEVATOR_X, y, isEntry ? TILE.ELEV_ENT : TILE.ELEV_SHAFT);
         this.setData(ELEVATOR_X, y, null);
       }
     }
@@ -320,7 +320,7 @@ class World {
         // Keep the elevator shaft open if it has been built
         if (this.elevatorBuilt && x === ELEVATOR_X) {
           // Place an entry-point tile every 5 m (depth = y-2, multiple of 5)
-          tiles[x] = isElevEntryRow(y) ? TILE.ELEV_ENT : TILE.EMPTY;
+          tiles[x] = isElevEntryRow(y) ? TILE.ELEV_ENT : TILE.ELEV_SHAFT;
           data[x]  = null;
           continue;
         }
@@ -526,7 +526,6 @@ class World {
       case TILE.LUNCHBOX:
       case TILE.TIN_CAN:
       case TILE.NECKLACE:
-      case TILE.ELEV_ENT:
         return true;
       case TILE.BUILDING:
       case TILE.DIRT:

@@ -190,6 +190,30 @@ class Game {
       return;
     }
 
+    // ── Elevator cabin mode ───────────────────────────────────────────────
+    if (p.inElevator) {
+      if (dx !== 0) {
+        // Step out of the elevator to the left (back into the mine)
+        p.inElevator = false;
+        p.x = ELEVATOR_X - 1;
+        this._afterMove(p.x, p.y);
+      } else {
+        // Move up or down to the next elevator door
+        const nextY = this._nextElevEntry(p.y, dy);
+        if (nextY === PLAYER_START_Y) {
+          // Reached the surface
+          p.inElevator = false;
+          p.x = ELEVATOR_X;
+          p.y = PLAYER_START_Y;
+          p.setMessage('🛗 Elevator: back at the surface.');
+        } else if (nextY !== null) {
+          p.y = nextY;
+          p.setMessage(`🛗 Elevator: ${nextY - 2} m deep.`);
+        }
+      }
+      return;
+    }
+
     // World boundary (left / right / top of pavement)
     if (nx < 0) {
       // Walking off the left edge
@@ -277,7 +301,13 @@ class Game {
       return;
     }
 
-    // ── 5. Normal passable tile ───────────────────────────────────────────
+    // ── 5. Elevator door – prompt to ride ────────────────────────────────
+    if (targetTile === TILE.ELEV_ENT) {
+      p.setMessage(`🛗 Elevator door. Press E to pay $${ELEVATOR_RIDE_COST} and ride.`);
+      return;
+    }
+
+    // ── 6. Normal passable tile ───────────────────────────────────────────
     if (this.world.isPassable(nx, ny)) {
       p.x = nx; p.y = ny;
       this._afterMove(nx, ny);
@@ -369,6 +399,36 @@ class Game {
       }
     }
     this._checkPickup(x, y);
+  }
+
+  // -------------------------------------------------------------------------
+  // Elevator helpers
+  // -------------------------------------------------------------------------
+
+  /**
+   * Return the world-row y of the next elevator entry point when traveling in
+   * direction dy (−1 = up, +1 = down) from the given row.
+   *
+   * Entry rows obey: (y − 2) % 5 === 0  (y = 7, 12, 17 … inside the shaft).
+   * y = PLAYER_START_Y (2) is returned when going up past the first door
+   * to signal a surface exit.  null is returned when there is nowhere to go
+   * (already at surface going up, or beyond depth limit going down).
+   */
+  _nextElevEntry(currentY, dy) {
+    if (dy < 0) {
+      // Going up – previous entry row
+      const prev = Math.floor((currentY - 3) / 5) * 5 + 2;
+      if (prev >= 7) return prev;          // another underground door above
+      if (currentY >= 7) return PLAYER_START_Y;  // surface exit
+      return null;                          // already at surface
+    } else {
+      // Going down – next entry row
+      const next = Math.floor((currentY - 2) / 5 + 1) * 5 + 2;
+      if (next - 2 > MAX_MINE_DEPTH) return null;
+      // Ensure the target row (and a lookahead buffer) has been generated
+      this.world.ensureGenerated(next + GEN_LOOKAHEAD);
+      return this.world.getTile(ELEVATOR_X, next) === TILE.ELEV_ENT ? next : null;
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -806,6 +866,15 @@ class Game {
 
   _handleInteract() {
     const p = this.player;
+
+    // ── Exit elevator on interact ─────────────────────────────────────────
+    if (p.inElevator) {
+      p.inElevator = false;
+      p.x = ELEVATOR_X - 1;
+      this._afterMove(p.x, p.y);
+      return;
+    }
+
     const checkTile = (type) =>
       this.world.getTile(p.x, p.y)     === type ||
       this.world.getTile(p.x, p.y - 1) === type;
@@ -928,34 +997,36 @@ class Game {
 
     if (checkTile(TILE.MINE_ENT)) {
       if (p.hasElevator && p.y === PLAYER_START_Y && p.x === ELEVATOR_X) {
-        // Player is at the surface elevator entrance — descend to the deepest entry point
+        // Surface elevator entrance – enter the elevator cabin
         if (p.money < ELEVATOR_RIDE_COST) {
-          p.setMessage(`🛗 Elevator needs $${ELEVATOR_RIDE_COST} per ride. (You have $${p.money})`);
+          p.setMessage(`🛗 Elevator needs $${ELEVATOR_RIDE_COST} to ride. (You have $${p.money})`);
         } else {
-          // Find the deepest ELEV_ENT tile in the shaft
-          const targetY = Math.max(7, deepestElevEntry(this.world.deepestGenY));
           p.money -= ELEVATOR_RIDE_COST;
+          p.inElevator = true;
           p.x = ELEVATOR_X;
-          p.y = targetY;
-          p.setMessage(`🛗 Elevator: descended to depth ${targetY - 2} m. ($${ELEVATOR_RIDE_COST} charged)`);
+          // p.y stays at PLAYER_START_Y (surface level of the cabin)
+          p.setMessage(`🛗 In the elevator. ↑↓ to move between floors, ← to exit. ($${ELEVATOR_RIDE_COST} charged)`);
         }
         this.ui.updateHUD(p);
       } else {
         p.setMessage('⛏ Walk down (↓ / S) to enter the mine.');
       }
+      return;
     }
 
-    if (checkTile(TILE.ELEV_ENT)) {
-      // Underground elevator entry point — ride up to the surface
+    // ── Underground elevator door (player is directly left of an ELEV_ENT) ─
+    if (p.hasElevator && p.x === ELEVATOR_X - 1 &&
+        this.world.getTile(ELEVATOR_X, p.y) === TILE.ELEV_ENT) {
       if (p.money < ELEVATOR_RIDE_COST) {
-        p.setMessage(`🛗 Elevator needs $${ELEVATOR_RIDE_COST} per ride. (You have $${p.money})`);
+        p.setMessage(`🛗 Elevator needs $${ELEVATOR_RIDE_COST} to ride. (You have $${p.money})`);
       } else {
         p.money -= ELEVATOR_RIDE_COST;
+        p.inElevator = true;
         p.x = ELEVATOR_X;
-        p.y = PLAYER_START_Y;
-        p.setMessage(`🛗 Elevator: back at the surface! ($${ELEVATOR_RIDE_COST} charged)`);
+        p.setMessage(`🛗 In the elevator at ${p.y - 2} m. ↑↓ to move between floors, ← to exit. ($${ELEVATOR_RIDE_COST} charged)`);
       }
       this.ui.updateHUD(p);
+      return;
     }
   }
 

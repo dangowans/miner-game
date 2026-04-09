@@ -662,8 +662,23 @@ class Renderer {
         break;
       }
 
+      case TILE.ELEV_SHAFT: {
+        // Continuous shaft rails between elevator doors – not interactive
+        ctx.fillStyle = '#0e1520';
+        ctx.fillRect(px, py, ts, ts);
+        ctx.fillStyle = '#3a5070';
+        // Left rail
+        ctx.fillRect(px + 2, py, 4, ts);
+        // Right rail
+        ctx.fillRect(px + ts - 6, py, 4, ts);
+        break;
+      }
+
       case TILE.ELEV_ENT: {
-        // Elevator entry point – steel-framed door with up-arrow indicator
+        // Elevator door – steel-framed with up/down arrow indicating interior navigation
+        // Dark background
+        ctx.fillStyle = '#0e1520';
+        ctx.fillRect(px, py, ts, ts);
         // Left rail
         ctx.fillStyle = '#3a5070';
         ctx.fillRect(px + 2, py, 4, ts);
@@ -671,11 +686,11 @@ class Renderer {
         ctx.fillRect(px + ts - 6, py, 4, ts);
         // Horizontal bar (door lintel)
         ctx.fillRect(px + 2, py + 4, ts - 4, 3);
-        // Up-arrow (ride to surface)
+        // ↕ arrow (ride elevator)
         ctx.fillStyle = '#88ccff';
         ctx.font      = 'bold 14px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('↑', cx, cy + 6);
+        ctx.fillText('↕', cx, cy + 6);
         // "$N" ride-cost label
         ctx.fillStyle = '#aaddff';
         ctx.font      = 'bold 7px monospace';
