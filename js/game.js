@@ -204,9 +204,7 @@ class Game {
         // Move up or down to the next elevator door
         const nextY = this._nextElevEntry(p.y, dy);
         if (nextY === PLAYER_START_Y) {
-          // Reached the surface – exit left so the surface ELEV_ENT tile is not occupied
-          p.inElevator = false;
-          p.x = ELEVATOR_X - 1;
+          // Reached the surface – stay in the cabin; player exits manually (← or E)
           p.y = PLAYER_START_Y;
           p.setMessage('🛗 Elevator: back at the surface.');
         } else if (nextY !== null) {
