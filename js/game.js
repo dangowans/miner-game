@@ -383,7 +383,9 @@ class Game {
     if (died) {
       Storage.clear();
       this.state = 'dead';
-      this.ui.showDead(this._elapsedTimeLabel(), p.familyMode ? this._collectFamilyStats() : null);         ? '🔥 Lava burn'
+      this.ui.showDead(this._elapsedTimeLabel(), p.familyMode ? this._collectFamilyStats() : null);
+    } else {
+      const what = hazardType === 'lava'         ? '🔥 Lava burn'
                  : hazardType === 'lava_source'  ? '🔥 Lava source — can\'t pass'
                  : hazardType === 'water'        ? '💧 Waded through water'
                  : hazardType === 'water_source' ? '💧 Spring source — can\'t pass'
