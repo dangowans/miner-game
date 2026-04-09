@@ -65,6 +65,11 @@ class Game {
       Storage.restorePlayer(this.player, saved.player);
       Storage.restoreWorld(this.world, saved.world);
       Storage.restoreGame(this, saved.game);
+      // Ensure construction worker tile is present in family mode saves that
+      // predate the worker tile addition (older version-3 saves may lack it).
+      if (this.player.familyMode) {
+        this.world.setTile(WORKER_X, 1, TILE.WORKER);
+      }
       this.ui.updateHUD(this.player);
     } else if (Storage.popStartInFamilyMode()) {
       // Player chose "Jump to Family Mode" from the outhouse shortcut
@@ -952,6 +957,9 @@ class Game {
 
     // Replace bar with house tile
     this.world.setTile(BAR_X, 1, TILE.HOUSE);
+
+    // Ensure construction worker is present for house upgrades
+    this.world.setTile(WORKER_X, 1, TILE.WORKER);
 
     // Initialise wall-clock timers
     const now = Date.now();
