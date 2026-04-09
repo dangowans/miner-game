@@ -676,10 +676,10 @@ class Renderer {
         ctx.font      = 'bold 14px monospace';
         ctx.textAlign = 'center';
         ctx.fillText('↑', cx, cy + 6);
-        // "$5" label
+        // "$N" ride-cost label
         ctx.fillStyle = '#aaddff';
         ctx.font      = 'bold 7px monospace';
-        ctx.fillText('$5', cx, cy + 16);
+        ctx.fillText(`$${ELEVATOR_RIDE_COST}`, cx, cy + 16);
         break;
       }
     }

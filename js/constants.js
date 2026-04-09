@@ -263,6 +263,12 @@ const ELEVATOR_X      = 23;   // Elevator shaft x-column (rightmost mine-entranc
 const ELEVATOR_COST   = 500;  // One-time cost to build the elevator shaft
 const ELEVATOR_RIDE_COST = 5; // Cost per elevator ride (ascend or descend)
 
+/** True when world-row y should hold an elevator entry-point tile (every 5 m). */
+const isElevEntryRow = (y) => (y - 2) % 5 === 0;
+
+/** Deepest elevator entry-point world-row at or above maxY. */
+const deepestElevEntry = (maxY) => Math.floor((maxY - 2) / 5) * 5 + 2;
+
 // ---------------------------------------------------------------------------
 // Surface building x-positions in the building facade row (y=0)
 // ---------------------------------------------------------------------------

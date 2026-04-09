@@ -933,8 +933,7 @@ class Game {
           p.setMessage(`🛗 Elevator needs $${ELEVATOR_RIDE_COST} per ride. (You have $${p.money})`);
         } else {
           // Find the deepest ELEV_ENT tile in the shaft
-          const deepest = Math.floor((this.world.deepestGenY - 2) / 5) * 5 + 2;
-          const targetY = Math.max(7, deepest);
+          const targetY = Math.max(7, deepestElevEntry(this.world.deepestGenY));
           p.money -= ELEVATOR_RIDE_COST;
           p.x = ELEVATOR_X;
           p.y = targetY;
