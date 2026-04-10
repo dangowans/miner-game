@@ -383,7 +383,24 @@ class World {
         // The player must walk directly into these tiles to reveal them.
         const impenetrable = rng() < 0.40;
 
-        data[x] = { hidden, threshold, probes: 0, impenetrable };
+        const tileData = { hidden, threshold, probes: 0, impenetrable };
+
+        // ~10% of stone tiles contain a rare gem hidden inside.
+        // Gem rarity scales with depth.
+        if (hidden === HIDDEN.STONE && rng() < 0.10) {
+          let innerGem;
+          if (fromY < 30) {
+            innerGem = HIDDEN.SILVER;
+          } else {
+            const gemRoll = rng();
+            if (fromY < 60)       innerGem = gemRoll < 0.5 ? HIDDEN.SILVER   : HIDDEN.GOLD;
+            else if (fromY < 90)  innerGem = gemRoll < 0.5 ? HIDDEN.GOLD     : HIDDEN.PLATINUM;
+            else                  innerGem = gemRoll < 0.5 ? HIDDEN.PLATINUM  : HIDDEN.DIAMOND;
+          }
+          tileData.innerGem = innerGem;
+        }
+
+        data[x] = tileData;
       }
     }
 
@@ -448,6 +465,7 @@ class World {
     const d = this.getData(x, y);
     if (!d) return null;
     const { hidden } = d;
+    const innerGem = d.innerGem || null;   // Preserve before clearing data
     this.setData(x, y, null);
 
     switch (hidden) {
@@ -455,7 +473,10 @@ class World {
       case HIDDEN.GOLD:         this.setTile(x, y, TILE.GOLD);         break;
       case HIDDEN.PLATINUM:     this.setTile(x, y, TILE.PLATINUM);     break;
       case HIDDEN.DIAMOND:      this.setTile(x, y, TILE.DIAMOND);      break;
-      case HIDDEN.STONE:        this.setTile(x, y, TILE.STONE);        break;
+      case HIDDEN.STONE:
+        this.setTile(x, y, TILE.STONE);
+        if (innerGem) this.setData(x, y, { innerGem });  // Keep gem info on the stone tile
+        break;
       case HIDDEN.WATER:
         this.setTile(x, y, TILE.WATER);
         this.springTiles.add(`${x},${y}`);

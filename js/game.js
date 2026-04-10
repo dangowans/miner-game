@@ -289,7 +289,14 @@ class Game {
     // ── 2. Stone: needs pick ──────────────────────────────────────────────
     if (targetTile === TILE.STONE) {
       if (p.hasPick) {
-        this.world.setTile(nx, ny, TILE.EMPTY);
+        const stoneData = this.world.getData(nx, ny);
+        if (stoneData && stoneData.innerGem) {
+          const gemTile = GEM_HIDDEN_TO_TILE[stoneData.innerGem];
+          this.world.setTile(nx, ny, gemTile !== undefined ? gemTile : TILE.EMPTY);
+          this.world.setData(nx, ny, null);
+        } else {
+          this.world.setTile(nx, ny, TILE.EMPTY);
+        }
         p.x = nx; p.y = ny;
         p.pickUses--;
         sounds.playCrumbleStone();
@@ -752,7 +759,8 @@ class Game {
   /**
    * Detonate a dynamite charge.
    * DIRT tiles in the blast radius have their hidden content revealed (not destroyed).
-   * Ore, stone and hazard tiles are left untouched — dynamite only reveals, not destroys.
+   * STONE tiles are destroyed (EMPTY); if a gem was hidden inside, it is revealed.
+   * Other ore and hazard tiles are left untouched.
    * Damages the player based on distance (2 hearts within 2 tiles, 1 heart within full radius).
    */
   _explodeDynamite(dyn) {
@@ -789,16 +797,42 @@ class Game {
         if (t === TILE.DIRT) {
           // Reveal the hidden content rather than destroying it
           const content = this.world.digInto(tx, ty);
-          this._onContentRevealed(content, tx, ty);
+          if (content === HIDDEN.STONE) {
+            // Dynamite also destroys newly-revealed stone; preserve any inner gem
+            const stoneData = this.world.getData(tx, ty);
+            if (stoneData && stoneData.innerGem) {
+              const gemTile = GEM_HIDDEN_TO_TILE[stoneData.innerGem];
+              this.world.setTile(tx, ty, gemTile !== undefined ? gemTile : TILE.EMPTY);
+            } else {
+              this.world.setTile(tx, ty, TILE.EMPTY);
+            }
+            this.world.setData(tx, ty, null);
+          } else {
+            this._onContentRevealed(content, tx, ty);
+          }
           // Remove any chained dynamite entries that got blasted
           this._dynamites = this._dynamites.filter(d => d.x !== tx || d.y !== ty);
+        } else if (t === TILE.STONE) {
+          // Dynamite destroys stone; if a gem was hidden inside, reveal it
+          const stoneData = this.world.getData(tx, ty);
+          if (stoneData && stoneData.innerGem) {
+            const gemTile = GEM_HIDDEN_TO_TILE[stoneData.innerGem];
+            if (gemTile !== undefined) {
+              this.world.setTile(tx, ty, gemTile);
+            } else {
+              this.world.setTile(tx, ty, TILE.EMPTY);
+            }
+          } else {
+            this.world.setTile(tx, ty, TILE.EMPTY);
+          }
+          this.world.setData(tx, ty, null);
         } else if (t === TILE.DYNAMITE) {
           // Chain-detonate other dynamite tiles
           this.world.setTile(tx, ty, TILE.EMPTY);
           this.world.setData(tx, ty, null);
           this._dynamites = this._dynamites.filter(d => d.x !== tx || d.y !== ty);
         }
-        // Ore, stone, water and lava tiles are left intact — dynamite just reveals
+        // Ore, water and lava tiles are left intact — dynamite just reveals/destroys
       }
     }
 
@@ -1243,18 +1277,39 @@ class Game {
       // In family mode the house stands where the bar was – ignore re-entry to the bar
       if (checkTile(TILE.HOUSE)) {
         // Auto-deliver any necklaces in the player's pocket
+        const newBabies = [];
         while (p.necklaceCount > 0 && p.babyCount < MAX_BABIES) {
           p.necklaceCount--;
           p.babyCount++;
-          p.setMessage(`👶 Baby #${p.babyCount} welcomed to the family!`);
+          newBabies.push(p.babyCount);
           sounds.playTransaction();
         }
-        this.state = 'overlay';
-        this.ui.openHouse(p, () => {
-          this.state = 'playing';
-          this.input.clear();
-          this.ui.updateHUD(p);
-        });
+
+        const openHouseOverlay = () => {
+          this.state = 'overlay';
+          this.ui.openHouse(p, () => {
+            this.state = 'playing';
+            this.input.clear();
+            this.ui.updateHUD(p);
+          });
+        };
+
+        if (newBabies.length > 0) {
+          // Show a popup for each new baby, then open the house overlay
+          this.state = 'overlay';
+          let idx = 0;
+          const showNextBaby = () => {
+            if (idx < newBabies.length) {
+              const num = newBabies[idx++];
+              this.ui.showItemPickup('👶', `Baby #${num} welcomed to the family!`, showNextBaby);
+            } else {
+              openHouseOverlay();
+            }
+          };
+          showNextBaby();
+        } else {
+          openHouseOverlay();
+        }
         return;
       }
       this.state = 'overlay';
@@ -1388,19 +1443,25 @@ class Game {
 
   /** Set world tiles for all house levels up to and including `level`.
    *  Level 1 = main facade only (already placed by _activateFamilyMode).
-   *  Level 2 = side-wall extensions left and right.
-   *  Level 3 = top-floor tile above the main facade.
-   *  Level 4 = top-floor tiles above the two side walls. */
+   *  Level 2 = left side-wall extension.
+   *  Level 3 = right side-wall extension.
+   *  Level 4 = top-floor tile above the main facade.
+   *  Level 5 = top-floor tile above the left side wall.
+   *  Level 6 = top-floor tile above the right side wall. */
   _applyHouseExpansionTiles(level) {
     if (level >= 2) {
       this.world.setTile(BAR_X - 1, 1, TILE.HOUSE);
-      this.world.setTile(BAR_X + 1, 1, TILE.HOUSE);
     }
     if (level >= 3) {
-      this.world.setTile(BAR_X, 0, TILE.HOUSE);
+      this.world.setTile(BAR_X + 1, 1, TILE.HOUSE);
     }
     if (level >= 4) {
+      this.world.setTile(BAR_X, 0, TILE.HOUSE);
+    }
+    if (level >= 5) {
       this.world.setTile(BAR_X - 1, 0, TILE.HOUSE);
+    }
+    if (level >= 6) {
       this.world.setTile(BAR_X + 1, 0, TILE.HOUSE);
     }
   }
