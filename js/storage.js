@@ -12,7 +12,7 @@
  */
 
 const SAVE_KEY            = 'minerGameSave';
-const SAVE_VERSION        = 5;
+const SAVE_VERSION        = 6;
 const FAMILY_UNLOCKED_KEY = 'minerGameFamilyUnlocked';
 const START_FAMILY_KEY    = 'minerGameStartFamily';
 
@@ -126,6 +126,7 @@ const Storage = {
     p.hasDowsingRod = data.hasDowsingRod ?? false;
     p.hasHeatVision = data.hasHeatVision ?? false;
     p.treasureMapDepth = data.treasureMapDepth ?? 0;
+    p.genieWishes   = data.genieWishes   ?? 0;
 
     p.firstAidKits = data.firstAidKits;
     p.hasMineCart  = data.hasMineCart  ?? false;
@@ -222,6 +223,7 @@ function _serializePlayer(p) {
     hasDowsingRod: p.hasDowsingRod,
     hasHeatVision: p.hasHeatVision,
     treasureMapDepth: p.treasureMapDepth,
+    genieWishes:   p.genieWishes,
 
     firstAidKits: p.firstAidKits,
     hasMineCart:  p.hasMineCart,

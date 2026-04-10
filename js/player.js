@@ -53,6 +53,7 @@ class Player {
     this.hasDowsingRod = false;   // Dowsing rod – instantly reveals adjacent water hazards
     this.hasHeatVision = false;   // Heat-vision goggles – instantly reveals adjacent lava hazards
     this.treasureMapDepth = 0;    // Mine depth shown on the treasure map (0 = map not found yet)
+    this.genieWishes   = 0;       // Wishes remaining from the genie lamp (0 = lamp not found)
 
     // Consumable items
     this.firstAidKits  = 0;       // First Aid Kits in inventory (bought at shop)

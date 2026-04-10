@@ -591,9 +591,7 @@ class Game {
     const died = p.takeDamage();
     sounds.playHazardHit();
     if (died) {
-      Storage.clear();
-      this.state = 'dead';
-      this.ui.showDead(this._elapsedTimeLabel(), p.familyMode ? this._collectFamilyStats() : null);
+      this._triggerDeath();
     } else {
       const what = hazardType === 'lava'         ? '🔥 Lava burn'
                  : hazardType === 'lava_source'  ? '🔥 Lava source — can\'t pass'
@@ -604,6 +602,24 @@ class Game {
       p.setMessage(`${what}! (${p.hearts}/${p.maxHearts} ♥ remaining)`);
     }
     return died;
+  }
+
+  /**
+   * Central helper called whenever a 'hearts reached 0' death occurs.
+   * If the player holds the genie lamp, the game-over screen includes a
+   * "Genie, I wish to continue" button; otherwise the save is wiped immediately.
+   */
+  _triggerDeath() {
+    const p = this.player;
+    this.state = 'dead';
+    const time  = this._elapsedTimeLabel();
+    const stats = p.familyMode ? this._collectFamilyStats() : null;
+    if (p.genieWishes > 0) {
+      this.ui.showDead(time, stats, () => this._useGenieWish('death'));
+    } else {
+      Storage.clear();
+      this.ui.showDead(time, stats);
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -872,9 +888,7 @@ class Game {
       const died = p.takeDamageMultiple(2);
       sounds.playHazardHit();
       if (died) {
-        Storage.clear();
-        this.state = 'dead';
-        this.ui.showDead(this._elapsedTimeLabel(), p.familyMode ? this._collectFamilyStats() : null);
+        this._triggerDeath();
         return;
       }
       p.setMessage(`💥 Too close to the blast! 2 damage (${p.hearts}/${p.maxHearts} ♥)`);
@@ -882,9 +896,7 @@ class Game {
       const died = p.takeDamage();
       sounds.playHazardHit();
       if (died) {
-        Storage.clear();
-        this.state = 'dead';
-        this.ui.showDead(this._elapsedTimeLabel(), p.familyMode ? this._collectFamilyStats() : null);
+        this._triggerDeath();
         return;
       }
       p.setMessage(`💥 Caught in the blast! 1 damage (${p.hearts}/${p.maxHearts} ♥)`);
@@ -1347,6 +1359,20 @@ class Game {
         }
         break;
       }
+
+      // ── Genie lamp – grants 3 game-over continues ──────────────────────
+      case TILE.GENIE_LAMP: {
+        if (p.genieWishes <= 0) {
+          p.genieWishes = 3;
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          this._showItemPickupOverlay('🧞', 'A genie lamp! The genie grants you 3 wishes. When disaster strikes, you may wish to continue instead of restarting.');
+          this.ui.updateHUD(p);
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
+        }
+        break;
+      }
     }
   }
 
@@ -1715,14 +1741,65 @@ class Game {
 
   /** Trigger a family-mode game over. */
   _familyGameOver(reason) {
-    Storage.clear();
-    this.state       = 'dead';
-    const stats      = this._collectFamilyStats();
-    if (reason === 'eviction') {
-      this.ui.showEviction(stats);
+    const p   = this.player;
+    this.state = 'dead';
+    const stats = this._collectFamilyStats();
+    if (p.genieWishes > 0) {
+      // Genie lamp available – show continue button; only clear save if player
+      // chooses "try again" instead
+      const onWish = () => this._useGenieWish(reason);
+      if (reason === 'eviction') {
+        this.ui.showEviction(stats, onWish);
+      } else {
+        this.ui.showDivorce(stats, onWish);
+      }
     } else {
-      this.ui.showDivorce(stats);
+      Storage.clear();
+      if (reason === 'eviction') {
+        this.ui.showEviction(stats);
+      } else {
+        this.ui.showDivorce(stats);
+      }
     }
+  }
+
+  /**
+   * Consume one genie wish and continue playing.
+   *
+   * - 'death'    : restore all hearts and move the player to the surface.
+   * - 'eviction' : clear the tax-grace state and restart the tax countdown.
+   * - 'divorce'  : restore supplies to 100 % and clear the supplies-grace state.
+   */
+  _useGenieWish(reason) {
+    const p = this.player;
+    p.genieWishes--;
+
+    if (reason === 'death') {
+      p.hearts = p.maxHearts;
+      p.dead   = false;
+      if (p.y >= 3) {
+        p.x = PLAYER_START_X;
+        p.y = PLAYER_START_Y;
+      }
+    } else if (reason === 'eviction') {
+      this._taxInGrace    = false;
+      this._taxGraceStart = 0;
+      this._lastTaxTime   = Date.now();  // Fresh tax cycle
+    } else if (reason === 'divorce') {
+      p.suppliesMeter          = 100;
+      this._suppliesInGrace    = false;
+      this._suppliesGraceStart = 0;
+    }
+
+    const wishesLeft = p.genieWishes;
+    const wishMsg = wishesLeft > 0
+      ? `🧞 The genie grants your wish! (${wishesLeft} wish${wishesLeft !== 1 ? 'es' : ''} remaining)`
+      : '🧞 The genie has granted your last wish. The lamp is now empty.';
+    p.setMessage(wishMsg);
+    this.state = 'playing';
+    this.input.clear();
+    this.ui.updateHUD(p);
+    Storage.save(p, this.world, this);
   }
 
   // -------------------------------------------------------------------------

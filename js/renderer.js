@@ -814,6 +814,21 @@ class Renderer {
         break;
       }
 
+      case TILE.GENIE_LAMP: {
+        // Dark burnished gold-brown background
+        ctx.fillStyle = '#1a1000';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        // Lamp emoji
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🪔', cx, cy + 8);
+        // Gold star marker to signal magic
+        ctx.fillStyle = '#ffd700';
+        ctx.font      = 'bold 8px monospace';
+        ctx.fillText('★', cx, py + 9);
+        break;
+      }
+
       case TILE.WORKER: {
         // Sky background
         ctx.fillStyle = '#7ab8e8';

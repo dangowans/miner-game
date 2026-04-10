@@ -115,6 +115,9 @@ class World {
       { content: HIDDEN.TREASURE_MAP,   y: 62 + Math.floor(rng() * 31),  x: 1 + Math.floor(rng() * xRange) },
       // Chest: extended mine only (depth 101–149 m, world-y 103–151)
       { content: HIDDEN.TREASURE_CHEST, y: 103 + Math.floor(rng() * 49), x: 1 + Math.floor(rng() * xRange) },
+
+      // ── Genie lamp (mid-mine, depth 25–60 m, world-y 27–62) ──────────────
+      { content: HIDDEN.GENIE_LAMP, y: 27 + Math.floor(rng() * 36), x: 1 + Math.floor(rng() * xRange) },
     ];
   }
 
@@ -183,6 +186,7 @@ class World {
           case HIDDEN.HEAT_VISION:    return !player.hasHeatVision;
           case HIDDEN.TREASURE_MAP:   return !player.specialItems.has(HIDDEN.TREASURE_MAP);
           case HIDDEN.TREASURE_CHEST: return !player.specialItems.has(HIDDEN.TREASURE_CHEST);
+          case HIDDEN.GENIE_LAMP:     return player.genieWishes <= 0;
           default:                    return true;
         }
       });
@@ -554,6 +558,7 @@ class World {
       case HIDDEN.TREASURE_MAP:   this.setTile(x, y, TILE.TREASURE_MAP);   break;
       case HIDDEN.TREASURE_CHEST: this.setTile(x, y, TILE.TREASURE_CHEST); break;
       case HIDDEN.GAS:            this.setTile(x, y, TILE.GAS);            break;
+      case HIDDEN.GENIE_LAMP:     this.setTile(x, y, TILE.GENIE_LAMP);     break;
       default:                  this.setTile(x, y, TILE.EMPTY);        break;
     }
     return hidden;
@@ -648,6 +653,7 @@ class World {
       case TILE.HEAT_VISION:
       case TILE.TREASURE_MAP:
       case TILE.TREASURE_CHEST:
+      case TILE.GENIE_LAMP:
         return true;
       case TILE.BUILDING:
       case TILE.DIRT:
