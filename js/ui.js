@@ -545,7 +545,7 @@ class UI {
         const each  = GEM_VALUE[type] || 0;
         const sub   = qty * each;
         const label = ORE_NAME[type] || type;
-        return `<div class="shop-item disabled" style="cursor:default">
+        return `<div class="shop-item disabled ore-row">
           ${label} ×${qty} — <span class="price">$${sub}</span>
           <small> ($${each} each)</small>
         </div>`;
