@@ -278,6 +278,7 @@ class Game {
       // Hazard tiles revealed by digging are entered via their own helpers
       if (newTile === TILE.LAVA)  { this._enterLava(p, nx, ny); return; }
       if (newTile === TILE.WATER) { this._enterWater(p, nx, ny); return; }
+      if (newTile === TILE.GAS)   { this._enterGas(p, nx, ny); return; }
 
       if (this.world.isPassable(nx, ny)) {
         p.x = nx; p.y = ny;
@@ -325,6 +326,12 @@ class Game {
     // ── 4. Lava: extinguisher converts to stone; otherwise costs 1 heart ──
     if (targetTile === TILE.LAVA) {
       this._enterLava(p, nx, ny);
+      return;
+    }
+
+    // ── 4b. Gas: player moves onto it, tile stays, deals 1 heart ─────────
+    if (targetTile === TILE.GAS) {
+      this._enterGas(p, nx, ny);
       return;
     }
 
@@ -417,12 +424,23 @@ class Game {
     }
   }
 
+  /**
+   * Handle player entering a gas leak tile.
+   *
+   * Gas does not spread. The player moves onto it (tile remains) and takes 1 heart.
+   */
+  _enterGas(p, nx, ny) {
+    p.x = nx; p.y = ny;
+    const died = this._applyHazardDamage('gas');
+    if (!died) this._afterMove(nx, ny);
+  }
+
   /** Shared post-move logic: probe neighbours + pickup. */
   _afterMove(x, y) {
     // Only probe adjacent dirt tiles when the player is inside the mine (y≥3).
     // Pavement movement (y=2) must not reveal hidden content in the top mine row.
     if (y >= 3) {
-      const revealed = this.world.probeAdjacent(x, y, this.player.toolReduction, this.player.hasLantern);
+      const revealed = this.world.probeAdjacent(x, y, this.player.toolReduction, this.player.hasLantern, this.player.hasDowsingRod, this.player.hasHeatVision);
       for (const { x: rx, y: ry, content } of revealed) {
         this._onContentRevealed(content, rx, ry);
       }
@@ -521,6 +539,7 @@ class Game {
       if (newTile === TILE.STONE) { sounds.playTinkStone(); return; }
       if (newTile === TILE.LAVA)  { this._enterLava(p, exitX, p.y);  return; }
       if (newTile === TILE.WATER) { this._enterWater(p, exitX, p.y); return; }
+      if (newTile === TILE.GAS)   { this._enterGas(p, exitX, p.y);   return; }
       if (this.world.isPassable(exitX, p.y)) {
         p.inElevator = false;
         p.x = exitX;
@@ -572,18 +591,35 @@ class Game {
     const died = p.takeDamage();
     sounds.playHazardHit();
     if (died) {
-      Storage.clear();
-      this.state = 'dead';
-      this.ui.showDead(this._elapsedTimeLabel(), p.familyMode ? this._collectFamilyStats() : null);
+      this._triggerDeath();
     } else {
       const what = hazardType === 'lava'         ? '🔥 Lava burn'
                  : hazardType === 'lava_source'  ? '🔥 Lava source — can\'t pass'
                  : hazardType === 'water'        ? '💧 Waded through water'
                  : hazardType === 'water_source' ? '💧 Spring source — can\'t pass'
+                 : hazardType === 'gas'          ? '☣️ Gas leak!'
                  : '⚠️ Hazard hit';
       p.setMessage(`${what}! (${p.hearts}/${p.maxHearts} ♥ remaining)`);
     }
     return died;
+  }
+
+  /**
+   * Central helper called whenever a 'hearts reached 0' death occurs.
+   * If the player holds the genie lamp, the game-over screen includes a
+   * "Genie, I wish to continue" button; otherwise the save is wiped immediately.
+   */
+  _triggerDeath() {
+    const p = this.player;
+    this.state = 'dead';
+    const time  = this._elapsedTimeLabel();
+    const stats = p.familyMode ? this._collectFamilyStats() : null;
+    if (p.genieWishes > 0) {
+      this.ui.showDead(time, stats, () => this._useGenieWish('death'));
+    } else {
+      Storage.clear();
+      this.ui.showDead(time, stats);
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -852,9 +888,7 @@ class Game {
       const died = p.takeDamageMultiple(2);
       sounds.playHazardHit();
       if (died) {
-        Storage.clear();
-        this.state = 'dead';
-        this.ui.showDead(this._elapsedTimeLabel(), p.familyMode ? this._collectFamilyStats() : null);
+        this._triggerDeath();
         return;
       }
       p.setMessage(`💥 Too close to the blast! 2 damage (${p.hearts}/${p.maxHearts} ♥)`);
@@ -862,9 +896,7 @@ class Game {
       const died = p.takeDamage();
       sounds.playHazardHit();
       if (died) {
-        Storage.clear();
-        this.state = 'dead';
-        this.ui.showDead(this._elapsedTimeLabel(), p.familyMode ? this._collectFamilyStats() : null);
+        this._triggerDeath();
         return;
       }
       p.setMessage(`💥 Caught in the blast! 1 damage (${p.hearts}/${p.maxHearts} ♥)`);
@@ -882,6 +914,8 @@ class Game {
       this.player.setMessage('💧 A water spring burst open nearby!');
     } else if (content === HIDDEN.LAVA) {
       this.player.setMessage('🔥 Lava erupted nearby! Watch your step!');
+    } else if (content === HIDDEN.GAS) {
+      this.player.setMessage('☣️ Gas leak detected nearby! Careful!');
     } else if (content === HIDDEN.STONE) {
       this.player.setMessage('🪨 Stone revealed. You\'ll need a Pick to break it.');
     }
@@ -1261,6 +1295,84 @@ class Game {
         }
         break;
       }
+
+      // ── Dowsing rod – instantly reveals adjacent water hazards ─────────
+      case TILE.DOWSING_ROD: {
+        if (!p.hasDowsingRod) {
+          p.hasDowsingRod = true;
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          this._showItemPickupOverlay('🪄', 'A dowsing rod! Springs will reveal themselves the moment you walk next to them.');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
+        }
+        break;
+      }
+
+      // ── Heat-vision goggles – instantly reveals adjacent lava hazards ──
+      case TILE.HEAT_VISION: {
+        if (!p.hasHeatVision) {
+          p.hasHeatVision = true;
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          this._showItemPickupOverlay('🥽', 'Heat-vision goggles! Lava pockets will reveal themselves the moment you walk next to them.');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
+        }
+        break;
+      }
+
+      // ── Treasure map – reveals the depth of the treasure chest ─────────
+      case TILE.TREASURE_MAP: {
+        if (!p.specialItems.has(HIDDEN.TREASURE_MAP)) {
+          p.specialItems.add(HIDDEN.TREASURE_MAP);
+          p.treasureMapDepth = this.world.treasureChestDepth;
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          this._showItemPickupOverlay('🗺️', `A treasure map! X marks the spot at depth ${p.treasureMapDepth} m. Build the elevator and expand its depth to reach it!`);
+          this.ui.updateHUD(p);
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
+        }
+        break;
+      }
+
+      // ── Treasure chest – contains rubies worth $5,000 ──────────────────
+      case TILE.TREASURE_CHEST: {
+        if (!p.specialItems.has(HIDDEN.TREASURE_CHEST)) {
+          const rubyCount  = TREASURE_CHEST_RUBY_COUNT;
+          const totalValue = rubyCount * GEM_VALUE[HIDDEN.RUBY];
+          const slotsNeeded = rubyCount;
+          const slotsAvailable = p.maxGems - p.gems.length;
+          if (slotsAvailable < slotsNeeded) {
+            p.setMessage(`🎁 Treasure chest needs ${slotsNeeded} free bag slots! (${slotsAvailable} available)`);
+          } else {
+            p.specialItems.add(HIDDEN.TREASURE_CHEST);
+            for (let i = 0; i < rubyCount; i++) p.addGem(HIDDEN.RUBY);
+            this.world.setTile(x, y, TILE.EMPTY);
+            sounds.playItemPickup();
+            this._showItemPickupOverlay('🎁', `You opened the treasure chest! Found ${rubyCount} rubies worth $${totalValue.toLocaleString()} in total. Sell them at the Bank!`);
+            this.ui.updateHUD(p);
+          }
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
+        }
+        break;
+      }
+
+      // ── Genie lamp – grants 3 game-over continues ──────────────────────
+      case TILE.GENIE_LAMP: {
+        if (p.genieWishes <= 0) {
+          p.genieWishes = 3;
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          this._showItemPickupOverlay('🧞', 'A genie lamp! The genie grants you 3 wishes. When disaster strikes, you may wish to continue instead of restarting.');
+          this.ui.updateHUD(p);
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
+        }
+        break;
+      }
     }
   }
 
@@ -1629,14 +1741,65 @@ class Game {
 
   /** Trigger a family-mode game over. */
   _familyGameOver(reason) {
-    Storage.clear();
-    this.state       = 'dead';
-    const stats      = this._collectFamilyStats();
-    if (reason === 'eviction') {
-      this.ui.showEviction(stats);
+    const p   = this.player;
+    this.state = 'dead';
+    const stats = this._collectFamilyStats();
+    if (p.genieWishes > 0) {
+      // Genie lamp available – show continue button; only clear save if player
+      // chooses "try again" instead
+      const onWish = () => this._useGenieWish(reason);
+      if (reason === 'eviction') {
+        this.ui.showEviction(stats, onWish);
+      } else {
+        this.ui.showDivorce(stats, onWish);
+      }
     } else {
-      this.ui.showDivorce(stats);
+      Storage.clear();
+      if (reason === 'eviction') {
+        this.ui.showEviction(stats);
+      } else {
+        this.ui.showDivorce(stats);
+      }
     }
+  }
+
+  /**
+   * Consume one genie wish and continue playing.
+   *
+   * - 'death'    : restore all hearts and move the player to the surface.
+   * - 'eviction' : clear the tax-grace state and restart the tax countdown.
+   * - 'divorce'  : restore supplies to 100 % and clear the supplies-grace state.
+   */
+  _useGenieWish(reason) {
+    const p = this.player;
+    p.genieWishes--;
+
+    if (reason === 'death') {
+      p.hearts = p.maxHearts;
+      p.dead   = false;
+      if (p.y >= 3) {
+        p.x = PLAYER_START_X;
+        p.y = PLAYER_START_Y;
+      }
+    } else if (reason === 'eviction') {
+      this._taxInGrace    = false;
+      this._taxGraceStart = 0;
+      this._lastTaxTime   = Date.now();  // Fresh tax cycle
+    } else if (reason === 'divorce') {
+      p.suppliesMeter          = 100;
+      this._suppliesInGrace    = false;
+      this._suppliesGraceStart = 0;
+    }
+
+    const wishesLeft = p.genieWishes;
+    const wishMsg = wishesLeft > 0
+      ? `🧞 The genie grants your wish! (${wishesLeft} wish${wishesLeft !== 1 ? 'es' : ''} remaining)`
+      : '🧞 The genie has granted your last wish. The lamp is now empty.';
+    p.setMessage(wishMsg);
+    this.state = 'playing';
+    this.input.clear();
+    this.ui.updateHUD(p);
+    Storage.save(p, this.world, this);
   }
 
   // -------------------------------------------------------------------------
@@ -1649,6 +1812,12 @@ class Game {
 
     // Regenerate the mine, excluding items the player already has
     this.world.regenerateMine(p);
+
+    // If the player has the treasure map but hasn't opened the chest yet,
+    // update the stored depth to match the new chest position.
+    if (p.specialItems.has(HIDDEN.TREASURE_MAP) && !p.specialItems.has(HIDDEN.TREASURE_CHEST)) {
+      p.treasureMapDepth = this.world.treasureChestDepth;
+    }
 
     // Clear any live dynamites (they're in the old mine)
     this._dynamites = [];

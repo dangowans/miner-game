@@ -66,6 +66,10 @@ class UI {
     if (player.hasFlower)       tools.push('🌸');
     if (player.hasRing)         tools.push('💍');
     if (player.hasRadio)        tools.push('📻');
+    if (player.hasDowsingRod)   tools.push('🪄');
+    if (player.hasHeatVision)   tools.push('🥽');
+    if (player.treasureMapDepth > 0) tools.push(`🗺️${player.treasureMapDepth}m`);
+    if (player.genieWishes > 0) tools.push(`🧞×${player.genieWishes}`);
     if (player.specialItems.has('rubber_boot'))  tools.push('🥾');
     if (player.specialItems.has('pocket_watch')) tools.push('⌚');
     if (player.specialItems.has('glasses'))      tools.push('🕶️');
@@ -430,12 +434,13 @@ class UI {
   // Death / win screens
   // -------------------------------------------------------------------------
 
-  showDead(elapsedTime, stats = null) {
+  showDead(elapsedTime, stats = null, onGenieWish = null) {
     const timeHtml  = elapsedTime ? `<p class="overlay-time">Time: ${elapsedTime}</p>` : '';
     const statsHtml = stats ? this._familyStatsHtml(stats) : `
         <p class="overlay-tip">
           Tip: visit the Doctor to increase your max hearts.
         </p>`;
+    const { html: genieHtml, wireup: genieWireup } = this._genieWishParts(onGenieWish);
     this.overlay.innerHTML = `
       <div class="overlay-centered">
         <p class="overlay-emoji">💀</p>
@@ -443,11 +448,15 @@ class UI {
         <p>The mine claimed another victim.</p>
         ${timeHtml}
         ${statsHtml}
-        <button class="close-btn" onclick="location.reload()">
+        ${genieHtml}
+        <button class="close-btn" id="dead-restart-btn"${onGenieWish ? ' style="margin-top:4px"' : ''}>
           🔄 Try Again
         </button>
       </div>`;
     this._openOverlay(() => {});
+    genieWireup();
+    const restartBtn = document.getElementById('dead-restart-btn');
+    if (restartBtn) restartBtn.addEventListener('click', () => { Storage.clear(); location.reload(); });
   }
 
   showPoliceArrest(elapsedTime, stats = null) {
@@ -863,6 +872,24 @@ class UI {
   // Family-mode game-over screens
   // -------------------------------------------------------------------------
 
+  /**
+   * Helper – builds the "Genie, I wish to continue" button HTML and wires its
+   * click handler after the overlay is rendered.  Returns [html, wireup] where
+   * wireup() should be called once after innerHTML is set.
+   */
+  _genieWishParts(onGenieWish) {
+    if (!onGenieWish) return { html: '', wireup: () => {} };
+    const html = `
+      <button class="close-btn" id="genie-wish-btn" style="border-color:#f5c842;color:#f5c842">
+        🧞 Genie, I wish to continue
+      </button>`;
+    const wireup = () => {
+      const btn = document.getElementById('genie-wish-btn');
+      if (btn) btn.addEventListener('click', () => { this._closeOverlay(); onGenieWish(); });
+    };
+    return { html, wireup };
+  }
+
   /** Helper – builds the "what you had" summary HTML. */
   _familyStatsHtml(stats) {
     const itemList = stats.items.length
@@ -888,10 +915,9 @@ class UI {
       </p>`;
   }
 
-  showEviction(stats) {
-    const timeHtml = stats.elapsedTime
-      ? `<p class="overlay-time">Time: ${stats.elapsedTime}</p>`
-      : '';
+  showEviction(stats, onGenieWish = null) {
+    const timeHtml = stats.elapsedTime ? `<p class="overlay-time">Time: ${stats.elapsedTime}</p>` : '';
+    const { html: genieHtml, wireup: genieWireup } = this._genieWishParts(onGenieWish);
     this.overlay.innerHTML = `
       <div class="overlay-centered">
         <p class="overlay-emoji">🏚️</p>
@@ -900,17 +926,20 @@ class UI {
         <p style="color:#ff8888"><em>"Pack your things and get out."</em></p>
         ${timeHtml}
         ${this._familyStatsHtml(stats)}
-        <button class="close-btn" onclick="location.reload()">
+        ${genieHtml}
+        <button class="close-btn" id="eviction-restart-btn"${onGenieWish ? ' style="margin-top:4px"' : ''}>
           🔄 Try Again
         </button>
       </div>`;
     this._openOverlay(() => {});
+    genieWireup();
+    const restartBtn = document.getElementById('eviction-restart-btn');
+    if (restartBtn) restartBtn.addEventListener('click', () => { Storage.clear(); location.reload(); });
   }
 
-  showDivorce(stats) {
-    const timeHtml = stats.elapsedTime
-      ? `<p class="overlay-time">Time: ${stats.elapsedTime}</p>`
-      : '';
+  showDivorce(stats, onGenieWish = null) {
+    const timeHtml = stats.elapsedTime ? `<p class="overlay-time">Time: ${stats.elapsedTime}</p>` : '';
+    const { html: genieHtml, wireup: genieWireup } = this._genieWishParts(onGenieWish);
     this.overlay.innerHTML = `
       <div class="overlay-centered">
         <p class="overlay-emoji">💔</p>
@@ -920,11 +949,15 @@ class UI {
         <p style="color:#ff8888"><em>"I'm moving in with Contractor Mike."</em></p>
         ${timeHtml}
         ${this._familyStatsHtml(stats)}
-        <button class="close-btn" onclick="location.reload()">
+        ${genieHtml}
+        <button class="close-btn" id="divorce-restart-btn"${onGenieWish ? ' style="margin-top:4px"' : ''}>
           🔄 Try Again
         </button>
       </div>`;
     this._openOverlay(() => {});
+    genieWireup();
+    const restartBtn = document.getElementById('divorce-restart-btn');
+    if (restartBtn) restartBtn.addEventListener('click', () => { Storage.clear(); location.reload(); });
   }
 
   // -------------------------------------------------------------------------

@@ -752,6 +752,83 @@ class Renderer {
         break;
       }
 
+      case TILE.DOWSING_ROD: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🪄', cx, cy + 8);
+        break;
+      }
+
+      case TILE.HEAT_VISION: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🥽', cx, cy + 8);
+        break;
+      }
+
+      case TILE.TREASURE_MAP: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🗺️', cx, cy + 8);
+        // Gold star marker to signal importance
+        ctx.fillStyle = '#ffd700';
+        ctx.font      = 'bold 8px monospace';
+        ctx.fillText('★', cx, py + 9);
+        break;
+      }
+
+      case TILE.TREASURE_CHEST: {
+        ctx.fillStyle = '#201000';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🎁', cx, cy + 8);
+        // Gold star marker to signal high value
+        ctx.fillStyle = '#ffd700';
+        ctx.font      = 'bold 8px monospace';
+        ctx.fillText('★', cx, py + 9);
+        break;
+      }
+
+      case TILE.GAS: {
+        // Dark sickly yellow-green background
+        ctx.fillStyle = '#2a3800';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        // Toxic cloud symbol
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('☁️', cx, cy + 8);
+        // Biohazard tint overlay for visibility
+        ctx.fillStyle = 'rgba(180, 220, 0, 0.35)';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        // Warning indicator
+        ctx.fillStyle = '#b8dc00';
+        ctx.font      = 'bold 8px monospace';
+        ctx.fillText('☣', cx, py + 9);
+        break;
+      }
+
+      case TILE.GENIE_LAMP: {
+        // Dark burnished gold-brown background
+        ctx.fillStyle = '#1a1000';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        // Lamp emoji
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🪔', cx, cy + 8);
+        // Gold star marker to signal magic
+        ctx.fillStyle = '#ffd700';
+        ctx.font      = 'bold 8px monospace';
+        ctx.fillText('★', cx, py + 9);
+        break;
+      }
+
       case TILE.WORKER: {
         // Sky background
         ctx.fillStyle = '#7ab8e8';

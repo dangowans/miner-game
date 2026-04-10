@@ -74,6 +74,12 @@ const TILE = Object.freeze({
   ARMOR:       50,   // Knight's armor – only in extended mine (part of knight set)
   SHIELD:      51,   // Knight's shield – only in extended mine (part of knight set)
   SWORD:       52,   // Knight's sword – only in extended mine (part of knight set)
+  DOWSING_ROD:   53,   // Hidden dowsing rod – instantly reveals adjacent water hazards
+  HEAT_VISION:   54,   // Hidden heat-vision goggles – instantly reveals adjacent lava hazards
+  TREASURE_MAP:  55,   // Hidden treasure map – reveals the depth of the treasure chest
+  TREASURE_CHEST:56,   // Treasure chest in the extended mine – contains gems worth $5,000
+  GAS:           57,   // Gas leak – impassable cloud of toxic gas; deals 1 heart on entry (no spread)
+  GENIE_LAMP:    58,   // Genie lamp – grants up to 3 wishes to continue after a game over
 });
 
 // ---------------------------------------------------------------------------
@@ -114,6 +120,12 @@ const HIDDEN = Object.freeze({
   ARMOR:        'armor',        // Knight set – extended mine only
   SHIELD:       'shield',       // Knight set – extended mine only
   SWORD:        'sword',        // Knight set – extended mine only
+  DOWSING_ROD:  'dowsing_rod', // Unique – instantly reveals adjacent water hazards once collected
+  HEAT_VISION:  'heat_vision', // Unique – instantly reveals adjacent lava hazards once collected
+  TREASURE_MAP:   'treasure_map',   // Unique – reveals the depth of the treasure chest
+  TREASURE_CHEST: 'treasure_chest', // Unique – treasure chest in the extended mine (>100 m)
+  GAS:            'gas',            // Gas leak – toxic cloud; deals 1 heart on entry (no spread)
+  GENIE_LAMP:     'genie_lamp',     // Unique – grants up to 3 wishes (game-over continues)
 });
 
 // ---------------------------------------------------------------------------
@@ -405,6 +417,12 @@ const TILE_COLOR = {
   [TILE.ARMOR]:        '#101820',   // Knight armor – dark steel
   [TILE.SHIELD]:       '#101820',   // Knight shield – dark steel
   [TILE.SWORD]:        '#101820',   // Knight sword – dark steel
+  [TILE.DOWSING_ROD]:    '#0a1a0a',   // Dowsing rod – dark with teal tint
+  [TILE.HEAT_VISION]:    '#0a0a1a',   // Heat-vision goggles – dark with blue tint
+  [TILE.TREASURE_MAP]:   '#1a1200',   // Treasure map – dark parchment tone
+  [TILE.TREASURE_CHEST]: '#201000',   // Treasure chest – very dark gold-brown
+  [TILE.GAS]:            '#2a3800',   // Gas leak – dark sickly yellow-green
+  [TILE.GENIE_LAMP]:     '#1a1000',   // Genie lamp – dark burnished gold-brown
 };
 
 // Ore tile types that can be destroyed when a hazard spreads over them
@@ -416,6 +434,11 @@ const HAZARD_DESTROYABLE_TILES = new Set([
 // Cash bag reward
 // ---------------------------------------------------------------------------
 const CASH_BAG_VALUE = 750;  // Cash added to player wallet when bag of cash is found
+
+// ---------------------------------------------------------------------------
+// Treasure chest – ruby count equals exactly $5,000
+// ---------------------------------------------------------------------------
+const TREASURE_CHEST_RUBY_COUNT = 10;  // 10 × $500 ruby = $5,000 total
 
 // ---------------------------------------------------------------------------
 // Knight item set – collect all four to slay the dragon
