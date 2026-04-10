@@ -12,7 +12,7 @@
  */
 
 const SAVE_KEY            = 'minerGameSave';
-const SAVE_VERSION        = 4;
+const SAVE_VERSION        = 5;
 const FAMILY_UNLOCKED_KEY = 'minerGameFamilyUnlocked';
 const START_FAMILY_KEY    = 'minerGameStartFamily';
 
@@ -125,6 +125,7 @@ const Storage = {
     p.hasRadio      = data.hasRadio;
     p.hasDowsingRod = data.hasDowsingRod ?? false;
     p.hasHeatVision = data.hasHeatVision ?? false;
+    p.treasureMapDepth = data.treasureMapDepth ?? 0;
 
     p.firstAidKits = data.firstAidKits;
     p.hasMineCart  = data.hasMineCart  ?? false;
@@ -168,6 +169,7 @@ const Storage = {
     // original seed sequence.
     w._rng.setState(data.rngState);
     w.elevatorBuilt = data.elevatorBuilt ?? false;
+    w.treasureChestDepth = data.treasureChestDepth ?? 0;
   },
 
   /** Restore game-level transient state (active dynamites, dragon warnings). */
@@ -219,6 +221,7 @@ function _serializePlayer(p) {
     hasRadio:      p.hasRadio,
     hasDowsingRod: p.hasDowsingRod,
     hasHeatVision: p.hasHeatVision,
+    treasureMapDepth: p.treasureMapDepth,
 
     firstAidKits: p.firstAidKits,
     hasMineCart:  p.hasMineCart,
@@ -255,14 +258,15 @@ function _serializeWorld(w) {
   }
 
   return {
-    deepestGenY:         w.deepestGenY,
+    deepestGenY:          w.deepestGenY,
     rowTiles,
     rowData,
-    springTiles:         Array.from(w.springTiles),
-    lavaSources:         Array.from(w.lavaSources),
-    uniqueItemPositions: w.uniqueItemPositions.map(p => Object.assign({}, p)),
-    rngState:            w._rng.getState(),
-    elevatorBuilt:       w.elevatorBuilt,
+    springTiles:          Array.from(w.springTiles),
+    lavaSources:          Array.from(w.lavaSources),
+    uniqueItemPositions:  w.uniqueItemPositions.map(p => Object.assign({}, p)),
+    rngState:             w._rng.getState(),
+    elevatorBuilt:        w.elevatorBuilt,
+    treasureChestDepth:   w.treasureChestDepth,
   };
 }
 

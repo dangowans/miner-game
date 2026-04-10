@@ -22,6 +22,11 @@ class World {
     // Pre-compute unique item positions (uses RNG before chunk generation).
     this.uniqueItemPositions = this._computeUniqueItemPositions();
 
+    // Derive the treasure chest depth from its pre-computed position.
+    // Used by the treasure map pickup message and the HUD.
+    const _chestPos = this.uniqueItemPositions.find(p => p.content === HIDDEN.TREASURE_CHEST);
+    this.treasureChestDepth = _chestPos ? _chestPos.y - 2 : 0;
+
     this.width       = MAP_WIDTH;
     this.rowTiles    = new Map();   // y → Uint8Array[MAP_WIDTH]
     this.rowData     = new Map();   // y → Array[MAP_WIDTH] of null|object
@@ -104,6 +109,12 @@ class World {
       // ── Functional utility items (midway in main mine) ────────────────────
       { content: HIDDEN.DOWSING_ROD,  y: 17 + Math.floor(rng() * 30),  x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.HEAT_VISION,  y: 17 + Math.floor(rng() * 30),  x: 1 + Math.floor(rng() * xRange) },
+
+      // ── Treasure items ────────────────────────────────────────────────────
+      // Map: lower part of main mine (depth 60–90 m, world-y 62–92)
+      { content: HIDDEN.TREASURE_MAP,   y: 62 + Math.floor(rng() * 31),  x: 1 + Math.floor(rng() * xRange) },
+      // Chest: extended mine only (depth 101–149 m, world-y 103–151)
+      { content: HIDDEN.TREASURE_CHEST, y: 103 + Math.floor(rng() * 49), x: 1 + Math.floor(rng() * xRange) },
     ];
   }
 
@@ -139,34 +150,40 @@ class World {
     this._rng = this._makeRng(Date.now());
     this.uniqueItemPositions = this._computeUniqueItemPositions();
 
+    // Update the treasure chest depth from the freshly computed positions.
+    const _chestPos = this.uniqueItemPositions.find(p => p.content === HIDDEN.TREASURE_CHEST);
+    this.treasureChestDepth = _chestPos ? _chestPos.y - 2 : 0;
+
     // Drop any one-time items the player already has so they don't reappear
     if (player) {
       this.uniqueItemPositions = this.uniqueItemPositions.filter(pos => {
         switch (pos.content) {
-          case HIDDEN.GLASSES:      return !player.specialItems.has(HIDDEN.GLASSES);
-          case HIDDEN.TIN_CAN:      return !player.specialItems.has(HIDDEN.TIN_CAN);
-          case HIDDEN.RUBBER_BOOT:  return !player.specialItems.has(HIDDEN.RUBBER_BOOT);
-          case HIDDEN.POCKET_WATCH: return !player.specialItems.has(HIDDEN.POCKET_WATCH);
-          case HIDDEN.SKULL:        return !player.specialItems.has(HIDDEN.SKULL);
-          case HIDDEN.CANTEEN:      return !player.specialItems.has(HIDDEN.CANTEEN);
-          case HIDDEN.LUNCHBOX:     return !player.specialItems.has(HIDDEN.LUNCHBOX);
-          case HIDDEN.CASH_BAG:     return !player.specialItems.has(HIDDEN.CASH_BAG);
-          case HIDDEN.SCROLL:       return !player.specialItems.has(HIDDEN.SCROLL);
-          case HIDDEN.FOSSIL:       return !player.specialItems.has(HIDDEN.FOSSIL);
-          case HIDDEN.NEWSPAPER:    return !player.specialItems.has(HIDDEN.NEWSPAPER);
-          case HIDDEN.BROKEN_CHAIN: return !player.specialItems.has(HIDDEN.BROKEN_CHAIN);
-          case HIDDEN.OLD_COIN:     return !player.specialItems.has(HIDDEN.OLD_COIN);
-          case HIDDEN.BOTTLE:       return !player.specialItems.has(HIDDEN.BOTTLE);
-          case HIDDEN.HELMET:       return !player.specialItems.has(HIDDEN.HELMET);
-          case HIDDEN.ARMOR:        return !player.specialItems.has(HIDDEN.ARMOR);
-          case HIDDEN.SHIELD:       return !player.specialItems.has(HIDDEN.SHIELD);
-          case HIDDEN.SWORD:        return !player.specialItems.has(HIDDEN.SWORD);
-          case HIDDEN.RING:         return !player.hasRing;
-          case HIDDEN.LANTERN:      return !player.hasLantern;
-          case HIDDEN.RADIO:        return !player.hasRadio;
-          case HIDDEN.DOWSING_ROD:  return !player.hasDowsingRod;
-          case HIDDEN.HEAT_VISION:  return !player.hasHeatVision;
-          default:                  return true;
+          case HIDDEN.GLASSES:        return !player.specialItems.has(HIDDEN.GLASSES);
+          case HIDDEN.TIN_CAN:        return !player.specialItems.has(HIDDEN.TIN_CAN);
+          case HIDDEN.RUBBER_BOOT:    return !player.specialItems.has(HIDDEN.RUBBER_BOOT);
+          case HIDDEN.POCKET_WATCH:   return !player.specialItems.has(HIDDEN.POCKET_WATCH);
+          case HIDDEN.SKULL:          return !player.specialItems.has(HIDDEN.SKULL);
+          case HIDDEN.CANTEEN:        return !player.specialItems.has(HIDDEN.CANTEEN);
+          case HIDDEN.LUNCHBOX:       return !player.specialItems.has(HIDDEN.LUNCHBOX);
+          case HIDDEN.CASH_BAG:       return !player.specialItems.has(HIDDEN.CASH_BAG);
+          case HIDDEN.SCROLL:         return !player.specialItems.has(HIDDEN.SCROLL);
+          case HIDDEN.FOSSIL:         return !player.specialItems.has(HIDDEN.FOSSIL);
+          case HIDDEN.NEWSPAPER:      return !player.specialItems.has(HIDDEN.NEWSPAPER);
+          case HIDDEN.BROKEN_CHAIN:   return !player.specialItems.has(HIDDEN.BROKEN_CHAIN);
+          case HIDDEN.OLD_COIN:       return !player.specialItems.has(HIDDEN.OLD_COIN);
+          case HIDDEN.BOTTLE:         return !player.specialItems.has(HIDDEN.BOTTLE);
+          case HIDDEN.HELMET:         return !player.specialItems.has(HIDDEN.HELMET);
+          case HIDDEN.ARMOR:          return !player.specialItems.has(HIDDEN.ARMOR);
+          case HIDDEN.SHIELD:         return !player.specialItems.has(HIDDEN.SHIELD);
+          case HIDDEN.SWORD:          return !player.specialItems.has(HIDDEN.SWORD);
+          case HIDDEN.RING:           return !player.hasRing;
+          case HIDDEN.LANTERN:        return !player.hasLantern;
+          case HIDDEN.RADIO:          return !player.hasRadio;
+          case HIDDEN.DOWSING_ROD:    return !player.hasDowsingRod;
+          case HIDDEN.HEAT_VISION:    return !player.hasHeatVision;
+          case HIDDEN.TREASURE_MAP:   return !player.specialItems.has(HIDDEN.TREASURE_MAP);
+          case HIDDEN.TREASURE_CHEST: return !player.specialItems.has(HIDDEN.TREASURE_CHEST);
+          default:                    return true;
         }
       });
     }
@@ -531,6 +548,8 @@ class World {
       case HIDDEN.SWORD:        this.setTile(x, y, TILE.SWORD);        break;
       case HIDDEN.DOWSING_ROD:  this.setTile(x, y, TILE.DOWSING_ROD);  break;
       case HIDDEN.HEAT_VISION:  this.setTile(x, y, TILE.HEAT_VISION);  break;
+      case HIDDEN.TREASURE_MAP:   this.setTile(x, y, TILE.TREASURE_MAP);   break;
+      case HIDDEN.TREASURE_CHEST: this.setTile(x, y, TILE.TREASURE_CHEST); break;
       default:                  this.setTile(x, y, TILE.EMPTY);        break;
     }
     return hidden;

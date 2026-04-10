@@ -1287,6 +1287,44 @@ class Game {
         }
         break;
       }
+
+      // ── Treasure map – reveals the depth of the treasure chest ─────────
+      case TILE.TREASURE_MAP: {
+        if (!p.specialItems.has(HIDDEN.TREASURE_MAP)) {
+          p.specialItems.add(HIDDEN.TREASURE_MAP);
+          p.treasureMapDepth = this.world.treasureChestDepth;
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          this._showItemPickupOverlay('🗺️', `A treasure map! X marks the spot at depth ${p.treasureMapDepth} m. Build the elevator and expand its depth to reach it!`);
+          this.ui.updateHUD(p);
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
+        }
+        break;
+      }
+
+      // ── Treasure chest – contains rubies worth $5,000 ──────────────────
+      case TILE.TREASURE_CHEST: {
+        if (!p.specialItems.has(HIDDEN.TREASURE_CHEST)) {
+          const rubyCount  = TREASURE_CHEST_RUBY_COUNT;
+          const totalValue = rubyCount * GEM_VALUE[HIDDEN.RUBY];
+          const slotsNeeded = rubyCount;
+          const slotsAvailable = p.maxGems - p.gems.length;
+          if (slotsAvailable < slotsNeeded) {
+            p.setMessage(`🎁 Treasure chest needs ${slotsNeeded} free bag slots! (${slotsAvailable} available)`);
+          } else {
+            p.specialItems.add(HIDDEN.TREASURE_CHEST);
+            for (let i = 0; i < rubyCount; i++) p.addGem(HIDDEN.RUBY);
+            this.world.setTile(x, y, TILE.EMPTY);
+            sounds.playItemPickup();
+            this._showItemPickupOverlay('🎁', `You opened the treasure chest! Found ${rubyCount} rubies worth $${totalValue.toLocaleString()} in total. Sell them at the Bank!`);
+            this.ui.updateHUD(p);
+          }
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
+        }
+        break;
+      }
     }
   }
 
@@ -1675,6 +1713,12 @@ class Game {
 
     // Regenerate the mine, excluding items the player already has
     this.world.regenerateMine(p);
+
+    // If the player has the treasure map but hasn't opened the chest yet,
+    // update the stored depth to match the new chest position.
+    if (p.specialItems.has(HIDDEN.TREASURE_MAP) && !p.specialItems.has(HIDDEN.TREASURE_CHEST)) {
+      p.treasureMapDepth = this.world.treasureChestDepth;
+    }
 
     // Clear any live dynamites (they're in the old mine)
     this._dynamites = [];

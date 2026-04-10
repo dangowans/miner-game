@@ -68,6 +68,7 @@ class UI {
     if (player.hasRadio)        tools.push('📻');
     if (player.hasDowsingRod)   tools.push('🪄');
     if (player.hasHeatVision)   tools.push('🥽');
+    if (player.treasureMapDepth > 0) tools.push(`🗺️${player.treasureMapDepth}m`);
     if (player.specialItems.has('rubber_boot'))  tools.push('🥾');
     if (player.specialItems.has('pocket_watch')) tools.push('⌚');
     if (player.specialItems.has('glasses'))      tools.push('🕶️');
