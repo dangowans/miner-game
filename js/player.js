@@ -50,6 +50,8 @@ class Player {
     this.hasFlower     = false;   // Flower collected from the surface
     this.hasGivenFlower = false;  // True once the flower has been given to the bar girl
     this.hasRadio      = false;   // Radio found in the mine – teleports to mine entrance
+    this.hasDowsingRod = false;   // Dowsing rod – instantly reveals adjacent water hazards
+    this.hasHeatVision = false;   // Heat-vision goggles – instantly reveals adjacent lava hazards
 
     // Consumable items
     this.firstAidKits  = 0;       // First Aid Kits in inventory (bought at shop)

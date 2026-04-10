@@ -123,6 +123,8 @@ const Storage = {
     p.hasFlower     = data.hasFlower;
     p.hasGivenFlower = data.hasGivenFlower;
     p.hasRadio      = data.hasRadio;
+    p.hasDowsingRod = data.hasDowsingRod ?? false;
+    p.hasHeatVision = data.hasHeatVision ?? false;
 
     p.firstAidKits = data.firstAidKits;
     p.hasMineCart  = data.hasMineCart  ?? false;
@@ -215,6 +217,8 @@ function _serializePlayer(p) {
     hasFlower:     p.hasFlower,
     hasGivenFlower: p.hasGivenFlower,
     hasRadio:      p.hasRadio,
+    hasDowsingRod: p.hasDowsingRod,
+    hasHeatVision: p.hasHeatVision,
 
     firstAidKits: p.firstAidKits,
     hasMineCart:  p.hasMineCart,

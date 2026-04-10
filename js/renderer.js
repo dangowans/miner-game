@@ -752,6 +752,24 @@ class Renderer {
         break;
       }
 
+      case TILE.DOWSING_ROD: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🪄', cx, cy + 8);
+        break;
+      }
+
+      case TILE.HEAT_VISION: {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🥽', cx, cy + 8);
+        break;
+      }
+
       case TILE.WORKER: {
         // Sky background
         ctx.fillStyle = '#7ab8e8';

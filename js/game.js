@@ -422,7 +422,7 @@ class Game {
     // Only probe adjacent dirt tiles when the player is inside the mine (y≥3).
     // Pavement movement (y=2) must not reveal hidden content in the top mine row.
     if (y >= 3) {
-      const revealed = this.world.probeAdjacent(x, y, this.player.toolReduction, this.player.hasLantern);
+      const revealed = this.world.probeAdjacent(x, y, this.player.toolReduction, this.player.hasLantern, this.player.hasDowsingRod, this.player.hasHeatVision);
       for (const { x: rx, y: ry, content } of revealed) {
         this._onContentRevealed(content, rx, ry);
       }
@@ -1256,6 +1256,32 @@ class Game {
             const count = KNIGHT_ITEMS.filter(i => p.specialItems.has(i)).length;
             this._showItemPickupOverlay('⚔️', `A knight\'s sword! You feel ready for battle. (Knight item ${count}/4)`);
           }
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
+        }
+        break;
+      }
+
+      // ── Dowsing rod – instantly reveals adjacent water hazards ─────────
+      case TILE.DOWSING_ROD: {
+        if (!p.hasDowsingRod) {
+          p.hasDowsingRod = true;
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          this._showItemPickupOverlay('🪄', 'A dowsing rod! Springs will reveal themselves the moment you walk next to them.');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
+        }
+        break;
+      }
+
+      // ── Heat-vision goggles – instantly reveals adjacent lava hazards ──
+      case TILE.HEAT_VISION: {
+        if (!p.hasHeatVision) {
+          p.hasHeatVision = true;
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          this._showItemPickupOverlay('🥽', 'Heat-vision goggles! Lava pockets will reveal themselves the moment you walk next to them.');
         } else {
           this.world.setTile(x, y, TILE.EMPTY);
         }

@@ -100,6 +100,10 @@ class World {
       { content: HIDDEN.ARMOR,        y: 135 + Math.floor(rng() * 60), x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.SHIELD,       y: 155 + Math.floor(rng() * 60), x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.SWORD,        y: 175 + Math.floor(rng() * 80), x: 1 + Math.floor(rng() * xRange) },
+
+      // ── Functional utility items (midway in main mine) ────────────────────
+      { content: HIDDEN.DOWSING_ROD,  y: 17 + Math.floor(rng() * 30),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.HEAT_VISION,  y: 17 + Math.floor(rng() * 30),  x: 1 + Math.floor(rng() * xRange) },
     ];
   }
 
@@ -160,6 +164,8 @@ class World {
           case HIDDEN.RING:         return !player.hasRing;
           case HIDDEN.LANTERN:      return !player.hasLantern;
           case HIDDEN.RADIO:        return !player.hasRadio;
+          case HIDDEN.DOWSING_ROD:  return !player.hasDowsingRod;
+          case HIDDEN.HEAT_VISION:  return !player.hasHeatVision;
           default:                  return true;
         }
       });
@@ -428,7 +434,7 @@ class World {
   // Reveal logic
   // -------------------------------------------------------------------------
 
-  probeAdjacent(px, py, toolReduction, hasLantern) {
+  probeAdjacent(px, py, toolReduction, hasLantern, hasDowsingRod, hasHeatVision) {
     const revealed = [];
     const DIRS = [
       { dx: 1, dy: 0 }, { dx: -1, dy: 0 },
@@ -439,6 +445,18 @@ class World {
       if (this.getTile(nx, ny) !== TILE.DIRT) continue;
       const d = this.getData(nx, ny);
       if (!d) continue;
+      // Dowsing rod: instantly reveal adjacent water hazards regardless of dirt type or probes.
+      if (hasDowsingRod && d.hidden === HIDDEN.WATER) {
+        const content = this._revealTile(nx, ny);
+        if (content !== null) revealed.push({ x: nx, y: ny, content });
+        continue;
+      }
+      // Heat-vision goggles: instantly reveal adjacent lava hazards regardless of dirt type or probes.
+      if (hasHeatVision && d.hidden === HIDDEN.LAVA) {
+        const content = this._revealTile(nx, ny);
+        if (content !== null) revealed.push({ x: nx, y: ny, content });
+        continue;
+      }
       // Impenetrable tiles can only be probed from adjacent with the lantern;
       // otherwise the player must walk directly into them to reveal them.
       if (d.impenetrable && !hasLantern) continue;
@@ -511,6 +529,8 @@ class World {
       case HIDDEN.ARMOR:        this.setTile(x, y, TILE.ARMOR);        break;
       case HIDDEN.SHIELD:       this.setTile(x, y, TILE.SHIELD);       break;
       case HIDDEN.SWORD:        this.setTile(x, y, TILE.SWORD);        break;
+      case HIDDEN.DOWSING_ROD:  this.setTile(x, y, TILE.DOWSING_ROD);  break;
+      case HIDDEN.HEAT_VISION:  this.setTile(x, y, TILE.HEAT_VISION);  break;
       default:                  this.setTile(x, y, TILE.EMPTY);        break;
     }
     return hidden;

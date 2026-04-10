@@ -74,6 +74,8 @@ const TILE = Object.freeze({
   ARMOR:       50,   // Knight's armor – only in extended mine (part of knight set)
   SHIELD:      51,   // Knight's shield – only in extended mine (part of knight set)
   SWORD:       52,   // Knight's sword – only in extended mine (part of knight set)
+  DOWSING_ROD: 53,   // Hidden dowsing rod – instantly reveals adjacent water hazards
+  HEAT_VISION: 54,   // Hidden heat-vision goggles – instantly reveals adjacent lava hazards
 });
 
 // ---------------------------------------------------------------------------
@@ -114,6 +116,8 @@ const HIDDEN = Object.freeze({
   ARMOR:        'armor',        // Knight set – extended mine only
   SHIELD:       'shield',       // Knight set – extended mine only
   SWORD:        'sword',        // Knight set – extended mine only
+  DOWSING_ROD:  'dowsing_rod', // Unique – instantly reveals adjacent water hazards when held
+  HEAT_VISION:  'heat_vision', // Unique – instantly reveals adjacent lava hazards when held
 });
 
 // ---------------------------------------------------------------------------
@@ -405,6 +409,8 @@ const TILE_COLOR = {
   [TILE.ARMOR]:        '#101820',   // Knight armor – dark steel
   [TILE.SHIELD]:       '#101820',   // Knight shield – dark steel
   [TILE.SWORD]:        '#101820',   // Knight sword – dark steel
+  [TILE.DOWSING_ROD]:  '#0a1a0a',   // Dowsing rod – dark with teal tint
+  [TILE.HEAT_VISION]:  '#0a0a1a',   // Heat-vision goggles – dark with blue tint
 };
 
 // Ore tile types that can be destroyed when a hazard spreads over them

@@ -66,6 +66,8 @@ class UI {
     if (player.hasFlower)       tools.push('🌸');
     if (player.hasRing)         tools.push('💍');
     if (player.hasRadio)        tools.push('📻');
+    if (player.hasDowsingRod)   tools.push('🪄');
+    if (player.hasHeatVision)   tools.push('🥽');
     if (player.specialItems.has('rubber_boot'))  tools.push('🥾');
     if (player.specialItems.has('pocket_watch')) tools.push('⌚');
     if (player.specialItems.has('glasses'))      tools.push('🕶️');
