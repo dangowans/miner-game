@@ -116,8 +116,8 @@ const HIDDEN = Object.freeze({
   ARMOR:        'armor',        // Knight set – extended mine only
   SHIELD:       'shield',       // Knight set – extended mine only
   SWORD:        'sword',        // Knight set – extended mine only
-  DOWSING_ROD:  'dowsing_rod', // Unique – instantly reveals adjacent water hazards when held
-  HEAT_VISION:  'heat_vision', // Unique – instantly reveals adjacent lava hazards when held
+  DOWSING_ROD:  'dowsing_rod', // Unique – instantly reveals adjacent water hazards once collected
+  HEAT_VISION:  'heat_vision', // Unique – instantly reveals adjacent lava hazards once collected
 });
 
 // ---------------------------------------------------------------------------
