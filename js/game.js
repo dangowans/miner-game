@@ -379,8 +379,8 @@ class Game {
    * Handle player entering a water tile.
    *
    * - Spring source (always): impassable; re-spreads and deals 1 heart.
-   * - Spread water + rubber boot: player walks through freely, no damage.
    * - Spread water + bucket: clears tile to EMPTY, free passage, uses 1 bucket charge.
+   * - Spread water + rubber boot (no bucket): player walks through freely, no damage.
    * - Spread water (no boot/bucket): player moves onto it, tile stays, deals 1 heart.
    */
   _enterWater(p, nx, ny) {
@@ -390,11 +390,6 @@ class Game {
       // Spring source: always impassable; re-spread and deal damage
       this.world.spreadHazard(nx, ny, TILE.WATER);
       this._applyHazardDamage('water_source');
-    } else if (p.specialItems.has('rubber_boot')) {
-      // Rubber boots: walk through spread water freely, no damage
-      p.x = nx; p.y = ny;
-      p.setMessage('🥾 Rubber boots keep your feet dry!');
-      this._afterMove(nx, ny);
     } else if (p.hasBucket) {
       // Bucket clears spread water – free passage, no damage, uses 1 charge
       this.world.setTile(nx, ny, TILE.EMPTY);
@@ -408,6 +403,11 @@ class Game {
       } else {
         p.setMessage(`🪣 Cleared water with bucket. (${p.bucketUses} use${p.bucketUses !== 1 ? 's' : ''} left)`);
       }
+      this._afterMove(nx, ny);
+    } else if (p.specialItems.has('rubber_boot')) {
+      // Rubber boots: walk through spread water freely, no damage
+      p.x = nx; p.y = ny;
+      p.setMessage('🥾 Rubber boots keep your feet dry!');
       this._afterMove(nx, ny);
     } else {
       // Spread water, no boot/bucket: player moves onto it, tile stays, deal damage
@@ -951,6 +951,8 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           this._showItemPickupOverlay('🥾', 'Rubber boots! Walk through water without taking damage.');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -961,6 +963,8 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           this._showItemPickupOverlay('⌚', 'A pocket watch! Still ticking after all these years.');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -971,6 +975,8 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           this._showItemPickupOverlay('🕶️', 'A pair of glasses? What else lies beneath the loo?');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -982,6 +988,8 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           this._showItemPickupOverlay('🔦', 'Lantern found! Move back and forth next to dirt to reveal what\'s inside.');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -993,6 +1001,8 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           this._showItemPickupOverlay('📻', 'Old radio found! Use the 📻 button to call for a ride to the mine entrance.');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -1004,6 +1014,8 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           this._showItemPickupOverlay('💀', 'A skull. Someone didn\'t make it back.');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -1014,6 +1026,8 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           this._showItemPickupOverlay('🧴', 'A dusty canteen. Still has a drop of water in it.');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -1024,6 +1038,8 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           this._showItemPickupOverlay('🍱', 'A lunch box. The sandwich inside is ancient but tempting.');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -1034,6 +1050,8 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           this._showItemPickupOverlay('🥫', 'A dented tin can. "Best before 1987."');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -1053,6 +1071,8 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           this._showItemPickupOverlay('💍', 'You found a ring! Bring it to the bar…');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -1064,6 +1084,8 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           this._showItemPickupOverlay('🪏', 'Found a Shovel! Digging dirt is easier now.');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -1075,6 +1097,8 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           this._showItemPickupOverlay('⛏', `Found a Pick! Walk into stone to break it. (${TOOL_USES} uses)`);
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -1086,6 +1110,8 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           this._showItemPickupOverlay('🎒', 'Found a Large Bag! Carry capacity doubled.');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -1099,6 +1125,8 @@ class Game {
           sounds.playItemPickup();
           this._showItemPickupOverlay('💰', `You found a bag of cash! A previous miner left it behind. +$${CASH_BAG_VALUE} added to your wallet.`);
           this.ui.updateHUD(p);
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -1110,6 +1138,8 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           this._showItemPickupOverlay('📜', 'An ancient scroll! The words are faded but you can make out warnings about "the beast below."');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -1120,6 +1150,8 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           this._showItemPickupOverlay('🦴', 'Fossilized footprints! Something enormous walked through here a very long time ago.');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -1130,6 +1162,8 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           this._showItemPickupOverlay('📰', 'An old newspaper! The headline reads: "KNIGHT EXPEDITION VANISHES IN DEEP MINE — 1923."');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -1140,6 +1174,8 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           this._showItemPickupOverlay('⛓️', 'A broken chain. Someone — or something — snapped it. Best not to think about it.');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -1150,6 +1186,8 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           this._showItemPickupOverlay('🪙', 'An old coin! The face on it belongs to a forgotten king. Might be worth something someday.');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -1160,6 +1198,8 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           this._showItemPickupOverlay('🍾', 'A sealed bottle of alcohol! Vintage 1923 and still intact. That\'s impressive.');
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -1172,6 +1212,8 @@ class Game {
           sounds.playItemPickup();
           const count = KNIGHT_ITEMS.filter(i => p.specialItems.has(i)).length;
           this._showItemPickupOverlay('⛑️', `A knight\'s helmet! You feel more courageous. (Knight item ${count}/4)`);
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -1183,6 +1225,8 @@ class Game {
           sounds.playItemPickup();
           const count = KNIGHT_ITEMS.filter(i => p.specialItems.has(i)).length;
           this._showItemPickupOverlay('🪬', `A knight\'s armor! You feel protected. (Knight item ${count}/4)`);
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -1194,6 +1238,8 @@ class Game {
           sounds.playItemPickup();
           const count = KNIGHT_ITEMS.filter(i => p.specialItems.has(i)).length;
           this._showItemPickupOverlay('🛡️', `A knight\'s shield! Your defenses are unmatched. (Knight item ${count}/4)`);
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
@@ -1210,6 +1256,8 @@ class Game {
             const count = KNIGHT_ITEMS.filter(i => p.specialItems.has(i)).length;
             this._showItemPickupOverlay('⚔️', `A knight\'s sword! You feel ready for battle. (Knight item ${count}/4)`);
           }
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
         }
         break;
       }
