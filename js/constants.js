@@ -78,6 +78,7 @@ const TILE = Object.freeze({
   HEAT_VISION:   54,   // Hidden heat-vision goggles – instantly reveals adjacent lava hazards
   TREASURE_MAP:  55,   // Hidden treasure map – reveals the depth of the treasure chest
   TREASURE_CHEST:56,   // Treasure chest in the extended mine – contains gems worth $5,000
+  GAS:           57,   // Gas leak – impassable cloud of toxic gas; deals 1 heart on entry (no spread)
 });
 
 // ---------------------------------------------------------------------------
@@ -122,6 +123,7 @@ const HIDDEN = Object.freeze({
   HEAT_VISION:  'heat_vision', // Unique – instantly reveals adjacent lava hazards once collected
   TREASURE_MAP:   'treasure_map',   // Unique – reveals the depth of the treasure chest
   TREASURE_CHEST: 'treasure_chest', // Unique – treasure chest in the extended mine (>100 m)
+  GAS:            'gas',            // Gas leak – toxic cloud; deals 1 heart on entry (no spread)
 });
 
 // ---------------------------------------------------------------------------
@@ -417,6 +419,7 @@ const TILE_COLOR = {
   [TILE.HEAT_VISION]:    '#0a0a1a',   // Heat-vision goggles – dark with blue tint
   [TILE.TREASURE_MAP]:   '#1a1200',   // Treasure map – dark parchment tone
   [TILE.TREASURE_CHEST]: '#201000',   // Treasure chest – very dark gold-brown
+  [TILE.GAS]:            '#2a3800',   // Gas leak – dark sickly yellow-green
 };
 
 // Ore tile types that can be destroyed when a hazard spreads over them

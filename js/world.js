@@ -336,11 +336,13 @@ class World {
     const surfaceOreScale = Math.min(1.0, 0.35 + fromY / 28);
 
     // Hazard weights scale up quickly from zero at the surface.
-    // Water starts appearing around y=5, lava around y=8.
+    // Water starts appearing around y=5, lava around y=8, gas around y=10.
     const waterScale = Math.min(1, fromY / 20);
     const lavaScale  = Math.min(1, fromY / 25);
+    const gasScale   = Math.min(1, fromY / 30);
     const waterWeight = Math.max(0, Math.round(5 * waterScale));
     const lavaWeight  = Math.max(0, Math.round((4 + Math.floor(depthBonus / 2)) * lavaScale));
+    const gasWeight   = Math.max(0, Math.round(3 * gasScale));
 
     const TABLE = [
       { content: HIDDEN.NOTHING,  weight: Math.max(15, 30 - depthBonus)                                          },
@@ -350,6 +352,7 @@ class World {
       { content: HIDDEN.DIAMOND,  weight: Math.max(0, Math.floor((fromY - 60) / 10))             },
       { content: HIDDEN.WATER,    weight: waterWeight                                                              },
       { content: HIDDEN.LAVA,     weight: lavaWeight                                                               },
+      { content: HIDDEN.GAS,      weight: gasWeight                                                                },
       { content: HIDDEN.STONE,    weight: 10 + Math.floor(depthBonus * 1.5)                                       },
       { content: HIDDEN.SHOVEL,   weight:  2                                                                       },
       { content: HIDDEN.PICK,     weight:  2                                                                       },
@@ -550,6 +553,7 @@ class World {
       case HIDDEN.HEAT_VISION:  this.setTile(x, y, TILE.HEAT_VISION);  break;
       case HIDDEN.TREASURE_MAP:   this.setTile(x, y, TILE.TREASURE_MAP);   break;
       case HIDDEN.TREASURE_CHEST: this.setTile(x, y, TILE.TREASURE_CHEST); break;
+      case HIDDEN.GAS:            this.setTile(x, y, TILE.GAS);            break;
       default:                  this.setTile(x, y, TILE.EMPTY);        break;
     }
     return hidden;
@@ -640,12 +644,17 @@ class World {
       case TILE.ARMOR:
       case TILE.SHIELD:
       case TILE.SWORD:
+      case TILE.DOWSING_ROD:
+      case TILE.HEAT_VISION:
+      case TILE.TREASURE_MAP:
+      case TILE.TREASURE_CHEST:
         return true;
       case TILE.BUILDING:
       case TILE.DIRT:
       case TILE.STONE:
       case TILE.WATER:
       case TILE.LAVA:
+      case TILE.GAS:
         return false;
       default:
         return false;

@@ -278,6 +278,7 @@ class Game {
       // Hazard tiles revealed by digging are entered via their own helpers
       if (newTile === TILE.LAVA)  { this._enterLava(p, nx, ny); return; }
       if (newTile === TILE.WATER) { this._enterWater(p, nx, ny); return; }
+      if (newTile === TILE.GAS)   { this._enterGas(p, nx, ny); return; }
 
       if (this.world.isPassable(nx, ny)) {
         p.x = nx; p.y = ny;
@@ -325,6 +326,12 @@ class Game {
     // ── 4. Lava: extinguisher converts to stone; otherwise costs 1 heart ──
     if (targetTile === TILE.LAVA) {
       this._enterLava(p, nx, ny);
+      return;
+    }
+
+    // ── 4b. Gas: player moves onto it, tile stays, deals 1 heart ─────────
+    if (targetTile === TILE.GAS) {
+      this._enterGas(p, nx, ny);
       return;
     }
 
@@ -415,6 +422,17 @@ class Game {
       const died = this._applyHazardDamage('water');
       if (!died) this._afterMove(nx, ny);
     }
+  }
+
+  /**
+   * Handle player entering a gas leak tile.
+   *
+   * Gas does not spread. The player moves onto it (tile remains) and takes 1 heart.
+   */
+  _enterGas(p, nx, ny) {
+    p.x = nx; p.y = ny;
+    const died = this._applyHazardDamage('gas');
+    if (!died) this._afterMove(nx, ny);
   }
 
   /** Shared post-move logic: probe neighbours + pickup. */
@@ -521,6 +539,7 @@ class Game {
       if (newTile === TILE.STONE) { sounds.playTinkStone(); return; }
       if (newTile === TILE.LAVA)  { this._enterLava(p, exitX, p.y);  return; }
       if (newTile === TILE.WATER) { this._enterWater(p, exitX, p.y); return; }
+      if (newTile === TILE.GAS)   { this._enterGas(p, exitX, p.y);   return; }
       if (this.world.isPassable(exitX, p.y)) {
         p.inElevator = false;
         p.x = exitX;
@@ -580,6 +599,7 @@ class Game {
                  : hazardType === 'lava_source'  ? '🔥 Lava source — can\'t pass'
                  : hazardType === 'water'        ? '💧 Waded through water'
                  : hazardType === 'water_source' ? '💧 Spring source — can\'t pass'
+                 : hazardType === 'gas'          ? '☣️ Gas leak!'
                  : '⚠️ Hazard hit';
       p.setMessage(`${what}! (${p.hearts}/${p.maxHearts} ♥ remaining)`);
     }
@@ -882,6 +902,8 @@ class Game {
       this.player.setMessage('💧 A water spring burst open nearby!');
     } else if (content === HIDDEN.LAVA) {
       this.player.setMessage('🔥 Lava erupted nearby! Watch your step!');
+    } else if (content === HIDDEN.GAS) {
+      this.player.setMessage('☣️ Gas leak detected nearby! Careful!');
     } else if (content === HIDDEN.STONE) {
       this.player.setMessage('🪨 Stone revealed. You\'ll need a Pick to break it.');
     }

@@ -796,6 +796,24 @@ class Renderer {
         break;
       }
 
+      case TILE.GAS: {
+        // Dark sickly yellow-green background
+        ctx.fillStyle = '#2a3800';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        // Toxic cloud symbol
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('☁️', cx, cy + 8);
+        // Biohazard tint overlay for visibility
+        ctx.fillStyle = 'rgba(180, 220, 0, 0.35)';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        // Warning indicator
+        ctx.fillStyle = '#b8dc00';
+        ctx.font      = 'bold 8px monospace';
+        ctx.fillText('☣', cx, py + 9);
+        break;
+      }
+
       case TILE.WORKER: {
         // Sky background
         ctx.fillStyle = '#7ab8e8';
