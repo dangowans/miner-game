@@ -18,6 +18,17 @@ class UI {
     this._hudTools      = document.getElementById('hud-tools');
     this._hudMsg        = document.getElementById('hud-msg');
     this._btnDynamite   = document.getElementById('btn-dynamite');
+    this._showExtraInventory = false;
+    this._lastHudPlayer = null;
+
+    if (this._hudTools) {
+      this._hudTools.addEventListener('click', (e) => {
+        const toggle = e.target.closest('[data-action="toggle-extra-inventory"]');
+        if (!toggle) return;
+        this._showExtraInventory = !this._showExtraInventory;
+        if (this._lastHudPlayer) this.updateHUD(this._lastHudPlayer);
+      });
+    }
 
     // Close on Escape key
     document.addEventListener('keydown', (e) => {
@@ -30,6 +41,7 @@ class UI {
   // -------------------------------------------------------------------------
 
   updateHUD(player) {
+    this._lastHudPlayer = player;
     // Hearts: filled ♥ and empty ♡
     let hearts = '';
     for (let i = 0; i < player.maxHearts; i++) {
@@ -57,6 +69,7 @@ class UI {
     this._hudGemsDetail.textContent = `${breakdown} (${player.gemCount}/${player.maxGems})`;
 
     const tools = [];
+    const extraTools = [];
     if (player.hasShovel)       tools.push('🪏');
     if (player.hasPick)         tools.push(`⛏×${player.pickUses}`);
     if (player.hasBucket)       tools.push(`🪣×${player.bucketUses}`);
@@ -71,24 +84,24 @@ class UI {
     if (player.treasureMapDepth > 0) tools.push(`🗺️${player.treasureMapDepth}m`);
     if (player.genieWishes > 0) tools.push(`🧞×${player.genieWishes}`);
     if (player.specialItems.has('rubber_boot'))  tools.push('🥾');
-    if (player.specialItems.has('pocket_watch')) tools.push('⌚');
-    if (player.specialItems.has('glasses'))      tools.push('🕶️');
-    if (player.specialItems.has('skull'))        tools.push('💀');
-    if (player.specialItems.has('canteen'))      tools.push('🧴');
-    if (player.specialItems.has('lunchbox'))     tools.push('🍱');
-    if (player.specialItems.has('tin_can'))      tools.push('🥫');
-    if (player.specialItems.has('cash_bag'))     tools.push('💰');
-    if (player.specialItems.has('scroll'))       tools.push('📜');
-    if (player.specialItems.has('fossil'))       tools.push('🦴');
-    if (player.specialItems.has('newspaper'))    tools.push('📰');
-    if (player.specialItems.has('broken_chain')) tools.push('⛓️');
-    if (player.specialItems.has('old_coin'))     tools.push('🪙');
-    if (player.specialItems.has('bottle'))       tools.push('🍾');
-    // Knight set
-    if (player.specialItems.has('helmet'))  tools.push('⛑️');
-    if (player.specialItems.has('armor'))   tools.push('🪬');
-    if (player.specialItems.has('shield'))  tools.push('🛡️');
-    if (player.specialItems.has('sword'))   tools.push('⚔️');
+    if (player.specialItems.has('helmet'))       tools.push('⛑️');
+    if (player.specialItems.has('armor'))        tools.push('🪬');
+    if (player.specialItems.has('shield'))       tools.push('🛡️');
+    if (player.specialItems.has('sword'))        tools.push('⚔️');
+
+    if (player.specialItems.has('pocket_watch')) extraTools.push('⌚');
+    if (player.specialItems.has('glasses'))      extraTools.push('🕶️');
+    if (player.specialItems.has('skull'))        extraTools.push('💀');
+    if (player.specialItems.has('canteen'))      extraTools.push('🧴');
+    if (player.specialItems.has('lunchbox'))     extraTools.push('🍱');
+    if (player.specialItems.has('tin_can'))      extraTools.push('🥫');
+    if (player.specialItems.has('cash_bag'))     extraTools.push('💰');
+    if (player.specialItems.has('scroll'))       extraTools.push('📜');
+    if (player.specialItems.has('fossil'))       extraTools.push('🦴');
+    if (player.specialItems.has('newspaper'))    extraTools.push('📰');
+    if (player.specialItems.has('broken_chain')) extraTools.push('⛓️');
+    if (player.specialItems.has('old_coin'))     extraTools.push('🪙');
+    if (player.specialItems.has('bottle'))       extraTools.push('🍾');
     if (player.necklaceCount > 0)                tools.push(`📿×${player.necklaceCount}`);
     if (player.dynamiteCount > 0) {
       tools.push(player.placingDynamite
@@ -111,7 +124,30 @@ class UI {
       tools.push(`| 🏦$${player.bankBalance} ${foodIcon}[${supBar}]${supPct}%`);
     }
 
-    this._hudTools.textContent = tools.join(' ');
+    const toolsText = tools.join(' ');
+    this._hudTools.textContent = toolsText;
+    if (extraTools.length > 0) {
+      const expanded = this._showExtraInventory;
+      const titleText = expanded ? 'Hide extra items' : 'Show extra items';
+      const toggleBtn = document.createElement('button');
+      toggleBtn.type = 'button';
+      toggleBtn.className = 'hud-ellipsis-toggle';
+      toggleBtn.dataset.action = 'toggle-extra-inventory';
+      toggleBtn.title = titleText;
+      toggleBtn.setAttribute('aria-label', titleText);
+      toggleBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      toggleBtn.textContent = '…';
+      this._hudTools.appendChild(document.createTextNode(' '));
+      this._hudTools.appendChild(toggleBtn);
+
+      if (expanded) {
+        const extraSpan = document.createElement('span');
+        extraSpan.className = 'hud-extra-items';
+        extraSpan.textContent = extraTools.join(' ');
+        this._hudTools.appendChild(document.createTextNode(' '));
+        this._hudTools.appendChild(extraSpan);
+      }
+    }
 
     // Dynamite button: enabled only when the player has dynamite
     if (this._btnDynamite) {

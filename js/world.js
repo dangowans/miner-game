@@ -586,6 +586,13 @@ class World {
           this.setTile(nx, ny, tileType);
           queue.push({ x: nx, y: ny });
           count++;
+        } else if (
+          (tileType === TILE.WATER && t === TILE.LAVA) ||
+          (tileType === TILE.LAVA  && t === TILE.WATER)
+        ) {
+          // Opposing hazards neutralize each other into stone.
+          this.setTile(nx, ny, TILE.STONE);
+          count++;
         }
       }
     }
@@ -668,7 +675,7 @@ class World {
   }
 
   isSpringSource(x, y) {
-    return this.springTiles.has(`${x},${y}`);
+    return this.springTiles.has(`${x},${y}`) && this.getTile(x, y) === TILE.WATER;
   }
 
   isLavaSource(x, y) {

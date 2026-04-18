@@ -97,12 +97,14 @@ Available in Family Mode (stand at x=20 and press E):
 ### 💧 Water Spring
 - Hidden inside some dirt tiles.
 - When triggered (probe or dig-in), the source tile becomes **water** and the spring **floods up to 12 adjacent empty spaces**.
+- If flooding water hits lava, that lava tile turns into **stone**.
 - **Water (spread tiles):** walk through at the cost of **1 heart** — the tile clears to empty after wading. Use the **Bucket** to clear it for free (no damage).
 - **Water (spring source):** walk through at the cost of **1 heart** — the spring keeps refilling so the source tile stays as water. The Bucket **cannot** clear the source.
 
 ### 🔥 Lava
 - When triggered, lava floods up to 12 adjacent empty spaces.
-- **Without a Fire Extinguisher:** walking into lava costs **1 heart** and the tile becomes empty.
+- If erupting lava hits water, that water tile turns into **stone**.
+- **Without a Fire Extinguisher:** walking into lava costs **1 heart**.
 - **With a Fire Extinguisher:** walking into lava converts the tile to **stone** (no damage). You can then break the stone with a Pick.
 
 ### 🪨 Stone
@@ -161,5 +163,6 @@ Maximum hearts: **6**. New heart slots are granted full.
 - Move back and forth next to a suspicious dirt tile to reveal it safely before stepping in.
 - Buy the **Shovel** early — it cuts reveal time significantly.
 - **Bucket** + **Fire Extinguisher** + **Pick** together let you navigate almost any obstacle.
+- Extra novelty collectibles in the HUD inventory are hidden behind an **…** toggle.
 - Ore gets more valuable (Platinum and Diamonds more common) the deeper you dig.
 - Visit the **Doctor** before a long mining session if you're low on hearts.
