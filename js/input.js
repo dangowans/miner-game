@@ -25,6 +25,7 @@ class Input {
         case 'ArrowRight': case 'd': case 'D': this._push('right');    break;
         case 'e': case 'E': case 'Enter':       this._push('interact'); break;
         case 'x': case 'X':                     this._push('dynamite'); break;
+        case 'v': case 'V':                     this._push('drill');    break;
         case 'c': case 'C':                     this._push('minecart'); break;
         default: return;
       }
@@ -44,6 +45,7 @@ class Input {
       'btn-left':     'left',
       'btn-right':    'right',
       'btn-dynamite': 'dynamite',
+      'btn-drill':    'drill',
       'btn-firstaid': 'firstaid',
       'btn-minecart': 'minecart',
       'btn-radio':    'radio',

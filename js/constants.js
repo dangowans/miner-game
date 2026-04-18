@@ -224,6 +224,14 @@ const SHOP_ITEMS = [
     oneTime: false,
   },
   {
+    id:      'drill',
+    name:    'Drill',
+    icon:    '🛠️',
+    price:   100,
+    desc:    'Use from inventory to drill 15 m straight down, clearing dirt and stone while revealing hidden content.',
+    oneTime: false,
+  },
+  {
     id:      'firstaid',
     name:    'First Aid Kit',
     icon:    '🩹',
@@ -239,6 +247,8 @@ const SHOP_ITEMS = [
 const DYNAMITE_FUSE_FRAMES           = 300;  // ~5 seconds at 60 fps before detonation
 const DYNAMITE_RADIUS                = 3;    // Blast radius in tiles (Euclidean)
 const DYNAMITE_CRITICAL_RADIUS       = 2;    // Within this many tiles: 2 hearts of damage
+const DYNAMITE_BIG_RADIUS            = 4;    // Occasional larger blast radius
+const DYNAMITE_BIG_BLAST_CHANCE      = 0.20; // Chance for an occasional larger blast
 const DYNAMITE_URGENT_SECS           = 2;    // Fuse seconds remaining when urgent warning starts
 
 // ---------------------------------------------------------------------------
@@ -303,6 +313,12 @@ const HAZARD_SPREAD = 12;  // Max EMPTY tiles a water/lava spring floods when tr
 // Mine Cart
 // ---------------------------------------------------------------------------
 const MINE_CART_COST = 200;  // One-time purchase from Contractor Mike
+const MINE_CART_SEND_COST = 5; // Cost per mine cart delivery
+
+// ---------------------------------------------------------------------------
+// Drill
+// ---------------------------------------------------------------------------
+const DRILL_DEPTH = 15;  // Tiles (metres) drilled straight down per use
 
 // ---------------------------------------------------------------------------
 // Elevator
