@@ -17,10 +17,9 @@
  *             is passable (gems, empty, items).  If stone is revealed the
  *             player still needs a pick to enter on the next move.
  *
- *   LAVA   → lava source: impassable; walking into it triggers re-spread and costs
- *             1 heart.  With fire extinguisher: lava → STONE (no damage, player stays
- *             put, extinguisher loses 1 use).  Spread lava: player moves onto it,
- *             tile remains, costs 1 heart.
+ *   LAVA   → walking into lava costs 1 heart and player moves onto it.  Source lava
+ *             re-spreads when entered.  With fire extinguisher: lava → STONE (no
+ *             damage, player stays put, extinguisher loses 1 use).
  *
  *   WATER  → spring source: impassable; walking into it triggers re-spread and costs
  *             1 heart.  Spread water: player moves onto it, tile remains, costs 1
@@ -354,7 +353,7 @@ class Game {
    * Handle player entering a lava tile.
    *
    * - Extinguisher (any lava): converts to STONE, player stays, uses 1 charge.
-   * - Lava source (no extinguisher): impassable; re-spreads and deals 1 heart.
+   * - Lava source (no extinguisher): re-spreads, player moves onto it, deals 1 heart.
    * - Spread lava (no extinguisher): player moves onto it, tile stays, deals 1 heart.
    */
   _enterLava(p, nx, ny) {
@@ -371,9 +370,11 @@ class Game {
         p.setMessage(`🧯 Lava → stone! (${p.extinguisherUses} use${p.extinguisherUses !== 1 ? 's' : ''} left) Use Pick to enter.`);
       }
     } else if (this.world.isLavaSource(nx, ny)) {
-      // Lava source: impassable; re-spread and deal damage
+      // Lava source: re-spread, then move onto it and deal damage
       this.world.spreadHazard(nx, ny, TILE.LAVA);
-      this._applyHazardDamage('lava_source');
+      p.x = nx; p.y = ny;
+      const died = this._applyHazardDamage('lava_source');
+      if (!died) this._afterMove(nx, ny);
     } else {
       // Spread lava: player moves onto it, tile stays, deal damage
       p.x = nx; p.y = ny;
@@ -594,7 +595,7 @@ class Game {
       this._triggerDeath();
     } else {
       const what = hazardType === 'lava'         ? '🔥 Lava burn'
-                 : hazardType === 'lava_source'  ? '🔥 Lava source — can\'t pass'
+                 : hazardType === 'lava_source'  ? '🔥 Burned by erupting lava'
                  : hazardType === 'water'        ? '💧 Waded through water'
                  : hazardType === 'water_source' ? '💧 Spring source — can\'t pass'
                  : hazardType === 'gas'          ? '☣️ Gas leak!'
