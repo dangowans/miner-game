@@ -125,13 +125,28 @@ class UI {
     }
 
     const toolsText = tools.join(' ');
+    this._hudTools.textContent = toolsText;
     if (extraTools.length > 0) {
       const expanded = this._showExtraInventory;
-      const extraText = expanded ? ` <span class="hud-extra-items">${extraTools.join(' ')}</span>` : '';
       const titleText = expanded ? 'Hide extra items' : 'Show extra items';
-      this._hudTools.innerHTML = `${toolsText} <button type="button" class="hud-ellipsis-toggle" data-action="toggle-extra-inventory" title="${titleText}" aria-label="${titleText}" aria-expanded="${expanded ? 'true' : 'false'}">…</button>${extraText}`;
-    } else {
-      this._hudTools.textContent = toolsText;
+      const toggleBtn = document.createElement('button');
+      toggleBtn.type = 'button';
+      toggleBtn.className = 'hud-ellipsis-toggle';
+      toggleBtn.dataset.action = 'toggle-extra-inventory';
+      toggleBtn.title = titleText;
+      toggleBtn.setAttribute('aria-label', titleText);
+      toggleBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      toggleBtn.textContent = '…';
+      this._hudTools.appendChild(document.createTextNode(' '));
+      this._hudTools.appendChild(toggleBtn);
+
+      if (expanded) {
+        const extraSpan = document.createElement('span');
+        extraSpan.className = 'hud-extra-items';
+        extraSpan.textContent = extraTools.join(' ');
+        this._hudTools.appendChild(document.createTextNode(' '));
+        this._hudTools.appendChild(extraSpan);
+      }
     }
 
     // Dynamite button: enabled only when the player has dynamite
