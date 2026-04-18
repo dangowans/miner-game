@@ -108,6 +108,7 @@ class UI {
         ? `💣×${player.dynamiteCount} [PLACING]`
         : `💣×${player.dynamiteCount}`);
     }
+    if (player.drillCount > 0) tools.push(`🪛×${player.drillCount}`);
     if (player.firstAidKits > 0) tools.push(`🩹×${player.firstAidKits}`);
 
     // Bank balance — show whenever the mine cart has been purchased
@@ -156,6 +157,11 @@ class UI {
       this._btnDynamite.style.borderColor = player.placingDynamite ? '#ff6600' : '';
     }
 
+    const btnDrill = document.getElementById('btn-drill');
+    if (btnDrill) {
+      btnDrill.disabled = player.drillCount <= 0 || player.y < 3;
+    }
+
     // First Aid Kit button: enabled when kits are in stock
     const btnFirstAid = document.getElementById('btn-firstaid');
     if (btnFirstAid) {
@@ -190,17 +196,20 @@ class UI {
                     (item.id === 'extinguisher'  && player.hasExtinguisher)||
                     (item.id === 'bag'           && player.hasBag);
       const dynamiteCount  = item.id === 'dynamite'  ? player.dynamiteCount  : null;
+      const drillCount     = item.id === 'drill'     ? player.drillCount     : null;
       const firstAidCount  = item.id === 'firstaid'  ? player.firstAidKits   : null;
       const affordable = player.money >= item.price;
       // Dynamite is never "owned once" — can always buy more if affordable
       // Same for first aid kits
-      const buyable    = (item.id === 'dynamite' || item.id === 'firstaid') ? affordable : (!owned && affordable);
+      const buyable    = (item.id === 'dynamite' || item.id === 'drill' || item.id === 'firstaid') ? affordable : (!owned && affordable);
       const cls        = buyable ? 'shop-item buyable' : 'shop-item disabled';
       const stockNote  = (count) => count > 0 ? ` <em>(×${count} in stock)</em>` : '';
       const needNote   = !affordable ? ` <em class="short">(need $${item.price - player.money} more)</em>` : '';
       let note;
       if (item.id === 'dynamite') {
         note = stockNote(dynamiteCount) + needNote;
+      } else if (item.id === 'drill') {
+        note = stockNote(drillCount) + needNote;
       } else if (item.id === 'firstaid') {
         note = stockNote(firstAidCount) + needNote;
       } else if (owned) {
@@ -249,6 +258,7 @@ class UI {
         else if (id === 'extinguisher'){ player.hasExtinguisher = true; player.extinguisherUses = TOOL_USES; }
         else if (id === 'bag')         { player.hasBag = true; player.maxGems = 20; }
         else if (id === 'dynamite')    { player.dynamiteCount++; }
+        else if (id === 'drill')       { player.drillCount++; }
         else if (id === 'firstaid')    { player.firstAidKits++; }
         const itemName = (SHOP_ITEMS.find(i => i.id === id) || {}).name || id;
         player.setMessage(`Bought: ${itemName}!`);
@@ -759,7 +769,7 @@ class UI {
       <div class="section-label">MINE CART</div>
       <div class="${cartCls}" id="worker-cart-btn">
         🚃 Mine cart — <span class="price">$${MINE_CART_COST}</span>${cartNote}
-        <br><small>Press 🚃 (or C) to instantly deposit all carried ore at bank value — requires a clear path to the mine exit (no water or lava blocking the way; cannot use elevator).</small>
+        <br><small>Press 🚃 (or C) to send all carried ore to your bank account instantly for $${MINE_CART_SEND_COST} — requires a clear path to the mine exit (no water or lava blocking the way; cannot use elevator).</small>
       </div>
     `;
     this._openOverlay(onClose);
@@ -1114,6 +1124,29 @@ class UI {
       if (onPay) onPay();
     });
     document.getElementById('elevator-decline-btn').addEventListener('click', () => {
+      this._closeOverlay();
+    });
+  }
+
+  showMineCartSendPrompt(cost, onPay, onDecline) {
+    this.overlay.innerHTML = `
+      <div class="overlay-centered">
+        <p class="overlay-emoji">🚃</p>
+        <p class="overlay-title">Send the mine cart?</p>
+        <p style="font-size:0.9em">Send this load to the bank for <strong>$${cost}</strong>?</p>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:12px">
+          <button class="close-btn" id="minecart-pay-btn">✅ Pay $${cost}</button>
+          <button class="close-btn" id="minecart-decline-btn">❌ No thanks</button>
+        </div>
+      </div>`;
+    this._openOverlay(() => { if (onDecline) onDecline(); });
+
+    document.getElementById('minecart-pay-btn').addEventListener('click', () => {
+      this._onCloseCallback = null;
+      this._closeOverlay();
+      if (onPay) onPay();
+    });
+    document.getElementById('minecart-decline-btn').addEventListener('click', () => {
       this._closeOverlay();
     });
   }

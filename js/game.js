@@ -141,6 +141,7 @@ class Game {
       case 'right':    this._tryMove( 1,  0); break;
       case 'interact': this._handleInteract(); break;
       case 'dynamite': this._toggleDynamitePlacement(); break;
+      case 'drill':    this._useDrill();       break;
       case 'firstaid': this._useFirstAidKit(); break;
       case 'minecart': this._useMineCart();    break;
       case 'radio':    this._useRadio();       break;
@@ -692,10 +693,72 @@ class Game {
       p.setMessage('🚃 Cart blocked! No clear path to the mine exit — water or lava is in the way.');
       return;
     }
+    if (p.money < MINE_CART_SEND_COST) {
+      p.setMessage(`🚃 Need $${MINE_CART_SEND_COST} to send the cart. (You have $${p.money})`);
+      return;
+    }
     const total = p.gems.reduce((s, g) => s + (GEM_VALUE[g] || 0), 0);
-    p.gems = [];
-    p.bankBalance += total;
-    p.setMessage(`🚃 Mine cart delivered! $${total} deposited to bank account.`);
+    this.input.clear();
+    this.state = 'overlay';
+    this.ui.showMineCartSendPrompt(MINE_CART_SEND_COST, () => {
+      p.money -= MINE_CART_SEND_COST;
+      p.gems = [];
+      p.bankBalance += total;
+      p.setMessage(`🚃 Mine cart delivered! $${total} deposited to bank account. (-$${MINE_CART_SEND_COST} fee)`);
+      sounds.playTransaction();
+      this.ui.updateHUD(p);
+      this.state = 'playing';
+      this.input.clear();
+    }, () => {
+      this.state = 'playing';
+      this.input.clear();
+    });
+  }
+
+  /** Use a drill charge to clear a straight vertical 15 m path below the miner. */
+  _useDrill() {
+    const p = this.player;
+    if (p.drillCount <= 0) {
+      p.setMessage('🪛 No drill charges — buy one at the Shop.');
+      return;
+    }
+    if (p.y < 3) {
+      p.setMessage('🪛 The drill can only be used in the mine.');
+      return;
+    }
+
+    const fromY = p.y + 1;
+    const toY = p.y + DRILL_DEPTH;
+    this.world.ensureGenerated(toY + GEN_LOOKAHEAD);
+
+    for (let y = fromY; y <= toY; y++) {
+      const t = this.world.getTile(p.x, y);
+      if (t === TILE.DIRT) {
+        const content = this.world.digInto(p.x, y);
+        if (content === HIDDEN.STONE) {
+          const stoneData = this.world.getData(p.x, y);
+          if (stoneData && stoneData.innerGem) {
+            const gemTile = GEM_HIDDEN_TO_TILE[stoneData.innerGem];
+            this.world.setTile(p.x, y, gemTile !== undefined ? gemTile : TILE.EMPTY);
+          } else {
+            this.world.setTile(p.x, y, TILE.EMPTY);
+          }
+          this.world.setData(p.x, y, null);
+        }
+      } else if (t === TILE.STONE) {
+        const stoneData = this.world.getData(p.x, y);
+        if (stoneData && stoneData.innerGem) {
+          const gemTile = GEM_HIDDEN_TO_TILE[stoneData.innerGem];
+          this.world.setTile(p.x, y, gemTile !== undefined ? gemTile : TILE.EMPTY);
+        } else {
+          this.world.setTile(p.x, y, TILE.EMPTY);
+        }
+        this.world.setData(p.x, y, null);
+      }
+    }
+
+    p.drillCount--;
+    p.setMessage(`🪛 Drill used! Cleared ${DRILL_DEPTH} m straight down. (${p.drillCount} left)`);
     sounds.playTransaction();
     this.ui.updateHUD(p);
   }
@@ -802,6 +865,7 @@ class Game {
    */
   _explodeDynamite(dyn) {
     const { x: bx, y: by } = dyn;
+    const blastRadius = Math.random() < DYNAMITE_BIG_BLAST_CHANCE ? DYNAMITE_BIG_RADIUS : DYNAMITE_RADIUS;
     sounds.playDynamiteExplode();
 
     // Always clear the dynamite's own tile first (the blast loop skips surface
@@ -819,14 +883,14 @@ class Game {
     }
 
     // ── Mine collapse: blast radius geometrically reaches the surface ────────
-    // The topmost row the blast can reach is (by - DYNAMITE_RADIUS).
+    // The topmost row the blast can reach is (by - blastRadius).
     // If that row is above the mine boundary (y<3), the surface is affected.
-    const blastTouchesSurface = (by - DYNAMITE_RADIUS) < 3;
+    const blastTouchesSurface = (by - blastRadius) < 3;
 
     // Reveal / clear tiles in blast radius (mine rows only)
-    for (let dx = -DYNAMITE_RADIUS; dx <= DYNAMITE_RADIUS; dx++) {
-      for (let dy = -DYNAMITE_RADIUS; dy <= DYNAMITE_RADIUS; dy++) {
-        if (dx * dx + dy * dy > DYNAMITE_RADIUS * DYNAMITE_RADIUS) continue;
+    for (let dx = -blastRadius; dx <= blastRadius; dx++) {
+      for (let dy = -blastRadius; dy <= blastRadius; dy++) {
+        if (dx * dx + dy * dy > blastRadius * blastRadius) continue;
         const tx = bx + dx;
         const ty = by + dy;
         if (ty < 3) continue;  // Don't blast the surface
@@ -893,7 +957,7 @@ class Game {
         return;
       }
       p.setMessage(`💥 Too close to the blast! 2 damage (${p.hearts}/${p.maxHearts} ♥)`);
-    } else if (distSq <= DYNAMITE_RADIUS * DYNAMITE_RADIUS) {
+    } else if (distSq <= blastRadius * blastRadius) {
       const died = p.takeDamage();
       sounds.playHazardHit();
       if (died) {

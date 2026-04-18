@@ -129,6 +129,7 @@ const Storage = {
     p.genieWishes   = data.genieWishes   ?? 0;
 
     p.firstAidKits = data.firstAidKits;
+    p.drillCount   = data.drillCount ?? 0;
     p.hasMineCart  = data.hasMineCart  ?? false;
 
     p.hearts    = data.hearts;
@@ -226,6 +227,7 @@ function _serializePlayer(p) {
     genieWishes:   p.genieWishes,
 
     firstAidKits: p.firstAidKits,
+    drillCount:   p.drillCount,
     hasMineCart:  p.hasMineCart,
 
     hearts:    p.hearts,
