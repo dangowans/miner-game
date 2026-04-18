@@ -89,7 +89,7 @@ Available in Family Mode (stand at x=20 and press E):
 | 🏠 House Expansion | $1000 | Upgrade the house level (up to level 4) |
 | 🛗 Elevator Shaft | $500 | Build a shaft at x=23 with entry points every 5 m ($5/ride) |
 | ⛏ Mine Depth | $200 | Expand elevator depth by 50 m (up to 300 m) |
-| 🛒 Mine Cart | $200 | Press 🛒 (or **C**) to send all carried ore to your bank at bank value for a **$5 delivery fee** — requires a clear walkable path from your location to the mine exit; cannot use the elevator; blocked by water or lava |
+| 🛒 Mine Cart | $200 | Press 🛒 (or **C**) to send all carried ore to your bank account for a **$5 delivery fee** — requires a clear walkable path from your location to the mine exit; cannot use the elevator; blocked by water or lava |
 
 ---
 

@@ -769,7 +769,7 @@ class UI {
       <div class="section-label">MINE CART</div>
       <div class="${cartCls}" id="worker-cart-btn">
         🚃 Mine cart — <span class="price">$${MINE_CART_COST}</span>${cartNote}
-        <br><small>Press 🚃 (or C) to send all carried ore to your bank value instantly for $${MINE_CART_SEND_COST} — requires a clear path to the mine exit (no water or lava blocking the way; cannot use elevator).</small>
+        <br><small>Press 🚃 (or C) to send all carried ore to your bank account instantly for $${MINE_CART_SEND_COST} — requires a clear path to the mine exit (no water or lava blocking the way; cannot use elevator).</small>
       </div>
     `;
     this._openOverlay(onClose);
