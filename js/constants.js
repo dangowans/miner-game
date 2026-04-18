@@ -226,7 +226,7 @@ const SHOP_ITEMS = [
   {
     id:      'drill',
     name:    'Drill',
-    icon:    '🛠️',
+    icon:    '🪛',
     price:   100,
     desc:    'Use from inventory to drill 15 m straight down, clearing dirt and stone while revealing hidden content.',
     oneTime: false,

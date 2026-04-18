@@ -108,7 +108,7 @@ class UI {
         ? `💣×${player.dynamiteCount} [PLACING]`
         : `💣×${player.dynamiteCount}`);
     }
-    if (player.drillCount > 0) tools.push(`🛠️×${player.drillCount}`);
+    if (player.drillCount > 0) tools.push(`🪛×${player.drillCount}`);
     if (player.firstAidKits > 0) tools.push(`🩹×${player.firstAidKits}`);
 
     // Bank balance — show whenever the mine cart has been purchased
