@@ -1,5 +1,12 @@
 'use strict';
 
+const EMPTY_MURAL_CELL_SIZE      = 8;
+const EMPTY_MURAL_SEED_X         = 37;
+const EMPTY_MURAL_SEED_Y         = 53;
+const EMPTY_MURAL_OFFSET_X       = 7;
+const EMPTY_MURAL_OFFSET_Y       = 11;
+const EMPTY_MURAL_GLYPHS         = ['𐦂', '𖨆', '𐀪', '𖠋', '𓆟', '♥', '★'];
+
 /**
  * Renderer – draws the world and player onto the HTML5 Canvas.
  */
@@ -352,6 +359,43 @@ class Renderer {
       case TILE.EMPTY: {
         ctx.fillStyle = '#080808';
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        // Ancient wall markings occasionally appear in excavated mine corridors.
+        // They are purely decorative and persist because EMPTY tiles are not collected.
+        // Markings render as large murals that span 3×3 or 4×4 tiles
+        // (9 or 16 tiles each) to reward deeper exploration.
+        if (ty >= 3) {
+          const cellX     = Math.floor(tx / EMPTY_MURAL_CELL_SIZE);
+          const cellY     = Math.floor((ty - 3) / EMPTY_MURAL_CELL_SIZE);
+          const seed      = (cellX * EMPTY_MURAL_SEED_X) + (cellY * EMPTY_MURAL_SEED_Y);
+          const hasMural  = (seed % 3 === 0);
+
+          if (hasMural) {
+            const muralSpan  = (seed % 2 === 0) ? 3 : 4;
+            const maxOffset  = EMPTY_MURAL_CELL_SIZE - muralSpan;
+            const muralStartX = (cellX * EMPTY_MURAL_CELL_SIZE) + ((seed * EMPTY_MURAL_OFFSET_X) % (maxOffset + 1));
+            const muralStartY = 3 + (cellY * EMPTY_MURAL_CELL_SIZE) + ((seed * EMPTY_MURAL_OFFSET_Y) % (maxOffset + 1));
+            const inMuralX    = tx >= muralStartX && tx < muralStartX + muralSpan;
+            const inMuralY    = ty >= muralStartY && ty < muralStartY + muralSpan;
+
+            if (inMuralX && inMuralY) {
+              const glyph = EMPTY_MURAL_GLYPHS[Math.abs(seed) % EMPTY_MURAL_GLYPHS.length];
+              const muralPx = px - ((tx - muralStartX) * ts);
+              const muralPy = py - ((ty - muralStartY) * ts);
+              const muralSize = muralSpan * ts;
+
+              ctx.save();
+              ctx.beginPath();
+              ctx.rect(px + 1, py + 1, ts - 2, ts - 2);
+              ctx.clip();
+              ctx.fillStyle    = '#8a4b32'; // slightly lighter than uncovered dirt
+              ctx.font         = `bold ${Math.round(muralSize * 0.8)}px monospace`;
+              ctx.textAlign    = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(glyph, muralPx + (muralSize / 2), muralPy + (muralSize / 2));
+              ctx.restore();
+            }
+          }
+        }
         break;
       }
 
@@ -409,13 +453,9 @@ class Renderer {
           ctx.fillStyle = '#00b89a';
           ctx.fillRect(px + 3, py + 3, ts - 6, ts - 6);
           ctx.fillStyle = '#aaffee';
-          ctx.font      = '16px monospace';
+          ctx.font      = '20px monospace';
           ctx.textAlign = 'center';
-          ctx.fillText('⬆', cx, cy + 6);
-          ctx.fillStyle = '#ffffff';
-          ctx.beginPath();
-          ctx.arc(cx, cy + 8, 3, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.fillText('🌀', cx, cy + 8);
         } else {
           ctx.fillStyle = '#1040aa';
           ctx.fillRect(px, py, ts, ts);
@@ -505,23 +545,11 @@ class Renderer {
       }
 
       case TILE.STONE: {
-        ctx.fillStyle = '#484848';
+        ctx.fillStyle = '#303030';
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
-        ctx.fillStyle = '#686868';
-        ctx.fillRect(px + 1, py + 1, ts - 2, 3);
-        ctx.fillRect(px + 1, py + 1, 3,       ts - 2);
-        ctx.fillStyle = '#282828';
-        ctx.fillRect(px + 1, py + ts - 4, ts - 2, 3);
-        ctx.fillRect(px + ts - 4, py + 1, 3,       ts - 2);
-        ctx.strokeStyle = '#333';
-        ctx.lineWidth   = 1;
-        ctx.beginPath();
-        const cx1 = px + ((tx * 7 + ty * 11) % (ts - 10)) + 5;
-        const cy1 = py + ((tx * 13 + ty * 5) % (ts - 10)) + 5;
-        ctx.moveTo(cx1, cy1);
-        ctx.lineTo(cx1 + 6, cy1 + 4);
-        ctx.lineTo(cx1 + 10, cy1 + 2);
-        ctx.stroke();
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🪨', cx, cy + 8);
         break;
       }
 
@@ -531,7 +559,7 @@ class Renderer {
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         ctx.font      = '18px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('💣', cx, cy + 6);
+        ctx.fillText('🧨', cx, cy + 6);
         const d = world.getData(tx, ty);
         if (d) {
           const secs = Math.ceil(d.frames / 60);
@@ -602,7 +630,7 @@ class Renderer {
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         ctx.font      = '20px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('🧴', cx, cy + 8);
+        ctx.fillText('🫙', cx, cy + 8);
         break;
       }
 
@@ -660,7 +688,7 @@ class Renderer {
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         ctx.font      = '20px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('🦴', cx, cy + 8);
+        ctx.fillText('👣', cx, cy + 8);
         break;
       }
 
