@@ -143,7 +143,7 @@ const GEM_VALUE = Object.freeze({
 const ORE_NAME = Object.freeze({
   [HIDDEN.SILVER]:   '🥈 Silver',
   [HIDDEN.GOLD]:     '🥇 Gold',
-  [HIDDEN.PLATINUM]: '⬜ Platinum',
+  [HIDDEN.PLATINUM]: '🔹 Platinum',
   [HIDDEN.DIAMOND]:  '💎 Diamond',
   [HIDDEN.RUBY]:     '🔴 Ruby',
 });
@@ -220,7 +220,7 @@ const SHOP_ITEMS = [
     name:    'Dynamite',
     icon:    '🧨',
     price:   75,
-    desc:    'Press 🧨 to enter placement mode, then move in any direction to place. 5-second fuse — get clear!',
+    desc:    'Press 🧨 to enter placement mode, then move in any direction to place. 3-second fuse — get clear!',
     oneTime: false,
   },
   {
@@ -244,7 +244,7 @@ const SHOP_ITEMS = [
 // ---------------------------------------------------------------------------
 // Dynamite
 // ---------------------------------------------------------------------------
-const DYNAMITE_FUSE_FRAMES           = 300;  // ~5 seconds at 60 fps before detonation
+const DYNAMITE_FUSE_FRAMES           = 180;  // ~3 seconds at 60 fps before detonation
 const DYNAMITE_RADIUS                = 3;    // Blast radius in tiles (Euclidean)
 const DYNAMITE_CRITICAL_RADIUS       = 2;    // Within this many tiles: 2 hearts of damage
 const DYNAMITE_BIG_RADIUS            = 4;    // Occasional larger blast radius
@@ -391,7 +391,7 @@ const TILE_COLOR = {
   [TILE.EMPTY]:        '#1a1a1a',
   [TILE.SILVER]:       '#b0c0cc',
   [TILE.GOLD]:         '#d4a800',
-  [TILE.PLATINUM]:     '#c8dde8',
+  [TILE.PLATINUM]:     '#72b2cf',
   [TILE.WATER]:        '#1555cc',
   [TILE.LAVA]:         '#dd3300',
   [TILE.SHOVEL]:       '#ccaa44',

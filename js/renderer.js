@@ -403,7 +403,7 @@ class Renderer {
       // ── Ore tiles ──────────────────────────────────────────────────────────
       case TILE.SILVER:   this._drawOreVein(ctx, px, py, ts, tx, ty, '#9aaab4', '#c8d8e0', 'Ag'); break;
       case TILE.GOLD:     this._drawOreVein(ctx, px, py, ts, tx, ty, '#a07800', '#d4a800', 'Au'); break;
-      case TILE.PLATINUM: this._drawOreVein(ctx, px, py, ts, tx, ty, '#6888a0', '#b8ccd8', 'Pt'); break;
+      case TILE.PLATINUM: this._drawOreVein(ctx, px, py, ts, tx, ty, '#3d6f88', '#72b2cf', 'Pt'); break;
       case TILE.DIAMOND:  this._drawDiamond(ctx, px, py, ts, cx, cy, hs);                         break;
 
       // ── Unique ore ─────────────────────────────────────────────────────────

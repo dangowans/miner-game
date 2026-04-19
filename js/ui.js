@@ -58,7 +58,7 @@ class UI {
     const ORE_ICON = {
       [HIDDEN.SILVER]:   '🥈',
       [HIDDEN.GOLD]:     '🥇',
-      [HIDDEN.PLATINUM]: '⬜',
+      [HIDDEN.PLATINUM]: '🔹',
       [HIDDEN.DIAMOND]:  '💎',
       [HIDDEN.RUBY]:     '🔴',
     };
