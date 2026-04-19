@@ -84,10 +84,9 @@ class UI {
     if (player.treasureMapDepth > 0) tools.push(`🗺️${player.treasureMapDepth}m`);
     if (player.genieWishes > 0) tools.push(`🧞×${player.genieWishes}`);
     if (player.specialItems.has('rubber_boot'))  tools.push('🥾');
-    if (player.specialItems.has('helmet'))       tools.push('🛡️');
-    if (player.specialItems.has('armor'))        tools.push('🛡️');
-    if (player.specialItems.has('shield'))       tools.push('🛡️');
-    if (player.specialItems.has('sword'))        tools.push('🛡️');
+    const knightItemCount = ['helmet', 'armor', 'shield', 'sword']
+      .filter(item => player.specialItems.has(item)).length;
+    if (knightItemCount > 0) tools.push(`🛡️×${knightItemCount}`);
 
     if (player.specialItems.has('pocket_watch')) extraTools.push('⌚');
     if (player.specialItems.has('glasses'))      extraTools.push('🕶️');
@@ -1045,7 +1044,7 @@ class UI {
         <div class="overlay-centered">
           <p class="overlay-emoji">🐉⚔️</p>
           <p class="overlay-title" style="color:#f5c842"><em>"You slayed the enormous beast!"</em></p>
-          <p style="color:#88cc44"><em>"there be supper!"</em></p>
+          <p style="color:#88cc44"><em>"There be dragon chops!"</em></p>
           <button class="close-btn" id="overlay-close" style="border-color:#f5c842;color:#f5c842">
             Turn Back (Victorious)
           </button>
