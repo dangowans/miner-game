@@ -5,6 +5,7 @@ const EMPTY_MURAL_SEED_X         = 37;
 const EMPTY_MURAL_SEED_Y         = 53;
 const EMPTY_MURAL_OFFSET_X       = 7;
 const EMPTY_MURAL_OFFSET_Y       = 11;
+// Keep intentional duplicates from the requested symbol set to preserve weighting.
 const EMPTY_MURAL_GLYPHS         = [
   '𐦂', '𖨆', '𐀪', '𖠋', '𓆟',
   '𓂀', '𓂀', '𓂀', '𓋹', '𓁈', '𓃠', '𓆃', '☥', '𓅓', '𓆣',
