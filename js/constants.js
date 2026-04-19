@@ -218,9 +218,9 @@ const SHOP_ITEMS = [
   {
     id:      'dynamite',
     name:    'Dynamite',
-    icon:    '💣',
+    icon:    '🧨',
     price:   75,
-    desc:    'Press 💣 to enter placement mode, then move in any direction to place. 5-second fuse — get clear!',
+    desc:    'Press 🧨 to enter placement mode, then move in any direction to place. 5-second fuse — get clear!',
     oneTime: false,
   },
   {

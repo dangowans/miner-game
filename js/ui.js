@@ -92,12 +92,12 @@ class UI {
     if (player.specialItems.has('pocket_watch')) extraTools.push('⌚');
     if (player.specialItems.has('glasses'))      extraTools.push('🕶️');
     if (player.specialItems.has('skull'))        extraTools.push('💀');
-    if (player.specialItems.has('canteen'))      extraTools.push('🧴');
+    if (player.specialItems.has('canteen'))      extraTools.push('🫙');
     if (player.specialItems.has('lunchbox'))     extraTools.push('🍱');
     if (player.specialItems.has('tin_can'))      extraTools.push('🥫');
     if (player.specialItems.has('cash_bag'))     extraTools.push('💰');
     if (player.specialItems.has('scroll'))       extraTools.push('📜');
-    if (player.specialItems.has('fossil'))       extraTools.push('🦴');
+    if (player.specialItems.has('fossil'))       extraTools.push('👣');
     if (player.specialItems.has('newspaper'))    extraTools.push('📰');
     if (player.specialItems.has('broken_chain')) extraTools.push('⛓️');
     if (player.specialItems.has('old_coin'))     extraTools.push('🪙');
@@ -105,8 +105,8 @@ class UI {
     if (player.necklaceCount > 0)                tools.push(`📿×${player.necklaceCount}`);
     if (player.dynamiteCount > 0) {
       tools.push(player.placingDynamite
-        ? `💣×${player.dynamiteCount} [PLACING]`
-        : `💣×${player.dynamiteCount}`);
+        ? `🧨×${player.dynamiteCount} [PLACING]`
+        : `🧨×${player.dynamiteCount}`);
     }
     if (player.drillCount > 0) tools.push(`🪛×${player.drillCount}`);
     if (player.firstAidKits > 0) tools.push(`🩹×${player.firstAidKits}`);
@@ -153,7 +153,7 @@ class UI {
     // Dynamite button: enabled only when the player has dynamite
     if (this._btnDynamite) {
       this._btnDynamite.disabled = player.dynamiteCount === 0 && !player.placingDynamite;
-      this._btnDynamite.textContent = player.placingDynamite ? '✕💣' : '💣';
+      this._btnDynamite.textContent = player.placingDynamite ? '✕🧨' : '🧨';
       this._btnDynamite.style.borderColor = player.placingDynamite ? '#ff6600' : '';
     }
 

@@ -352,6 +352,16 @@ class Renderer {
       case TILE.EMPTY: {
         ctx.fillStyle = '#080808';
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        // Ancient wall markings occasionally appear in excavated mine corridors.
+        // They are purely decorative and persist because EMPTY tiles are not collected.
+        if (ty >= 3 && ((tx * 17 + ty * 23) % 11 === 0)) {
+          const glyphs = ['𐦂', '𖨆', '𐀪', '𖠋', '𓆟', '♥', '★'];
+          const glyph = glyphs[(tx * 5 + ty * 3) % glyphs.length];
+          ctx.fillStyle = '#3f1f14'; // dark dirt tone
+          ctx.font      = 'bold 14px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(glyph, cx, cy + 5);
+        }
         break;
       }
 
@@ -409,13 +419,9 @@ class Renderer {
           ctx.fillStyle = '#00b89a';
           ctx.fillRect(px + 3, py + 3, ts - 6, ts - 6);
           ctx.fillStyle = '#aaffee';
-          ctx.font      = '16px monospace';
+          ctx.font      = '20px monospace';
           ctx.textAlign = 'center';
-          ctx.fillText('⬆', cx, cy + 6);
-          ctx.fillStyle = '#ffffff';
-          ctx.beginPath();
-          ctx.arc(cx, cy + 8, 3, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.fillText('🌀', cx, cy + 8);
         } else {
           ctx.fillStyle = '#1040aa';
           ctx.fillRect(px, py, ts, ts);
@@ -505,23 +511,11 @@ class Renderer {
       }
 
       case TILE.STONE: {
-        ctx.fillStyle = '#484848';
+        ctx.fillStyle = '#303030';
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
-        ctx.fillStyle = '#686868';
-        ctx.fillRect(px + 1, py + 1, ts - 2, 3);
-        ctx.fillRect(px + 1, py + 1, 3,       ts - 2);
-        ctx.fillStyle = '#282828';
-        ctx.fillRect(px + 1, py + ts - 4, ts - 2, 3);
-        ctx.fillRect(px + ts - 4, py + 1, 3,       ts - 2);
-        ctx.strokeStyle = '#333';
-        ctx.lineWidth   = 1;
-        ctx.beginPath();
-        const cx1 = px + ((tx * 7 + ty * 11) % (ts - 10)) + 5;
-        const cy1 = py + ((tx * 13 + ty * 5) % (ts - 10)) + 5;
-        ctx.moveTo(cx1, cy1);
-        ctx.lineTo(cx1 + 6, cy1 + 4);
-        ctx.lineTo(cx1 + 10, cy1 + 2);
-        ctx.stroke();
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🪨', cx, cy + 8);
         break;
       }
 
@@ -531,7 +525,7 @@ class Renderer {
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         ctx.font      = '18px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('💣', cx, cy + 6);
+        ctx.fillText('🧨', cx, cy + 6);
         const d = world.getData(tx, ty);
         if (d) {
           const secs = Math.ceil(d.frames / 60);
@@ -602,7 +596,7 @@ class Renderer {
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         ctx.font      = '20px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('🧴', cx, cy + 8);
+        ctx.fillText('🫙', cx, cy + 8);
         break;
       }
 
@@ -660,7 +654,7 @@ class Renderer {
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         ctx.font      = '20px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('🦴', cx, cy + 8);
+        ctx.fillText('👣', cx, cy + 8);
         break;
       }
 

@@ -76,7 +76,7 @@ The pavement **cannot be crossed** downward except at the mine entrance (x=22–
 | 🪣 Bucket | $80 | Walk into spread **water** to clear it to empty — free passage, no heart cost (10 uses) |
 | 🧯 Fire Extinguisher | $120 | Walk into **lava** to convert it to stone (no damage; 10 uses) |
 | 🎒 Large Bag | $75 | Doubles ore carry capacity (10 → 20) |
-| 💣 Dynamite | $75 | Place a charge with a 5-second fuse; usually blasts in a 3-tile radius, with occasional larger explosions |
+| 🧨 Dynamite | $75 | Place a charge with a 5-second fuse; usually blasts in a 3-tile radius, with occasional larger explosions |
 | 🪛 Drill | $100 | Use from inventory to drill 15 m straight down, clearing dirt and stone and revealing hazards/ore/items without hazard spread |
 | 🩹 First Aid Kit | $65 | Restore health to full from inventory |
 
@@ -95,7 +95,7 @@ Available in Family Mode (stand at x=20 and press E):
 
 ## Hazards
 
-### 💧 Water Spring
+### 🌀 Water Spring
 - Hidden inside some dirt tiles.
 - When triggered (probe or dig-in), the source tile becomes **water** and the spring **floods up to 12 adjacent empty spaces**.
 - If flooding water hits lava, that lava tile turns into **stone**.

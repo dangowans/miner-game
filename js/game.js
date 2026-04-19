@@ -598,7 +598,7 @@ class Game {
       const what = hazardType === 'lava'         ? '🔥 Lava burn'
                  : hazardType === 'lava_source'  ? '🔥 Burned by erupting lava'
                  : hazardType === 'water'        ? '💧 Waded through water'
-                 : hazardType === 'water_source' ? '💧 Spring source — can\'t pass'
+                 : hazardType === 'water_source' ? '🌀 Spring source — can\'t pass'
                  : hazardType === 'gas'          ? '☣️ Gas leak!'
                  : '⚠️ Hazard hit';
       p.setMessage(`${what}! (${p.hearts}/${p.maxHearts} ♥ remaining)`);
@@ -636,7 +636,7 @@ class Game {
       p.setMessage('Dynamite placement cancelled.');
     } else if (p.dynamiteCount > 0) {
       p.placingDynamite = true;
-      p.setMessage('💣 Move in any direction to place dynamite, or press 💣 again to cancel.');
+      p.setMessage('🧨 Move in any direction to place dynamite, or press 🧨 again to cancel.');
     } else {
       p.setMessage('No dynamite — buy some at the Shop.');
     }
@@ -824,7 +824,7 @@ class Game {
     const isValidMine    = ty >= 3 && tile === TILE.EMPTY;
     const isValidSurface = ty < 3  && (tile === TILE.PAVEMENT || tile === TILE.SKY);
     if (!isValidMine && !isValidSurface) {
-      p.setMessage('💣 Can only place dynamite on empty mine tiles or open surface tiles.');
+      p.setMessage('🧨 Can only place dynamite on empty mine tiles or open surface tiles.');
       p.placingDynamite = false;
       return;
     }
@@ -834,7 +834,7 @@ class Game {
     this._dynamites.push({ x: tx, y: ty, frames: DYNAMITE_FUSE_FRAMES });
     p.dynamiteCount--;
     p.placingDynamite = false;
-    p.setMessage('💣 Dynamite placed! 5 seconds — RUN!');
+    p.setMessage('🧨 Dynamite placed! 5 seconds — RUN!');
     sounds.playDynamitePlace();
     this.ui.updateHUD(p);
   }
@@ -976,7 +976,7 @@ class Game {
 
   _onContentRevealed(content, _x, _y) {
     if (content === HIDDEN.WATER) {
-      this.player.setMessage('💧 A water spring burst open nearby!');
+      this.player.setMessage('🌀 A water spring burst open nearby!');
     } else if (content === HIDDEN.LAVA) {
       this.player.setMessage('🔥 Lava erupted nearby! Watch your step!');
     } else if (content === HIDDEN.GAS) {
@@ -1124,7 +1124,7 @@ class Game {
           p.specialItems.add('canteen');
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
-          this._showItemPickupOverlay('🧴', 'A dusty canteen. Still has a drop of water in it.');
+          this._showItemPickupOverlay('🫙', 'A dusty canteen. Still has a drop of water in it.');
         } else {
           this.world.setTile(x, y, TILE.EMPTY);
         }
@@ -1248,7 +1248,7 @@ class Game {
           p.specialItems.add(HIDDEN.FOSSIL);
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
-          this._showItemPickupOverlay('🦴', 'Fossilized footprints! Something enormous walked through here a very long time ago.');
+          this._showItemPickupOverlay('👣', 'Fossilized footprints! Something enormous walked through here a very long time ago.');
         } else {
           this.world.setTile(x, y, TILE.EMPTY);
         }
@@ -1779,13 +1779,13 @@ class Game {
     if (p.hasRing)         items.push('💍 Ring');
     if (p.hasLantern)      items.push('🔦 Lantern');
     if (p.hasRadio)        items.push('📻 Radio');
-    if (p.dynamiteCount)   items.push(`💣 Dynamite ×${p.dynamiteCount}`);
+    if (p.dynamiteCount)   items.push(`🧨 Dynamite ×${p.dynamiteCount}`);
     if (p.firstAidKits)    items.push(`🩹 First Aid ×${p.firstAidKits}`);
     for (const si of p.specialItems) {
       const icons = {
         rubber_boot: '🥾', pocket_watch: '⌚', glasses: '🕶️', skull: '💀',
-        canteen: '🧴', lunchbox: '🍱', tin_can: '🥫',
-        cash_bag: '💰', scroll: '📜', fossil: '🦴', newspaper: '📰',
+        canteen: '🫙', lunchbox: '🍱', tin_can: '🥫',
+        cash_bag: '💰', scroll: '📜', fossil: '👣', newspaper: '📰',
         broken_chain: '⛓️', old_coin: '🪙', bottle: '🍾',
         helmet: '⛑️', armor: '🪬', shield: '🛡️', sword: '⚔️',
       };
