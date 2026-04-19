@@ -354,6 +354,7 @@ class Renderer {
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         // Ancient wall markings occasionally appear in excavated mine corridors.
         // They are purely decorative and persist because EMPTY tiles are not collected.
+        // Coprime multipliers + modulo keep placement deterministic but sparse.
         if (ty >= 3 && ((tx * 17 + ty * 23) % 11 === 0)) {
           const glyphs = ['𐦂', '𖨆', '𐀪', '𖠋', '𓆟', '♥', '★'];
           const glyph = glyphs[(tx * 5 + ty * 3) % glyphs.length];
