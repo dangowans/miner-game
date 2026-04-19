@@ -101,6 +101,19 @@ class UI {
     if (player.specialItems.has('broken_chain')) extraTools.push('⛓️');
     if (player.specialItems.has('old_coin'))     extraTools.push('🪙');
     if (player.specialItems.has('bottle'))       extraTools.push('🍾');
+    if (player.specialItems.has('anchor'))       extraTools.push('⚓');
+    if (player.specialItems.has('urn'))          extraTools.push('⚱️');
+    if (player.specialItems.has('old_key'))      extraTools.push('🗝️');
+    if (player.specialItems.has('hourglass'))    extraTools.push('⏳');
+    if (player.specialItems.has('old_mirror'))   extraTools.push('🪞');
+    if (player.specialItems.has('picture_frame')) extraTools.push('🖼️');
+    if (player.specialItems.has('tea_pot'))      extraTools.push('🫖');
+    if (player.specialItems.has('guitar'))       extraTools.push('🎸');
+    const chessPieceCount = [
+      'white_king', 'white_queen', 'white_rook', 'white_bishop', 'white_knight', 'white_pawn',
+      'black_king', 'black_queen', 'black_rook', 'black_bishop', 'black_knight', 'black_pawn',
+    ].filter(item => player.specialItems.has(item)).length;
+    if (chessPieceCount > 0) extraTools.push(`♟×${chessPieceCount}`);
     if (player.necklaceCount > 0)                tools.push(`📿×${player.necklaceCount}`);
     if (player.dynamiteCount > 0) {
       tools.push(player.placingDynamite

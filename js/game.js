@@ -1520,6 +1520,62 @@ class Game {
         break;
       }
 
+      // ── Deeper-mine collectibles + chess set pieces ─────────────────────
+      case TILE.ANCHOR:
+      case TILE.URN:
+      case TILE.OLD_KEY:
+      case TILE.HOURGLASS:
+      case TILE.OLD_MIRROR:
+      case TILE.PICTURE_FRAME:
+      case TILE.TEA_POT:
+      case TILE.GUITAR:
+      case TILE.WHITE_KING:
+      case TILE.WHITE_QUEEN:
+      case TILE.WHITE_ROOK:
+      case TILE.WHITE_BISHOP:
+      case TILE.WHITE_KNIGHT:
+      case TILE.WHITE_PAWN:
+      case TILE.BLACK_KING:
+      case TILE.BLACK_QUEEN:
+      case TILE.BLACK_ROOK:
+      case TILE.BLACK_BISHOP:
+      case TILE.BLACK_KNIGHT:
+      case TILE.BLACK_PAWN: {
+        const collectibleByTile = {
+          [TILE.ANCHOR]: { hidden: HIDDEN.ANCHOR, icon: '⚓', text: 'An old anchor. Strange thing to find this far underground.' },
+          [TILE.URN]: { hidden: HIDDEN.URN, icon: '⚱️', text: 'An urn sealed shut for ages. You carefully pack it away.' },
+          [TILE.OLD_KEY]: { hidden: HIDDEN.OLD_KEY, icon: '🗝️', text: 'An old key. Whatever lock it fits is probably long gone.' },
+          [TILE.HOURGLASS]: { hidden: HIDDEN.HOURGLASS, icon: '⏳', text: 'An hourglass still half full — time moves strangely down here.' },
+          [TILE.OLD_MIRROR]: { hidden: HIDDEN.OLD_MIRROR, icon: '🪞', text: 'An old mirror. Your reflection looks tired, but determined.' },
+          [TILE.PICTURE_FRAME]: { hidden: HIDDEN.PICTURE_FRAME, icon: '🖼️', text: 'A picture frame with no photo. Someone left in a hurry.' },
+          [TILE.TEA_POT]: { hidden: HIDDEN.TEA_POT, icon: '🫖', text: 'A dented tea pot. It rattles softly as you move.' },
+          [TILE.GUITAR]: { hidden: HIDDEN.GUITAR, icon: '🎸', text: 'A weathered guitar. One string remains perfectly in tune.' },
+          [TILE.WHITE_KING]: { hidden: HIDDEN.WHITE_KING, icon: '♔', text: 'You found the white king chess piece.' },
+          [TILE.WHITE_QUEEN]: { hidden: HIDDEN.WHITE_QUEEN, icon: '♕', text: 'You found the white queen chess piece.' },
+          [TILE.WHITE_ROOK]: { hidden: HIDDEN.WHITE_ROOK, icon: '♖', text: 'You found the white rook chess piece.' },
+          [TILE.WHITE_BISHOP]: { hidden: HIDDEN.WHITE_BISHOP, icon: '♗', text: 'You found the white bishop chess piece.' },
+          [TILE.WHITE_KNIGHT]: { hidden: HIDDEN.WHITE_KNIGHT, icon: '♘', text: 'You found the white knight chess piece.' },
+          [TILE.WHITE_PAWN]: { hidden: HIDDEN.WHITE_PAWN, icon: '♙', text: 'You found the white pawn chess piece.' },
+          [TILE.BLACK_KING]: { hidden: HIDDEN.BLACK_KING, icon: '♚', text: 'You found the black king chess piece.' },
+          [TILE.BLACK_QUEEN]: { hidden: HIDDEN.BLACK_QUEEN, icon: '♛', text: 'You found the black queen chess piece.' },
+          [TILE.BLACK_ROOK]: { hidden: HIDDEN.BLACK_ROOK, icon: '♜', text: 'You found the black rook chess piece.' },
+          [TILE.BLACK_BISHOP]: { hidden: HIDDEN.BLACK_BISHOP, icon: '♝', text: 'You found the black bishop chess piece.' },
+          [TILE.BLACK_KNIGHT]: { hidden: HIDDEN.BLACK_KNIGHT, icon: '♞', text: 'You found the black knight chess piece.' },
+          [TILE.BLACK_PAWN]: { hidden: HIDDEN.BLACK_PAWN, icon: '♟', text: 'You found the black pawn chess piece.' },
+        };
+        const collectible = collectibleByTile[tile];
+        if (collectible && !p.specialItems.has(collectible.hidden)) {
+          p.specialItems.add(collectible.hidden);
+          this.world.setTile(x, y, TILE.EMPTY);
+          sounds.playItemPickup();
+          this._showItemPickupOverlay(collectible.icon, collectible.text);
+          this.ui.updateHUD(p);
+        } else {
+          this.world.setTile(x, y, TILE.EMPTY);
+        }
+        break;
+      }
+
       // ── Dowsing rod – instantly reveals adjacent water hazards ─────────
       case TILE.DOWSING_ROD: {
         if (!p.hasDowsingRod) {

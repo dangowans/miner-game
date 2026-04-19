@@ -800,6 +800,56 @@ class Renderer {
         break;
       }
 
+      case TILE.ANCHOR:
+      case TILE.URN:
+      case TILE.OLD_KEY:
+      case TILE.HOURGLASS:
+      case TILE.OLD_MIRROR:
+      case TILE.PICTURE_FRAME:
+      case TILE.TEA_POT:
+      case TILE.GUITAR:
+      case TILE.WHITE_KING:
+      case TILE.WHITE_QUEEN:
+      case TILE.WHITE_ROOK:
+      case TILE.WHITE_BISHOP:
+      case TILE.WHITE_KNIGHT:
+      case TILE.WHITE_PAWN:
+      case TILE.BLACK_KING:
+      case TILE.BLACK_QUEEN:
+      case TILE.BLACK_ROOK:
+      case TILE.BLACK_BISHOP:
+      case TILE.BLACK_KNIGHT:
+      case TILE.BLACK_PAWN: {
+        const iconByTile = {
+          [TILE.ANCHOR]: '⚓',
+          [TILE.URN]: '⚱️',
+          [TILE.OLD_KEY]: '🗝️',
+          [TILE.HOURGLASS]: '⏳',
+          [TILE.OLD_MIRROR]: '🪞',
+          [TILE.PICTURE_FRAME]: '🖼️',
+          [TILE.TEA_POT]: '🫖',
+          [TILE.GUITAR]: '🎸',
+          [TILE.WHITE_KING]: '♔',
+          [TILE.WHITE_QUEEN]: '♕',
+          [TILE.WHITE_ROOK]: '♖',
+          [TILE.WHITE_BISHOP]: '♗',
+          [TILE.WHITE_KNIGHT]: '♘',
+          [TILE.WHITE_PAWN]: '♙',
+          [TILE.BLACK_KING]: '♚',
+          [TILE.BLACK_QUEEN]: '♛',
+          [TILE.BLACK_ROOK]: '♜',
+          [TILE.BLACK_BISHOP]: '♝',
+          [TILE.BLACK_KNIGHT]: '♞',
+          [TILE.BLACK_PAWN]: '♟',
+        };
+        ctx.fillStyle = '#111';
+        ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(iconByTile[t] || '❔', cx, cy + 8);
+        break;
+      }
+
       case TILE.DOWSING_ROD: {
         ctx.fillStyle = '#111';
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
