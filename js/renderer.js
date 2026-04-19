@@ -5,7 +5,7 @@ const EMPTY_MURAL_SEED_X         = 37;
 const EMPTY_MURAL_SEED_Y         = 53;
 const EMPTY_MURAL_OFFSET_X       = 7;
 const EMPTY_MURAL_OFFSET_Y       = 11;
-const EMPTY_MURAL_GLYPHS         = ['𐦂', '𖨆', '𐀪', '𖠋', '𓆟', '♡', '★'];
+const EMPTY_MURAL_GLYPHS         = ['𐦂', '𖨆', '𐀪', '𖠋', '𓆟', '♡', '☆'];
 
 /**
  * Renderer – draws the world and player onto the HTML5 Canvas.
@@ -388,7 +388,7 @@ class Renderer {
               ctx.beginPath();
               ctx.rect(px + 1, py + 1, ts - 2, ts - 2);
               ctx.clip();
-              ctx.fillStyle    = '#8b7a54'; // higher contrast so murals remain visible
+              ctx.fillStyle    = '#7f6f4c'; // higher contrast so murals remain visible
               ctx.font         = `bold ${Math.round(muralSize * 0.8)}px monospace`;
               ctx.textAlign    = 'center';
               ctx.textBaseline = 'middle';
@@ -403,7 +403,7 @@ class Renderer {
       // ── Ore tiles ──────────────────────────────────────────────────────────
       case TILE.SILVER:   this._drawOreVein(ctx, px, py, ts, tx, ty, '#9aaab4', '#c8d8e0', 'Ag'); break;
       case TILE.GOLD:     this._drawOreVein(ctx, px, py, ts, tx, ty, '#a07800', '#d4a800', 'Au'); break;
-      case TILE.PLATINUM: this._drawOreVein(ctx, px, py, ts, tx, ty, '#6888a0', '#b8ccd8', 'Pt'); break;
+      case TILE.PLATINUM: this._drawOreVein(ctx, px, py, ts, tx, ty, '#3d6f88', '#72b2cf', 'Pt'); break;
       case TILE.DIAMOND:  this._drawDiamond(ctx, px, py, ts, cx, cy, hs);                         break;
 
       // ── Unique ore ─────────────────────────────────────────────────────────
