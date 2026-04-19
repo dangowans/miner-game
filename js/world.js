@@ -75,7 +75,7 @@ class World {
     const xRange = MINE_ENT_X_MIN - 2;   // 20 safe columns (x ∈ [1, 20])
     // Mine starts at y=3, so world-y = mine_depth + 2.
     // Extended mine starts beyond depth 100 (world-y > 102).
-    return [
+    const positions = [
       // ── Existing unique items ──────────────────────────────────────────────
       { content: HIDDEN.RUBY,         y: 21 + Math.floor(rng() * 80),  x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.RUBBER_BOOT,  y:  9 + Math.floor(rng() * 40),  x: 1 + Math.floor(rng() * xRange) },
@@ -105,6 +105,26 @@ class World {
       { content: HIDDEN.ARMOR,        y: 135 + Math.floor(rng() * 60), x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.SHIELD,       y: 155 + Math.floor(rng() * 60), x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.SWORD,        y: 175 + Math.floor(rng() * 80), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.ANCHOR,       y: 110 + Math.floor(rng() * 80), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.URN,          y: 120 + Math.floor(rng() * 90), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.OLD_KEY,      y: 130 + Math.floor(rng() * 90), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.HOURGLASS,    y: 140 + Math.floor(rng() * 95), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.OLD_MIRROR,   y: 150 + Math.floor(rng() * 95), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.PICTURE_FRAME, y: 160 + Math.floor(rng() * 95), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.TEA_POT,      y: 170 + Math.floor(rng() * 90), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.GUITAR,       y: 180 + Math.floor(rng() * 90), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.WHITE_KING,   y: 115 + Math.floor(rng() * 85), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.WHITE_QUEEN,  y: 120 + Math.floor(rng() * 85), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.WHITE_ROOK,   y: 125 + Math.floor(rng() * 90), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.WHITE_BISHOP, y: 130 + Math.floor(rng() * 90), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.WHITE_KNIGHT, y: 135 + Math.floor(rng() * 90), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.WHITE_PAWN,   y: 140 + Math.floor(rng() * 95), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.BLACK_KING,   y: 145 + Math.floor(rng() * 95), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.BLACK_QUEEN,  y: 150 + Math.floor(rng() * 95), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.BLACK_ROOK,   y: 155 + Math.floor(rng() * 95), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.BLACK_BISHOP, y: 160 + Math.floor(rng() * 95), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.BLACK_KNIGHT, y: 165 + Math.floor(rng() * 95), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.BLACK_PAWN,   y: 170 + Math.floor(rng() * 95), x: 1 + Math.floor(rng() * xRange) },
 
       // ── Functional utility items (midway in main mine) ────────────────────
       { content: HIDDEN.DOWSING_ROD,  y: 17 + Math.floor(rng() * 30),  x: 1 + Math.floor(rng() * xRange) },
@@ -119,6 +139,21 @@ class World {
       // ── Genie lamp (mid-mine, depth 25–60 m, world-y 27–62) ──────────────
       { content: HIDDEN.GENIE_LAMP, y: 27 + Math.floor(rng() * 36), x: 1 + Math.floor(rng() * xRange) },
     ];
+
+    // Ensure unique positions so no one-off collectible gets overwritten by another.
+    const used = new Set();
+    for (const pos of positions) {
+      let key = `${pos.x},${pos.y}`;
+      let attempts = 0;
+      while (used.has(key) && attempts < xRange * 200) {
+        pos.x = (pos.x % xRange) + 1; // Keep x in [1, 20]
+        if (pos.x === 1) pos.y += 1;
+        key = `${pos.x},${pos.y}`;
+        attempts++;
+      }
+      used.add(key);
+    }
+    return positions;
   }
 
   // -------------------------------------------------------------------------
@@ -179,6 +214,26 @@ class World {
           case HIDDEN.ARMOR:          return !player.specialItems.has(HIDDEN.ARMOR);
           case HIDDEN.SHIELD:         return !player.specialItems.has(HIDDEN.SHIELD);
           case HIDDEN.SWORD:          return !player.specialItems.has(HIDDEN.SWORD);
+          case HIDDEN.ANCHOR:         return !player.specialItems.has(HIDDEN.ANCHOR);
+          case HIDDEN.URN:            return !player.specialItems.has(HIDDEN.URN);
+          case HIDDEN.OLD_KEY:        return !player.specialItems.has(HIDDEN.OLD_KEY);
+          case HIDDEN.HOURGLASS:      return !player.specialItems.has(HIDDEN.HOURGLASS);
+          case HIDDEN.OLD_MIRROR:     return !player.specialItems.has(HIDDEN.OLD_MIRROR);
+          case HIDDEN.PICTURE_FRAME:  return !player.specialItems.has(HIDDEN.PICTURE_FRAME);
+          case HIDDEN.TEA_POT:        return !player.specialItems.has(HIDDEN.TEA_POT);
+          case HIDDEN.GUITAR:         return !player.specialItems.has(HIDDEN.GUITAR);
+          case HIDDEN.WHITE_KING:     return !player.specialItems.has(HIDDEN.WHITE_KING);
+          case HIDDEN.WHITE_QUEEN:    return !player.specialItems.has(HIDDEN.WHITE_QUEEN);
+          case HIDDEN.WHITE_ROOK:     return !player.specialItems.has(HIDDEN.WHITE_ROOK);
+          case HIDDEN.WHITE_BISHOP:   return !player.specialItems.has(HIDDEN.WHITE_BISHOP);
+          case HIDDEN.WHITE_KNIGHT:   return !player.specialItems.has(HIDDEN.WHITE_KNIGHT);
+          case HIDDEN.WHITE_PAWN:     return !player.specialItems.has(HIDDEN.WHITE_PAWN);
+          case HIDDEN.BLACK_KING:     return !player.specialItems.has(HIDDEN.BLACK_KING);
+          case HIDDEN.BLACK_QUEEN:    return !player.specialItems.has(HIDDEN.BLACK_QUEEN);
+          case HIDDEN.BLACK_ROOK:     return !player.specialItems.has(HIDDEN.BLACK_ROOK);
+          case HIDDEN.BLACK_BISHOP:   return !player.specialItems.has(HIDDEN.BLACK_BISHOP);
+          case HIDDEN.BLACK_KNIGHT:   return !player.specialItems.has(HIDDEN.BLACK_KNIGHT);
+          case HIDDEN.BLACK_PAWN:     return !player.specialItems.has(HIDDEN.BLACK_PAWN);
           case HIDDEN.RING:           return !player.hasRing;
           case HIDDEN.LANTERN:        return !player.hasLantern;
           case HIDDEN.RADIO:          return !player.hasRadio;
@@ -553,6 +608,26 @@ class World {
       case HIDDEN.ARMOR:        this.setTile(x, y, TILE.ARMOR);        break;
       case HIDDEN.SHIELD:       this.setTile(x, y, TILE.SHIELD);       break;
       case HIDDEN.SWORD:        this.setTile(x, y, TILE.SWORD);        break;
+      case HIDDEN.ANCHOR:       this.setTile(x, y, TILE.ANCHOR);       break;
+      case HIDDEN.URN:          this.setTile(x, y, TILE.URN);          break;
+      case HIDDEN.OLD_KEY:      this.setTile(x, y, TILE.OLD_KEY);      break;
+      case HIDDEN.HOURGLASS:    this.setTile(x, y, TILE.HOURGLASS);    break;
+      case HIDDEN.OLD_MIRROR:   this.setTile(x, y, TILE.OLD_MIRROR);   break;
+      case HIDDEN.PICTURE_FRAME: this.setTile(x, y, TILE.PICTURE_FRAME); break;
+      case HIDDEN.TEA_POT:      this.setTile(x, y, TILE.TEA_POT);      break;
+      case HIDDEN.GUITAR:       this.setTile(x, y, TILE.GUITAR);       break;
+      case HIDDEN.WHITE_KING:   this.setTile(x, y, TILE.WHITE_KING);   break;
+      case HIDDEN.WHITE_QUEEN:  this.setTile(x, y, TILE.WHITE_QUEEN);  break;
+      case HIDDEN.WHITE_ROOK:   this.setTile(x, y, TILE.WHITE_ROOK);   break;
+      case HIDDEN.WHITE_BISHOP: this.setTile(x, y, TILE.WHITE_BISHOP); break;
+      case HIDDEN.WHITE_KNIGHT: this.setTile(x, y, TILE.WHITE_KNIGHT); break;
+      case HIDDEN.WHITE_PAWN:   this.setTile(x, y, TILE.WHITE_PAWN);   break;
+      case HIDDEN.BLACK_KING:   this.setTile(x, y, TILE.BLACK_KING);   break;
+      case HIDDEN.BLACK_QUEEN:  this.setTile(x, y, TILE.BLACK_QUEEN);  break;
+      case HIDDEN.BLACK_ROOK:   this.setTile(x, y, TILE.BLACK_ROOK);   break;
+      case HIDDEN.BLACK_BISHOP: this.setTile(x, y, TILE.BLACK_BISHOP); break;
+      case HIDDEN.BLACK_KNIGHT: this.setTile(x, y, TILE.BLACK_KNIGHT); break;
+      case HIDDEN.BLACK_PAWN:   this.setTile(x, y, TILE.BLACK_PAWN);   break;
       case HIDDEN.DOWSING_ROD:  this.setTile(x, y, TILE.DOWSING_ROD);  break;
       case HIDDEN.HEAT_VISION:  this.setTile(x, y, TILE.HEAT_VISION);  break;
       case HIDDEN.TREASURE_MAP:   this.setTile(x, y, TILE.TREASURE_MAP);   break;
@@ -656,6 +731,26 @@ class World {
       case TILE.ARMOR:
       case TILE.SHIELD:
       case TILE.SWORD:
+      case TILE.ANCHOR:
+      case TILE.URN:
+      case TILE.OLD_KEY:
+      case TILE.HOURGLASS:
+      case TILE.OLD_MIRROR:
+      case TILE.PICTURE_FRAME:
+      case TILE.TEA_POT:
+      case TILE.GUITAR:
+      case TILE.WHITE_KING:
+      case TILE.WHITE_QUEEN:
+      case TILE.WHITE_ROOK:
+      case TILE.WHITE_BISHOP:
+      case TILE.WHITE_KNIGHT:
+      case TILE.WHITE_PAWN:
+      case TILE.BLACK_KING:
+      case TILE.BLACK_QUEEN:
+      case TILE.BLACK_ROOK:
+      case TILE.BLACK_BISHOP:
+      case TILE.BLACK_KNIGHT:
+      case TILE.BLACK_PAWN:
       case TILE.DOWSING_ROD:
       case TILE.HEAT_VISION:
       case TILE.TREASURE_MAP:

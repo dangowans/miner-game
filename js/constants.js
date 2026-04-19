@@ -80,6 +80,26 @@ const TILE = Object.freeze({
   TREASURE_CHEST:56,   // Treasure chest in the extended mine – contains gems worth $5,000
   GAS:           57,   // Gas leak – impassable cloud of toxic gas; deals 1 heart on entry (no spread)
   GENIE_LAMP:    58,   // Genie lamp – grants up to 3 wishes to continue after a game over
+  ANCHOR:        59,   // Hidden anchor – extended mine collectible
+  URN:           60,   // Hidden urn – extended mine collectible
+  OLD_KEY:       61,   // Hidden old key – extended mine collectible
+  HOURGLASS:     62,   // Hidden hourglass – extended mine collectible
+  OLD_MIRROR:    63,   // Hidden old mirror – extended mine collectible
+  PICTURE_FRAME: 64,   // Hidden picture frame – extended mine collectible
+  TEA_POT:       65,   // Hidden tea pot – extended mine collectible
+  GUITAR:        66,   // Hidden guitar – extended mine collectible
+  WHITE_KING:    67,   // White king chess piece
+  WHITE_QUEEN:   68,   // White queen chess piece
+  WHITE_ROOK:    69,   // White rook chess piece
+  WHITE_BISHOP:  70,   // White bishop chess piece
+  WHITE_KNIGHT:  71,   // White knight chess piece
+  WHITE_PAWN:    72,   // White pawn chess piece
+  BLACK_KING:    73,   // Black king chess piece
+  BLACK_QUEEN:   74,   // Black queen chess piece
+  BLACK_ROOK:    75,   // Black rook chess piece
+  BLACK_BISHOP:  76,   // Black bishop chess piece
+  BLACK_KNIGHT:  77,   // Black knight chess piece
+  BLACK_PAWN:    78,   // Black pawn chess piece
 });
 
 // ---------------------------------------------------------------------------
@@ -126,6 +146,26 @@ const HIDDEN = Object.freeze({
   TREASURE_CHEST: 'treasure_chest', // Unique – treasure chest in the extended mine (>100 m)
   GAS:            'gas',            // Gas leak – toxic cloud; deals 1 heart on entry (no spread)
   GENIE_LAMP:     'genie_lamp',     // Unique – grants up to 3 wishes (game-over continues)
+  ANCHOR:         'anchor',         // Unique – extended mine collectible
+  URN:            'urn',            // Unique – extended mine collectible
+  OLD_KEY:        'old_key',        // Unique – extended mine collectible
+  HOURGLASS:      'hourglass',      // Unique – extended mine collectible
+  OLD_MIRROR:     'old_mirror',     // Unique – extended mine collectible
+  PICTURE_FRAME:  'picture_frame',  // Unique – extended mine collectible
+  TEA_POT:        'tea_pot',        // Unique – extended mine collectible
+  GUITAR:         'guitar',         // Unique – extended mine collectible
+  WHITE_KING:     'white_king',     // Unique – chess collectible
+  WHITE_QUEEN:    'white_queen',    // Unique – chess collectible
+  WHITE_ROOK:     'white_rook',     // Unique – chess collectible
+  WHITE_BISHOP:   'white_bishop',   // Unique – chess collectible
+  WHITE_KNIGHT:   'white_knight',   // Unique – chess collectible
+  WHITE_PAWN:     'white_pawn',     // Unique – chess collectible
+  BLACK_KING:     'black_king',     // Unique – chess collectible
+  BLACK_QUEEN:    'black_queen',    // Unique – chess collectible
+  BLACK_ROOK:     'black_rook',     // Unique – chess collectible
+  BLACK_BISHOP:   'black_bishop',   // Unique – chess collectible
+  BLACK_KNIGHT:   'black_knight',   // Unique – chess collectible
+  BLACK_PAWN:     'black_pawn',     // Unique – chess collectible
 });
 
 // ---------------------------------------------------------------------------
@@ -442,6 +482,26 @@ const TILE_COLOR = {
   [TILE.TREASURE_CHEST]: '#201000',   // Treasure chest – very dark gold-brown
   [TILE.GAS]:            '#2a3800',   // Gas leak – dark sickly yellow-green
   [TILE.GENIE_LAMP]:     '#1a1000',   // Genie lamp – dark burnished gold-brown
+  [TILE.ANCHOR]:         '#0a0a0a',   // Hidden anchor – very dark
+  [TILE.URN]:            '#0a0a0a',   // Hidden urn – very dark
+  [TILE.OLD_KEY]:        '#0a0a0a',   // Hidden old key – very dark
+  [TILE.HOURGLASS]:      '#0a0a0a',   // Hidden hourglass – very dark
+  [TILE.OLD_MIRROR]:     '#0a0a0a',   // Hidden old mirror – very dark
+  [TILE.PICTURE_FRAME]:  '#0a0a0a',   // Hidden picture frame – very dark
+  [TILE.TEA_POT]:        '#0a0a0a',   // Hidden tea pot – very dark
+  [TILE.GUITAR]:         '#0a0a0a',   // Hidden guitar – very dark
+  [TILE.WHITE_KING]:     '#0a0a0a',   // White king chess piece – hidden
+  [TILE.WHITE_QUEEN]:    '#0a0a0a',   // White queen chess piece – hidden
+  [TILE.WHITE_ROOK]:     '#0a0a0a',   // White rook chess piece – hidden
+  [TILE.WHITE_BISHOP]:   '#0a0a0a',   // White bishop chess piece – hidden
+  [TILE.WHITE_KNIGHT]:   '#0a0a0a',   // White knight chess piece – hidden
+  [TILE.WHITE_PAWN]:     '#0a0a0a',   // White pawn chess piece – hidden
+  [TILE.BLACK_KING]:     '#0a0a0a',   // Black king chess piece – hidden
+  [TILE.BLACK_QUEEN]:    '#0a0a0a',   // Black queen chess piece – hidden
+  [TILE.BLACK_ROOK]:     '#0a0a0a',   // Black rook chess piece – hidden
+  [TILE.BLACK_BISHOP]:   '#0a0a0a',   // Black bishop chess piece – hidden
+  [TILE.BLACK_KNIGHT]:   '#0a0a0a',   // Black knight chess piece – hidden
+  [TILE.BLACK_PAWN]:     '#0a0a0a',   // Black pawn chess piece – hidden
 };
 
 // Ore tile types that can be destroyed when a hazard spreads over them
