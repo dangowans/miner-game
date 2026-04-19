@@ -5,7 +5,13 @@ const EMPTY_MURAL_SEED_X         = 37;
 const EMPTY_MURAL_SEED_Y         = 53;
 const EMPTY_MURAL_OFFSET_X       = 7;
 const EMPTY_MURAL_OFFSET_Y       = 11;
-const EMPTY_MURAL_GLYPHS         = ['𐦂', '𖨆', '𐀪', '𖠋', '𓆟', '♡', '☆'];
+const EMPTY_MURAL_GLYPHS         = [
+  '𐦂', '𖨆', '𐀪', '𖠋', '𓆟',
+  '𓂀', '𓂀', '𓂀', '𓋹', '𓁈', '𓃠', '𓆃', '☥', '𓅓', '𓆣',
+  '𓀂', '𓀬', '𓁅', '𓁅', '𓃂', '𓄆', '𓃻', '𓀛',
+  '𓅰', '𓅬', '𓅭', '𓅮', '𓅯',
+  '𓆌', '𓃹', '𓃒', '𓅃', '𓆝',
+];
 
 /**
  * Renderer – draws the world and player onto the HTML5 Canvas.
