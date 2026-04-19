@@ -539,9 +539,9 @@ class Game {
       this._onContentRevealed(content, exitX, p.y);
       const newTile = this.world.getTile(exitX, p.y);
       if (newTile === TILE.STONE) { sounds.playTinkStone(); return; }
-      if (newTile === TILE.LAVA)  { this._enterLava(p, exitX, p.y);  return; }
-      if (newTile === TILE.WATER) { this._enterWater(p, exitX, p.y); return; }
-      if (newTile === TILE.GAS)   { this._enterGas(p, exitX, p.y);   return; }
+      if (newTile === TILE.LAVA)  { p.inElevator = false; this._enterLava(p, exitX, p.y);  return; }
+      if (newTile === TILE.WATER) { p.inElevator = false; this._enterWater(p, exitX, p.y); return; }
+      if (newTile === TILE.GAS)   { p.inElevator = false; this._enterGas(p, exitX, p.y);   return; }
       if (this.world.isPassable(exitX, p.y)) {
         p.inElevator = false;
         p.x = exitX;
@@ -1310,7 +1310,7 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           const count = KNIGHT_ITEMS.filter(i => p.specialItems.has(i)).length;
-          this._showItemPickupOverlay('⛑️', `A knight\'s helmet! You feel more courageous. (Knight item ${count}/4)`);
+          this._showItemPickupOverlay('🛡️', `A knight\'s helmet! You feel more courageous. (Knight item ${count}/4)`);
         } else {
           this.world.setTile(x, y, TILE.EMPTY);
         }
@@ -1323,7 +1323,7 @@ class Game {
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
           const count = KNIGHT_ITEMS.filter(i => p.specialItems.has(i)).length;
-          this._showItemPickupOverlay('🪬', `A knight\'s armor! You feel protected. (Knight item ${count}/4)`);
+          this._showItemPickupOverlay('🛡️', `A knight\'s armor! You feel protected. (Knight item ${count}/4)`);
         } else {
           this.world.setTile(x, y, TILE.EMPTY);
         }
@@ -1350,10 +1350,10 @@ class Game {
           sounds.playItemPickup();
           const allFour = KNIGHT_ITEMS.every(i => p.specialItems.has(i));
           if (allFour) {
-            this._showItemPickupOverlay('⚔️', 'A knight\'s sword! You are now fully equipped. Seek the edge of the world — the beast awaits!');
+            this._showItemPickupOverlay('🛡️', 'A knight\'s sword! You are now fully equipped. Seek the edge of the world — the beast awaits!');
           } else {
             const count = KNIGHT_ITEMS.filter(i => p.specialItems.has(i)).length;
-            this._showItemPickupOverlay('⚔️', `A knight\'s sword! You feel ready for battle. (Knight item ${count}/4)`);
+            this._showItemPickupOverlay('🛡️', `A knight\'s sword! You feel ready for battle. (Knight item ${count}/4)`);
           }
         } else {
           this.world.setTile(x, y, TILE.EMPTY);
@@ -1627,6 +1627,7 @@ class Game {
     p.babyCount     = 0;
     p.houseLevel    = 1;
     p.suppliesMeter = 100;
+    p.hasSecondBankCard = false;
 
     // Deduct marriage payment (skipped when jumping from the outhouse shortcut)
     if (!skipPayment) {
@@ -1730,6 +1731,16 @@ class Game {
       }
     }
 
+    if (!this.player.slayedDragon
+      && this.player.hasSecondBankCard
+      && this.player.suppliesMeter < SECOND_BANK_CARD_AUTO_RESTOCK_AT
+      && this.player.bankBalance >= SUPPLIES_REFILL_COST) {
+      const p = this.player;
+      p.bankBalance -= SUPPLIES_REFILL_COST;
+      p.suppliesMeter = Math.min(100, p.suppliesMeter + SUPPLIES_REFILL_AMOUNT);
+      p.setMessage(`💳👱‍♀️ Wife restocked supplies from the bank. Balance: $${p.bankBalance}`);
+    }
+
     if (this._suppliesInGrace) {
       const p = this.player;
       if (p.suppliesMeter > 0) {
@@ -1787,7 +1798,7 @@ class Game {
         canteen: '🫙', lunchbox: '🍱', tin_can: '🥫',
         cash_bag: '💰', scroll: '📜', fossil: '👣', newspaper: '📰',
         broken_chain: '⛓️', old_coin: '🪙', bottle: '🍾',
-        helmet: '⛑️', armor: '🪬', shield: '🛡️', sword: '⚔️',
+        helmet: '🛡️', armor: '🛡️', shield: '🛡️', sword: '🛡️',
       };
       if (icons[si]) items.push(icons[si]);
     }

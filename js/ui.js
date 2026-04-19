@@ -84,10 +84,10 @@ class UI {
     if (player.treasureMapDepth > 0) tools.push(`🗺️${player.treasureMapDepth}m`);
     if (player.genieWishes > 0) tools.push(`🧞×${player.genieWishes}`);
     if (player.specialItems.has('rubber_boot'))  tools.push('🥾');
-    if (player.specialItems.has('helmet'))       tools.push('⛑️');
-    if (player.specialItems.has('armor'))        tools.push('🪬');
+    if (player.specialItems.has('helmet'))       tools.push('🛡️');
+    if (player.specialItems.has('armor'))        tools.push('🛡️');
     if (player.specialItems.has('shield'))       tools.push('🛡️');
-    if (player.specialItems.has('sword'))        tools.push('⚔️');
+    if (player.specialItems.has('sword'))        tools.push('🛡️');
 
     if (player.specialItems.has('pocket_watch')) extraTools.push('⌚');
     if (player.specialItems.has('glasses'))      extraTools.push('🕶️');
@@ -628,6 +628,18 @@ class UI {
       const balanceNote  = player.familyMode
         ? '<small style="color:#888"> — taxes are debited from here automatically</small>'
         : '<small style="color:#888"> — mine cart deposits go here</small>';
+      const canBuySecondCard = player.familyMode
+        && !player.hasSecondBankCard
+        && player.bankBalance > SECOND_BANK_CARD_MIN_BALANCE
+        && player.bankBalance >= SECOND_BANK_CARD_COST;
+      const secondCardCls = canBuySecondCard ? 'shop-item buyable' : 'shop-item disabled';
+      const secondCardNote = player.hasSecondBankCard
+        ? ' <em>(already purchased)</em>'
+        : player.familyMode && player.bankBalance <= SECOND_BANK_CARD_MIN_BALANCE
+          ? ` <em class="short">(requires > $${SECOND_BANK_CARD_MIN_BALANCE} balance)</em>`
+          : player.familyMode && player.bankBalance < SECOND_BANK_CARD_COST
+            ? ` <em class="short">(need $${SECOND_BANK_CARD_COST - player.bankBalance} more in bank)</em>`
+            : '';
       accountHtml = `
         <div class="section-label">BANK ACCOUNT</div>
         <p style="font-size:0.88em;margin:4px 0 8px">
@@ -640,6 +652,10 @@ class UI {
         </div>
         <div class="${withdrawCls}" id="withdraw-btn" data-amount="${depositStep}">
           💸 Withdraw $${depositStep}${withdrawNote}
+        </div>
+        <div class="${secondCardCls}" id="second-card-btn">
+          💳💳 Buy second bank card — <span class="price">$${SECOND_BANK_CARD_COST}</span>${secondCardNote}
+          <br><small>Wife auto-restocks supplies below ${SECOND_BANK_CARD_AUTO_RESTOCK_AT}% using bank funds</small>
         </div>` : ''}`;
     }
 
@@ -686,6 +702,20 @@ class UI {
         player.bankBalance -= amt;
         player.money       += amt;
         player.setMessage(`💸 Withdrew $${amt} from bank account. Balance: $${player.bankBalance}`);
+        sounds.playTransaction();
+        this._closeOverlay();
+      });
+    }
+
+    const secondCardBtn = document.getElementById('second-card-btn');
+    if (secondCardBtn && secondCardBtn.classList.contains('buyable')) {
+      secondCardBtn.addEventListener('click', () => {
+        if (player.hasSecondBankCard) return;
+        if (player.bankBalance <= SECOND_BANK_CARD_MIN_BALANCE) return;
+        if (player.bankBalance < SECOND_BANK_CARD_COST) return;
+        player.bankBalance -= SECOND_BANK_CARD_COST;
+        player.hasSecondBankCard = true;
+        player.setMessage('💳👱‍♀️ Second bank card purchased! Wife will auto-restock supplies below 25%.');
         sounds.playTransaction();
         this._closeOverlay();
       });
@@ -1015,7 +1045,7 @@ class UI {
         <div class="overlay-centered">
           <p class="overlay-emoji">🐉⚔️</p>
           <p class="overlay-title" style="color:#f5c842"><em>"You slayed the enormous beast!"</em></p>
-          <p style="color:#88cc44"><em>"You have a lifetime supply of meat!"</em></p>
+          <p style="color:#88cc44"><em>"there be supper!"</em></p>
           <button class="close-btn" id="overlay-close" style="border-color:#f5c842;color:#f5c842">
             Turn Back (Victorious)
           </button>

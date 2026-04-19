@@ -143,6 +143,7 @@ const Storage = {
     p.babyCount     = data.babyCount     ?? 0;
     p.houseLevel    = data.houseLevel    ?? 1;
     p.suppliesMeter = data.suppliesMeter ?? 100;
+    p.hasSecondBankCard = data.hasSecondBankCard ?? false;
     p.necklaceCount = data.necklaceCount ?? 0;
     p.hasElevator   = data.hasElevator   ?? false;
     p.unlockedDepth = data.unlockedDepth ?? MAX_MINE_DEPTH;
@@ -241,6 +242,7 @@ function _serializePlayer(p) {
     babyCount:     p.babyCount,
     houseLevel:    p.houseLevel,
     suppliesMeter: p.suppliesMeter,
+    hasSecondBankCard: p.hasSecondBankCard,
     necklaceCount: p.necklaceCount,
     hasElevator:   p.hasElevator,
     unlockedDepth: p.unlockedDepth,
