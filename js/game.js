@@ -1,6 +1,16 @@
 'use strict';
 
 const FLOOD_FLUSH_ITEM_CHANCE = 0.12;
+const FLOOD_FLUSH_ITEM_LABELS = Object.freeze({
+  shovel: 'shovel',
+  pick: 'pick',
+  bucket: 'bucket',
+  extinguisher: 'extinguisher',
+  bag: 'large bag',
+  dynamite: 'dynamite',
+  firstAid: 'first aid kit',
+  drill: 'drill charge',
+});
 
 /**
  * Game – main loop, movement, digging, hazard logic, interaction dispatch.
@@ -442,14 +452,14 @@ class Game {
 
     const p = this.player;
     const options = [];
-    if (p.hasShovel)                     options.push({ id: 'shovel',      label: 'shovel' });
-    if (p.hasPick)                       options.push({ id: 'pick',        label: 'pick' });
-    if (p.hasBucket)                     options.push({ id: 'bucket',      label: 'bucket' });
-    if (p.hasExtinguisher)               options.push({ id: 'extinguisher', label: 'extinguisher' });
-    if (p.hasBag)                        options.push({ id: 'bag',         label: 'large bag' });
-    if (p.dynamiteCount > 0)             options.push({ id: 'dynamite',    label: 'dynamite' });
-    if (p.firstAidKits > 0)              options.push({ id: 'firstAid',    label: 'first aid kit' });
-    if (p.drillCount > 0)                options.push({ id: 'drill',       label: 'drill charge' });
+    if (p.hasShovel)                     options.push({ id: 'shovel',       label: FLOOD_FLUSH_ITEM_LABELS.shovel });
+    if (p.hasPick)                       options.push({ id: 'pick',         label: FLOOD_FLUSH_ITEM_LABELS.pick });
+    if (p.hasBucket)                     options.push({ id: 'bucket',       label: FLOOD_FLUSH_ITEM_LABELS.bucket });
+    if (p.hasExtinguisher)               options.push({ id: 'extinguisher', label: FLOOD_FLUSH_ITEM_LABELS.extinguisher });
+    if (p.hasBag)                        options.push({ id: 'bag',          label: FLOOD_FLUSH_ITEM_LABELS.bag });
+    if (p.dynamiteCount > 0)             options.push({ id: 'dynamite',     label: FLOOD_FLUSH_ITEM_LABELS.dynamite });
+    if (p.firstAidKits > 0)              options.push({ id: 'firstAid',     label: FLOOD_FLUSH_ITEM_LABELS.firstAid });
+    if (p.drillCount > 0)                options.push({ id: 'drill',        label: FLOOD_FLUSH_ITEM_LABELS.drill });
     if (options.length === 0) return null;
 
     const stashPos = this._findFloodStashTile(sx, sy);
@@ -538,16 +548,16 @@ class Game {
         p.hasShovel = true;
         break;
       case 'pick':
-        p.hasPick = true;
-        p.pickUses = Math.max(1, flushedItem.uses || 0);
+        p.pickUses = Number.isFinite(flushedItem.uses) ? Math.max(0, flushedItem.uses) : 1;
+        p.hasPick = p.pickUses > 0;
         break;
       case 'bucket':
-        p.hasBucket = true;
-        p.bucketUses = Math.max(1, flushedItem.uses || 0);
+        p.bucketUses = Number.isFinite(flushedItem.uses) ? Math.max(0, flushedItem.uses) : 1;
+        p.hasBucket = p.bucketUses > 0;
         break;
       case 'extinguisher':
-        p.hasExtinguisher = true;
-        p.extinguisherUses = Math.max(1, flushedItem.uses || 0);
+        p.extinguisherUses = Number.isFinite(flushedItem.uses) ? Math.max(0, flushedItem.uses) : 1;
+        p.hasExtinguisher = p.extinguisherUses > 0;
         break;
       case 'bag':
         p.hasBag = true;
@@ -570,17 +580,7 @@ class Game {
     delete next.flushedItem;
     const hasOtherData = Object.keys(next).length > 0;
     this.world.setData(x, y, hasOtherData ? next : null);
-    return {
-      label: flushedItem.type === 'firstAid'
-        ? 'first aid kit'
-        : flushedItem.type === 'extinguisher'
-          ? 'extinguisher'
-          : flushedItem.type === 'drill'
-            ? 'drill charge'
-            : flushedItem.type === 'bag'
-              ? 'large bag'
-              : flushedItem.type,
-    };
+    return { label: FLOOD_FLUSH_ITEM_LABELS[flushedItem.type] || flushedItem.type };
   }
 
   /**
