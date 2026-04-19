@@ -1,5 +1,10 @@
 'use strict';
 
+const CHESS_PIECES = Object.freeze([
+  'white_king', 'white_queen', 'white_rook', 'white_bishop', 'white_knight', 'white_pawn',
+  'black_king', 'black_queen', 'black_rook', 'black_bishop', 'black_knight', 'black_pawn',
+]);
+
 /**
  * UI – manages HTML overlays (shop, bar, doctor, win, death)
  * and the HTML HUD panel below the canvas.
@@ -109,10 +114,7 @@ class UI {
     if (player.specialItems.has('picture_frame')) extraTools.push('🖼️');
     if (player.specialItems.has('tea_pot'))      extraTools.push('🫖');
     if (player.specialItems.has('guitar'))       extraTools.push('🎸');
-    const chessPieceCount = [
-      'white_king', 'white_queen', 'white_rook', 'white_bishop', 'white_knight', 'white_pawn',
-      'black_king', 'black_queen', 'black_rook', 'black_bishop', 'black_knight', 'black_pawn',
-    ].filter(item => player.specialItems.has(item)).length;
+    const chessPieceCount = CHESS_PIECES.filter(item => player.specialItems.has(item)).length;
     if (chessPieceCount > 0) extraTools.push(`♟×${chessPieceCount}`);
     if (player.necklaceCount > 0)                tools.push(`📿×${player.necklaceCount}`);
     if (player.dynamiteCount > 0) {

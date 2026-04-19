@@ -75,7 +75,7 @@ class World {
     const xRange = MINE_ENT_X_MIN - 2;   // 20 safe columns (x ∈ [1, 20])
     // Mine starts at y=3, so world-y = mine_depth + 2.
     // Extended mine starts beyond depth 100 (world-y > 102).
-    return [
+    const positions = [
       // ── Existing unique items ──────────────────────────────────────────────
       { content: HIDDEN.RUBY,         y: 21 + Math.floor(rng() * 80),  x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.RUBBER_BOOT,  y:  9 + Math.floor(rng() * 40),  x: 1 + Math.floor(rng() * xRange) },
@@ -110,7 +110,7 @@ class World {
       { content: HIDDEN.OLD_KEY,      y: 130 + Math.floor(rng() * 90), x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.HOURGLASS,    y: 140 + Math.floor(rng() * 95), x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.OLD_MIRROR,   y: 150 + Math.floor(rng() * 95), x: 1 + Math.floor(rng() * xRange) },
-      { content: HIDDEN.PICTURE_FRAME,y: 160 + Math.floor(rng() * 95), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.PICTURE_FRAME, y: 160 + Math.floor(rng() * 95), x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.TEA_POT,      y: 170 + Math.floor(rng() * 90), x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.GUITAR,       y: 180 + Math.floor(rng() * 90), x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.WHITE_KING,   y: 115 + Math.floor(rng() * 85), x: 1 + Math.floor(rng() * xRange) },
@@ -139,6 +139,21 @@ class World {
       // ── Genie lamp (mid-mine, depth 25–60 m, world-y 27–62) ──────────────
       { content: HIDDEN.GENIE_LAMP, y: 27 + Math.floor(rng() * 36), x: 1 + Math.floor(rng() * xRange) },
     ];
+
+    // Ensure unique positions so no one-off collectible gets overwritten by another.
+    const used = new Set();
+    for (const pos of positions) {
+      let key = `${pos.x},${pos.y}`;
+      let attempts = 0;
+      while (used.has(key) && attempts < xRange * 200) {
+        pos.x = (pos.x % xRange) + 1; // Keep x in [1, 20]
+        if (pos.x === 1) pos.y += 1;
+        key = `${pos.x},${pos.y}`;
+        attempts++;
+      }
+      used.add(key);
+    }
+    return positions;
   }
 
   // -------------------------------------------------------------------------
@@ -598,7 +613,7 @@ class World {
       case HIDDEN.OLD_KEY:      this.setTile(x, y, TILE.OLD_KEY);      break;
       case HIDDEN.HOURGLASS:    this.setTile(x, y, TILE.HOURGLASS);    break;
       case HIDDEN.OLD_MIRROR:   this.setTile(x, y, TILE.OLD_MIRROR);   break;
-      case HIDDEN.PICTURE_FRAME:this.setTile(x, y, TILE.PICTURE_FRAME);break;
+      case HIDDEN.PICTURE_FRAME: this.setTile(x, y, TILE.PICTURE_FRAME); break;
       case HIDDEN.TEA_POT:      this.setTile(x, y, TILE.TEA_POT);      break;
       case HIDDEN.GUITAR:       this.setTile(x, y, TILE.GUITAR);       break;
       case HIDDEN.WHITE_KING:   this.setTile(x, y, TILE.WHITE_KING);   break;
