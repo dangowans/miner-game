@@ -1,5 +1,12 @@
 'use strict';
 
+const EMPTY_MURAL_CELL_SIZE      = 8;
+const EMPTY_MURAL_SEED_X         = 37;
+const EMPTY_MURAL_SEED_Y         = 53;
+const EMPTY_MURAL_OFFSET_X       = 7;
+const EMPTY_MURAL_OFFSET_Y       = 11;
+const EMPTY_MURAL_GLYPHS         = ['𐦂', '𖨆', '𐀪', '𖠋', '𓆟', '♥', '★'];
+
 /**
  * Renderer – draws the world and player onto the HTML5 Canvas.
  */
@@ -357,38 +364,37 @@ class Renderer {
         // Markings render as large murals that span 3×3 or 4×4 tiles
         // (9 or 16 tiles each) to reward deeper exploration.
         if (ty >= 3) {
-          const muralCell = 8;
-          const cellX     = Math.floor(tx / muralCell);
-          const cellY     = Math.floor((ty - 3) / muralCell);
-          const seed      = (cellX * 37) + (cellY * 53);
+          const cellX     = Math.floor(tx / EMPTY_MURAL_CELL_SIZE);
+          const cellY     = Math.floor((ty - 3) / EMPTY_MURAL_CELL_SIZE);
+          const seed      = (cellX * EMPTY_MURAL_SEED_X) + (cellY * EMPTY_MURAL_SEED_Y);
           const hasMural  = (seed % 3 === 0);
 
-          if (!hasMural) break;
+          if (hasMural) {
+            const muralSpan  = (seed % 2 === 0) ? 3 : 4;
+            const maxOffset  = EMPTY_MURAL_CELL_SIZE - muralSpan;
+            const muralStartX = (cellX * EMPTY_MURAL_CELL_SIZE) + ((seed * EMPTY_MURAL_OFFSET_X) % (maxOffset + 1));
+            const muralStartY = 3 + (cellY * EMPTY_MURAL_CELL_SIZE) + ((seed * EMPTY_MURAL_OFFSET_Y) % (maxOffset + 1));
+            const inMuralX    = tx >= muralStartX && tx < muralStartX + muralSpan;
+            const inMuralY    = ty >= muralStartY && ty < muralStartY + muralSpan;
 
-          const muralSpan  = (seed % 2 === 0) ? 3 : 4;
-          const maxOffset  = muralCell - muralSpan;
-          const muralStartX = (cellX * muralCell) + ((seed * 7) % (maxOffset + 1));
-          const muralStartY = 3 + (cellY * muralCell) + ((seed * 11) % (maxOffset + 1));
-          const inMuralX    = tx >= muralStartX && tx < muralStartX + muralSpan;
-          const inMuralY    = ty >= muralStartY && ty < muralStartY + muralSpan;
-          if (!inMuralX || !inMuralY) break;
+            if (inMuralX && inMuralY) {
+              const glyph = EMPTY_MURAL_GLYPHS[Math.abs(seed) % EMPTY_MURAL_GLYPHS.length];
+              const muralPx = px - ((tx - muralStartX) * ts);
+              const muralPy = py - ((ty - muralStartY) * ts);
+              const muralSize = muralSpan * ts;
 
-          const glyphs = ['𐦂', '𖨆', '𐀪', '𖠋', '𓆟', '♥', '★'];
-          const glyph = glyphs[Math.abs(seed) % glyphs.length];
-          const muralPx = px - ((tx - muralStartX) * ts);
-          const muralPy = py - ((ty - muralStartY) * ts);
-          const muralSize = muralSpan * ts;
-
-          ctx.save();
-          ctx.beginPath();
-          ctx.rect(px + 1, py + 1, ts - 2, ts - 2);
-          ctx.clip();
-          ctx.fillStyle    = '#8a4b32'; // slightly lighter than uncovered dirt
-          ctx.font         = `bold ${Math.round(muralSize * 0.8)}px monospace`;
-          ctx.textAlign    = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(glyph, muralPx + (muralSize / 2), muralPy + (muralSize / 2));
-          ctx.restore();
+              ctx.save();
+              ctx.beginPath();
+              ctx.rect(px + 1, py + 1, ts - 2, ts - 2);
+              ctx.clip();
+              ctx.fillStyle    = '#8a4b32'; // slightly lighter than uncovered dirt
+              ctx.font         = `bold ${Math.round(muralSize * 0.8)}px monospace`;
+              ctx.textAlign    = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(glyph, muralPx + (muralSize / 2), muralPy + (muralSize / 2));
+              ctx.restore();
+            }
+          }
         }
         break;
       }
