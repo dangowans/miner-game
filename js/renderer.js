@@ -77,11 +77,12 @@ class Renderer {
     const cy = py + hs;
 
     // ── Sky horizon for the building-facade row ───────────────────────────────
-    // Draw a sky-blue strip across the top of every y=1 building tile BEFORE
-    // tile detail so that peaked roofs (house, outhouse) render above it.
+    // Draw a strip across the top of every y=1 building tile BEFORE tile detail
+    // so peaked roofs (house, outhouse) render above it.
     // SKY, FLOWER and MINE_ENT tiles are excluded.
     if (ty === 1 && tile !== TILE.MINE_ENT && tile !== TILE.SKY && tile !== TILE.FLOWER) {
-      ctx.fillStyle = '#7ab8e8';
+      const hasSecondStoreyAbove = tile === TILE.HOUSE && world.getTile(tx, 0) === TILE.HOUSE;
+      ctx.fillStyle = hasSecondStoreyAbove ? '#c8956a' : '#7ab8e8';
       ctx.fillRect(px, py, ts, 8);
     }
 
@@ -387,7 +388,7 @@ class Renderer {
               ctx.beginPath();
               ctx.rect(px + 1, py + 1, ts - 2, ts - 2);
               ctx.clip();
-              ctx.fillStyle    = '#1c1c1c'; // slightly lighter than excavated empty tiles
+              ctx.fillStyle    = '#8b7a54'; // higher contrast so murals remain visible
               ctx.font         = `bold ${Math.round(muralSize * 0.8)}px monospace`;
               ctx.textAlign    = 'center';
               ctx.textBaseline = 'middle';
