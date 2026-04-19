@@ -548,16 +548,16 @@ class Game {
         p.hasShovel = true;
         break;
       case 'pick':
-        p.pickUses = Number.isFinite(flushedItem.uses) ? Math.max(0, flushedItem.uses) : 1;
-        p.hasPick = p.pickUses > 0;
+        p.pickUses = Number.isFinite(flushedItem.uses) && flushedItem.uses > 0 ? flushedItem.uses : 1;
+        p.hasPick = true;
         break;
       case 'bucket':
-        p.bucketUses = Number.isFinite(flushedItem.uses) ? Math.max(0, flushedItem.uses) : 1;
-        p.hasBucket = p.bucketUses > 0;
+        p.bucketUses = Number.isFinite(flushedItem.uses) && flushedItem.uses > 0 ? flushedItem.uses : 1;
+        p.hasBucket = true;
         break;
       case 'extinguisher':
-        p.extinguisherUses = Number.isFinite(flushedItem.uses) ? Math.max(0, flushedItem.uses) : 1;
-        p.hasExtinguisher = p.extinguisherUses > 0;
+        p.extinguisherUses = Number.isFinite(flushedItem.uses) && flushedItem.uses > 0 ? flushedItem.uses : 1;
+        p.hasExtinguisher = true;
         break;
       case 'bag':
         p.hasBag = true;
