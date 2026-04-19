@@ -277,6 +277,9 @@ const BABY_COST                = 500;   // Cost to have each baby
 const MAX_BABIES               = 10;     // Maximum number of babies
 const SUPPLIES_REFILL_COST     = 40;    // Cost to refill supplies by 25 %
 const SUPPLIES_REFILL_AMOUNT   = 25;    // Percent refilled per payment
+const SECOND_BANK_CARD_MIN_BALANCE = 10000; // Bank balance needed to unlock second bank card offer
+const SECOND_BANK_CARD_COST        = 500;   // One-time cost for the second bank card
+const SECOND_BANK_CARD_AUTO_RESTOCK_AT = 25; // Wife auto-restocks when supplies drop below this %
 
 // ---------------------------------------------------------------------------
 // Mine depth limit

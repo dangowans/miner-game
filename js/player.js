@@ -74,6 +74,7 @@ class Player {
     this.babyCount      = 0;     // Number of babies
     this.houseLevel     = 1;     // House expansion level (1 = base)
     this.suppliesMeter  = 100;   // Household supplies 0–100 %
+    this.hasSecondBankCard = false; // Wife can auto-restock supplies from bank account
     this.necklaceCount  = 0;     // Necklaces found in the mine (deliver at home for a baby)
     this.hasElevator    = false; // True once the elevator shaft has been built
     this.inElevator     = false; // True while the player is riding in the elevator cabin

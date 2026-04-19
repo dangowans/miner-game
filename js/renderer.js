@@ -746,7 +746,7 @@ class Renderer {
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         ctx.font      = '20px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('⛑️', cx, cy + 8);
+        ctx.fillText('🛡️', cx, cy + 8);
         // Silver star marker for knight items
         ctx.fillStyle = '#c0c0c0';
         ctx.font      = 'bold 8px monospace';
@@ -759,7 +759,7 @@ class Renderer {
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         ctx.font      = '20px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('🪬', cx, cy + 8);
+        ctx.fillText('🛡️', cx, cy + 8);
         // Silver star marker for knight items
         ctx.fillStyle = '#c0c0c0';
         ctx.font      = 'bold 8px monospace';
@@ -785,7 +785,7 @@ class Renderer {
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         ctx.font      = '20px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('⚔️', cx, cy + 8);
+        ctx.fillText('🛡️', cx, cy + 8);
         // Silver star marker for knight items
         ctx.fillStyle = '#c0c0c0';
         ctx.font      = 'bold 8px monospace';
