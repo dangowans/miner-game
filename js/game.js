@@ -1,5 +1,7 @@
 'use strict';
 
+const FLOOD_FLUSH_ITEM_CHANCE = 0.12;
+
 /**
  * Game – main loop, movement, digging, hazard logic, interaction dispatch.
  *
@@ -398,7 +400,11 @@ class Game {
     if (isSource) {
       // Spring source: always impassable; re-spread and deal damage
       this.world.spreadHazard(nx, ny, TILE.WATER);
-      this._applyHazardDamage('water_source');
+      const flushedLabel = this._tryFlushInventoryItemFromFlood(nx, ny);
+      const died = this._applyHazardDamage('water_source');
+      if (flushedLabel && !died) {
+        p.setMessage(`🌊 The flood flushed away your ${flushedLabel}! It may be under the water.`);
+      }
     } else if (p.hasBucket) {
       // Bucket clears spread water – free passage, no damage, uses 1 charge
       this.world.setTile(nx, ny, TILE.EMPTY);
@@ -412,6 +418,11 @@ class Game {
       } else {
         p.setMessage(`🪣 Cleared water with bucket. (${p.bucketUses} use${p.bucketUses !== 1 ? 's' : ''} left)`);
       }
+      const recovered = this._recoverFlushedItemAt(nx, ny);
+      if (recovered) {
+        p.setMessage(`🧺 You recovered your ${recovered.label} from the floodwater.`);
+        sounds.playItemPickup();
+      }
       this._afterMove(nx, ny);
     } else if (p.specialItems.has('rubber_boot')) {
       // Rubber boots: walk through spread water freely, no damage
@@ -424,6 +435,152 @@ class Game {
       const died = this._applyHazardDamage('water');
       if (!died) this._afterMove(nx, ny);
     }
+  }
+
+  _tryFlushInventoryItemFromFlood(sx, sy) {
+    if (Math.random() >= FLOOD_FLUSH_ITEM_CHANCE) return null;
+
+    const p = this.player;
+    const options = [];
+    if (p.hasShovel)                     options.push({ id: 'shovel',      label: 'shovel' });
+    if (p.hasPick)                       options.push({ id: 'pick',        label: 'pick' });
+    if (p.hasBucket)                     options.push({ id: 'bucket',      label: 'bucket' });
+    if (p.hasExtinguisher)               options.push({ id: 'extinguisher', label: 'extinguisher' });
+    if (p.hasBag)                        options.push({ id: 'bag',         label: 'large bag' });
+    if (p.dynamiteCount > 0)             options.push({ id: 'dynamite',    label: 'dynamite' });
+    if (p.firstAidKits > 0)              options.push({ id: 'firstAid',    label: 'first aid kit' });
+    if (p.drillCount > 0)                options.push({ id: 'drill',       label: 'drill charge' });
+    if (options.length === 0) return null;
+
+    const stashPos = this._findFloodStashTile(sx, sy);
+    if (!stashPos) return null;
+
+    const chosen = options[Math.floor(Math.random() * options.length)];
+    const payload = { type: chosen.id };
+
+    switch (chosen.id) {
+      case 'shovel':
+        p.hasShovel = false;
+        break;
+      case 'pick':
+        payload.uses = p.pickUses;
+        p.hasPick = false;
+        p.pickUses = 0;
+        break;
+      case 'bucket':
+        payload.uses = p.bucketUses;
+        p.hasBucket = false;
+        p.bucketUses = 0;
+        break;
+      case 'extinguisher':
+        payload.uses = p.extinguisherUses;
+        p.hasExtinguisher = false;
+        p.extinguisherUses = 0;
+        break;
+      case 'bag':
+        p.hasBag = false;
+        p.maxGems = 10;
+        break;
+      case 'dynamite':
+        p.dynamiteCount--;
+        break;
+      case 'firstAid':
+        p.firstAidKits--;
+        break;
+      case 'drill':
+        p.drillCount--;
+        break;
+    }
+
+    const current = this.world.getData(stashPos.x, stashPos.y) || {};
+    current.flushedItem = payload;
+    this.world.setData(stashPos.x, stashPos.y, current);
+    return chosen.label;
+  }
+
+  _findFloodStashTile(sx, sy) {
+    const queue = [{ x: sx, y: sy }];
+    const seen = new Set([`${sx},${sy}`]);
+    const candidates = [];
+    const dirs = [
+      { dx: 1, dy: 0 }, { dx: -1, dy: 0 },
+      { dx: 0, dy: 1 }, { dx: 0, dy: -1 },
+    ];
+
+    while (queue.length > 0) {
+      const { x, y } = queue.shift();
+      for (const { dx, dy } of dirs) {
+        const nx = x + dx;
+        const ny = y + dy;
+        const key = `${nx},${ny}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        if (this.world.getTile(nx, ny) !== TILE.WATER) continue;
+        queue.push({ x: nx, y: ny });
+        if (this.world.isSpringSource(nx, ny)) continue;
+        const d = this.world.getData(nx, ny);
+        if (d && d.flushedItem) continue;
+        candidates.push({ x: nx, y: ny });
+      }
+    }
+
+    if (candidates.length === 0) return null;
+    return candidates[Math.floor(Math.random() * candidates.length)];
+  }
+
+  _recoverFlushedItemAt(x, y) {
+    const d = this.world.getData(x, y);
+    if (!d || !d.flushedItem) return null;
+    const { flushedItem } = d;
+    const p = this.player;
+    switch (flushedItem.type) {
+      case 'shovel':
+        p.hasShovel = true;
+        break;
+      case 'pick':
+        p.hasPick = true;
+        p.pickUses = Math.max(1, flushedItem.uses || 0);
+        break;
+      case 'bucket':
+        p.hasBucket = true;
+        p.bucketUses = Math.max(1, flushedItem.uses || 0);
+        break;
+      case 'extinguisher':
+        p.hasExtinguisher = true;
+        p.extinguisherUses = Math.max(1, flushedItem.uses || 0);
+        break;
+      case 'bag':
+        p.hasBag = true;
+        p.maxGems = 20;
+        break;
+      case 'dynamite':
+        p.dynamiteCount++;
+        break;
+      case 'firstAid':
+        p.firstAidKits++;
+        break;
+      case 'drill':
+        p.drillCount++;
+        break;
+      default:
+        return null;
+    }
+
+    const next = Object.assign({}, d);
+    delete next.flushedItem;
+    const hasOtherData = Object.keys(next).length > 0;
+    this.world.setData(x, y, hasOtherData ? next : null);
+    return {
+      label: flushedItem.type === 'firstAid'
+        ? 'first aid kit'
+        : flushedItem.type === 'extinguisher'
+          ? 'extinguisher'
+          : flushedItem.type === 'drill'
+            ? 'drill charge'
+            : flushedItem.type === 'bag'
+              ? 'large bag'
+              : flushedItem.type,
+    };
   }
 
   /**
