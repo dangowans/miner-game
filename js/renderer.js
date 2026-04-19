@@ -354,14 +354,16 @@ class Renderer {
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         // Ancient wall markings occasionally appear in excavated mine corridors.
         // They are purely decorative and persist because EMPTY tiles are not collected.
-        // Coprime multipliers + modulo keep placement deterministic but sparse.
-        if (ty >= 3 && ((tx * 17 + ty * 23) % 11 === 0)) {
+        // Coprime multipliers + alternating modulo (9/16) keep placement
+        // deterministic and make markings appear roughly every 9 or 16 tiles.
+        const glyphSpacing = ((tx + ty) % 2 === 0) ? 9 : 16;
+        if (ty >= 3 && ((tx * 17 + ty * 23) % glyphSpacing === 0)) {
           const glyphs = ['𐦂', '𖨆', '𐀪', '𖠋', '𓆟', '♥', '★'];
           const glyph = glyphs[(tx * 5 + ty * 3) % glyphs.length];
-          ctx.fillStyle = '#3f1f14'; // dark dirt tone
-          ctx.font      = 'bold 14px monospace';
+          ctx.fillStyle = '#8a4b32'; // slightly lighter than uncovered dirt
+          ctx.font      = 'bold 18px monospace';
           ctx.textAlign = 'center';
-          ctx.fillText(glyph, cx, cy + 5);
+          ctx.fillText(glyph, cx, cy + 7);
         }
         break;
       }
