@@ -413,7 +413,8 @@ class Game {
       const flushedLabel = this._tryFlushInventoryItemFromFlood(nx, ny);
       const died = this._applyHazardDamage('water_source');
       if (flushedLabel && !died) {
-        p.setMessage(`🌊 The flood flushed away your ${flushedLabel}! It may be under the water.`);
+        const base = p.message ? `${p.message} ` : '';
+        p.setMessage(`${base}🌊 The flood flushed away your ${flushedLabel}! It may be under the water.`);
       }
     } else if (p.hasBucket) {
       // Bucket clears spread water – free passage, no damage, uses 1 charge
@@ -430,7 +431,8 @@ class Game {
       }
       const recovered = this._recoverFlushedItemAt(nx, ny);
       if (recovered) {
-        p.setMessage(`🧺 You recovered your ${recovered.label} from the floodwater.`);
+        const base = p.message ? `${p.message} ` : '';
+        p.setMessage(`${base}🧺 You recovered your ${recovered.label} from the floodwater.`);
         sounds.playItemPickup();
       }
       this._afterMove(nx, ny);
