@@ -5,7 +5,7 @@ const EMPTY_MURAL_SEED_X         = 37;
 const EMPTY_MURAL_SEED_Y         = 53;
 const EMPTY_MURAL_OFFSET_X       = 7;
 const EMPTY_MURAL_OFFSET_Y       = 11;
-const EMPTY_MURAL_GLYPHS         = ['𐦂', '𖨆', '𐀪', '𖠋', '𓆟', '♥', '★'];
+const EMPTY_MURAL_GLYPHS         = ['𐦂', '𖨆', '𐀪', '𖠋', '𓆟', '♡', '★'];
 
 /**
  * Renderer – draws the world and player onto the HTML5 Canvas.
@@ -387,7 +387,7 @@ class Renderer {
               ctx.beginPath();
               ctx.rect(px + 1, py + 1, ts - 2, ts - 2);
               ctx.clip();
-              ctx.fillStyle    = '#8a4b32'; // slightly lighter than uncovered dirt
+              ctx.fillStyle    = '#1c1c1c'; // slightly lighter than excavated empty tiles
               ctx.font         = `bold ${Math.round(muralSize * 0.8)}px monospace`;
               ctx.textAlign    = 'center';
               ctx.textBaseline = 'middle';
@@ -545,11 +545,23 @@ class Renderer {
       }
 
       case TILE.STONE: {
-        ctx.fillStyle = '#303030';
+        ctx.fillStyle = '#484848';
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
-        ctx.font      = '20px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('🪨', cx, cy + 8);
+        ctx.fillStyle = '#686868';
+        ctx.fillRect(px + 1, py + 1, ts - 2, 3);
+        ctx.fillRect(px + 1, py + 1, 3,       ts - 2);
+        ctx.fillStyle = '#282828';
+        ctx.fillRect(px + 1, py + ts - 4, ts - 2, 3);
+        ctx.fillRect(px + ts - 4, py + 1, 3,       ts - 2);
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth   = 1;
+        ctx.beginPath();
+        const cx1 = px + ((tx * 7 + ty * 11) % (ts - 10)) + 5;
+        const cy1 = py + ((tx * 13 + ty * 5) % (ts - 10)) + 5;
+        ctx.moveTo(cx1, cy1);
+        ctx.lineTo(cx1 + 6, cy1 + 4);
+        ctx.lineTo(cx1 + 10, cy1 + 2);
+        ctx.stroke();
         break;
       }
 
