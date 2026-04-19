@@ -1731,7 +1731,8 @@ class Game {
       }
     }
 
-    if (!this.player.slayedDragon
+    if (this.player.familyMode
+      && !this.player.slayedDragon
       && this.player.hasSecondBankCard
       && this.player.suppliesMeter < SECOND_BANK_CARD_AUTO_RESTOCK_AT
       && this.player.bankBalance >= SUPPLIES_REFILL_COST) {
