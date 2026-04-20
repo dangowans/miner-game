@@ -1034,10 +1034,16 @@ class Game {
 
     // ── Police arrest: dynamite was placed and exploded on the surface ───────
     if (by < 3) {
-      Storage.clear();
       this.state = 'dead';
+      const p = this.player;
       const stats = this.player.familyMode ? this._collectFamilyStats() : null;
-      this.ui.showPoliceArrest(this._elapsedTimeLabel(), stats);
+      const time = this._elapsedTimeLabel();
+      if (p.genieWishes > 0) {
+        this.ui.showPoliceArrest(time, stats, () => this._useGenieWish('death'));
+      } else {
+        Storage.clear();
+        this.ui.showPoliceArrest(time, stats);
+      }
       return;
     }
 

@@ -519,11 +519,12 @@ class UI {
     if (restartBtn) restartBtn.addEventListener('click', () => { Storage.clear(); location.reload(); });
   }
 
-  showPoliceArrest(elapsedTime, stats = null) {
+  showPoliceArrest(elapsedTime, stats = null, onGenieWish = null) {
     const timeHtml  = elapsedTime
       ? `<p class="overlay-time">Time: ${elapsedTime}</p>`
       : '';
     const statsHtml = stats ? this._familyStatsHtml(stats) : '';
+    const { html: genieHtml, wireup: genieWireup } = this._genieWishParts(onGenieWish);
     this.overlay.innerHTML = `
       <div class="overlay-centered">
         <p class="overlay-emoji">👮</p>
@@ -531,11 +532,15 @@ class UI {
         <p>You set off dynamite in town! A police officer arrested you on the spot.</p>
         ${timeHtml}
         ${statsHtml}
-        <button class="close-btn" onclick="location.reload()">
+        ${genieHtml}
+        <button class="close-btn" id="police-restart-btn"${onGenieWish ? ' style="margin-top:4px"' : ''}>
           🔄 Try Again
         </button>
       </div>`;
     this._openOverlay(() => {});
+    genieWireup();
+    const restartBtn = document.getElementById('police-restart-btn');
+    if (restartBtn) restartBtn.addEventListener('click', () => { Storage.clear(); location.reload(); });
   }
 
   showMineCollapse(elapsedTime, stats = null) {
