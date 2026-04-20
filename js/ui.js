@@ -420,12 +420,9 @@ class UI {
 
   openDoctor(player, onClose) {
     const missing    = player.maxHearts - player.hearts;
-    const healCost   = HEAL_PRICE;
-    // Compute how many hearts will actually be restored (mirrors player.heal() logic)
-    const affordable = Math.floor(player.money / healCost);
-    const toHeal     = Math.min(missing, affordable);
-    const canHeal    = toHeal > 0;
-    const totalCost  = toHeal * healCost;
+    const toHeal     = missing;
+    const totalCost  = Math.min(missing * HEAL_PRICE, HEAL_VISIT_CAP);
+    const canHeal    = missing > 0 && player.money >= totalCost;
     const canExpand  = player.maxHearts < MAX_HEARTS && player.money >= EXTRA_HEART_PRICE;
 
     const heartsDisplay = () => {
@@ -440,7 +437,7 @@ class UI {
          </div>`
       : missing === 0
         ? `<div class="shop-item disabled">❤️ You are already at full health</div>`
-        : `<div class="shop-item disabled">❤️ Not enough money to heal ($${healCost} needed)</div>`;
+        : `<div class="shop-item disabled">❤️ Not enough money to heal ($${totalCost} needed)</div>`;
 
     const expandHtml = player.maxHearts >= MAX_HEARTS
       ? `<div class="shop-item disabled">💛 Maximum hearts reached (${MAX_HEARTS})</div>`

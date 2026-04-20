@@ -801,7 +801,7 @@ class Game {
     }
   }
 
-  /** Use a First Aid Kit to restore health to full. */
+  /** Use a First Aid Kit to restore up to FIRST_AID_MAX_HEAL hearts. */
   _useFirstAidKit() {
     const p = this.player;
     if (p.firstAidKits <= 0) {
@@ -813,8 +813,9 @@ class Game {
       return;
     }
     p.firstAidKits--;
-    p.hearts = p.maxHearts;
-    p.setMessage(`🩹 First Aid Kit used! Restored to full health. (${p.firstAidKits} left)`);
+    const healed = Math.min(FIRST_AID_MAX_HEAL, p.maxHearts - p.hearts);
+    p.hearts += healed;
+    p.setMessage(`🩹 First Aid Kit used! Restored ${healed} heart${healed !== 1 ? 's' : ''}. (${p.firstAidKits} left)`);
     sounds.playTransaction();
     this.ui.updateHUD(p);
   }

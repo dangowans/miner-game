@@ -276,7 +276,7 @@ const SHOP_ITEMS = [
     name:    'First Aid Kit',
     icon:    '🩹',
     price:   65,
-    desc:    'Use from inventory to restore health to full.',
+    desc:    'Use from inventory to restore up to 3 hearts.',
     oneTime: false,
   },
 ];
@@ -336,9 +336,11 @@ const JEWELER_MONEY_COST   = 1000;  // Cash required alongside the ring for prop
 // Doctor services
 // ---------------------------------------------------------------------------
 const HEAL_PRICE        = 30;   // Cost to restore 1 heart
+const HEAL_VISIT_CAP    = 60;   // Doctor full-heal visit cap
 const EXTRA_HEART_PRICE = 150;  // Cost to add +1 max heart (up to MAX_HEARTS)
 const MAX_HEARTS        = 6;
 const START_HEARTS      = 3;
+const FIRST_AID_MAX_HEAL = 3;   // First Aid Kit restores at most this many hearts
 
 // ---------------------------------------------------------------------------
 // Reveal thresholds

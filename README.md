@@ -78,7 +78,7 @@ The pavement **cannot be crossed** downward except at the mine entrance (x=22–
 | 🎒 Large Bag | $75 | Doubles ore carry capacity (10 → 20) |
 | 🧨 Dynamite | $75 | Place a charge with a 5-second fuse; usually blasts in a 3-tile radius, with occasional larger explosions |
 | 🪛 Drill | $100 | Use from inventory to drill 15 m straight down, clearing dirt and stone and revealing hazards/ore/items without hazard spread |
-| 🩹 First Aid Kit | $65 | Restore health to full from inventory |
+| 🩹 First Aid Kit | $65 | Restore up to 3 hearts from inventory |
 
 ## Contractor Mike
 
@@ -126,7 +126,7 @@ Available in Family Mode (stand at x=20 and press E):
 
 | Service | Cost |
 |---------|-----:|
-| Restore 1 heart | $30 |
+| Restore all missing hearts | $30 per missing heart (max $60) |
 | Buy +1 max heart slot | $150 |
 
 Maximum hearts: **6**. New heart slots are granted full.
