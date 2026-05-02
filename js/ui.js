@@ -126,15 +126,15 @@ class UI {
     if (player.specialItems.has('tea_pot'))      addExtraTool('🫖', recalls['🫖']);
     if (player.specialItems.has('guitar'))       addExtraTool('🎸', recalls['🎸']);
     const chessPieceCount = CHESS_PIECES.filter(item => player.specialItems.has(item)).length;
-    if (chessPieceCount > 0) addExtraTool(`♟×${chessPieceCount}`, '');
+    if (chessPieceCount > 0) addExtraTool(`♟×${chessPieceCount}`, recalls['♟']);
     if (player.necklaceCount > 0) addTool(`📿×${player.necklaceCount}`, recalls['📿']);
     if (player.dynamiteCount > 0) {
       addTool(player.placingDynamite
         ? `🧨×${player.dynamiteCount} [PLACING]`
-        : `🧨×${player.dynamiteCount}`, '');
+        : `🧨×${player.dynamiteCount}`, recalls['🧨']);
     }
-    if (player.drillCount > 0) addTool(`🪛×${player.drillCount}`);
-    if (player.firstAidKits > 0) addTool(`🩹×${player.firstAidKits}`);
+    if (player.drillCount > 0) addTool(`🪛×${player.drillCount}`, recalls['🪛']);
+    if (player.firstAidKits > 0) addTool(`🩹×${player.firstAidKits}`, recalls['🩹']);
 
     // Bank balance — show whenever the mine cart has been purchased
     if (player.hasMineCart && !player.familyMode) {
