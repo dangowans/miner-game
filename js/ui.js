@@ -82,7 +82,7 @@ class UI {
 
     const tools = [];
     const extraTools = [];
-    const recalls = player.itemRecallMessages || {};
+    const recalls = player.itemRecallMessages ?? {};
     const addTool = (text, recallMessage = '') => tools.push({ text, recallMessage });
     const addExtraTool = (text, recallMessage = '') => extraTools.push({ text, recallMessage });
 
@@ -126,12 +126,12 @@ class UI {
     if (player.specialItems.has('tea_pot'))      addExtraTool('🫖', recalls['🫖']);
     if (player.specialItems.has('guitar'))       addExtraTool('🎸', recalls['🎸']);
     const chessPieceCount = CHESS_PIECES.filter(item => player.specialItems.has(item)).length;
-    if (chessPieceCount > 0) addExtraTool(`♟×${chessPieceCount}`);
+    if (chessPieceCount > 0) addExtraTool(`♟×${chessPieceCount}`, '');
     if (player.necklaceCount > 0) addTool(`📿×${player.necklaceCount}`, recalls['📿']);
     if (player.dynamiteCount > 0) {
       addTool(player.placingDynamite
         ? `🧨×${player.dynamiteCount} [PLACING]`
-        : `🧨×${player.dynamiteCount}`);
+        : `🧨×${player.dynamiteCount}`, '');
     }
     if (player.drillCount > 0) addTool(`🪛×${player.drillCount}`);
     if (player.firstAidKits > 0) addTool(`🩹×${player.firstAidKits}`);
