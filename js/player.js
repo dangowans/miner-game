@@ -7,7 +7,8 @@
  *   - Starts with START_HEARTS (3) hearts out of START_HEARTS max.
  *   - Walking into a hazard tile (lava / water) costs 1 heart.
  *   - Hearts reach 0 → dead.
- *   - Visit the Doctor on the surface to restore hearts (HEAL_PRICE per heart).
+ *   - Visit the Doctor on the surface to restore all missing hearts in one visit
+ *     (capped at HEAL_VISIT_CAP).
  *   - Also buy additional max-heart slots (EXTRA_HEART_PRICE each, up to MAX_HEARTS=6).
  *
  * Tool durability:
@@ -84,6 +85,7 @@ class Player {
     // HUD message
     this.message      = '';
     this.messageTimer = 0;
+    this.itemRecallMessages = {};
 
     // Invincibility frames after taking damage (prevents multi-hit)
     this.iFrames = 0;
@@ -159,19 +161,18 @@ class Player {
   }
 
   /**
-   * Heal at the Doctor; costs HEAL_PRICE per heart.
-   * Restores as many hearts as the player can afford (up to maxHearts).
+   * Heal at the Doctor.
+   * Restores all missing hearts in one visit, with total visit cost capped.
    * Returns the number of hearts actually restored.
    */
   heal() {
-    const missing    = this.maxHearts - this.hearts;
+    const missing = this.maxHearts - this.hearts;
     if (missing <= 0) return 0;
-    const affordable = Math.floor(this.money / HEAL_PRICE);
-    const toHeal     = Math.min(missing, affordable);
-    if (toHeal <= 0) return 0;
-    this.hearts += toHeal;
-    this.money  -= toHeal * HEAL_PRICE;
-    return toHeal;
+    const visitCost = Math.min(missing * HEAL_PRICE, HEAL_VISIT_CAP);
+    if (this.money < visitCost) return 0;
+    this.hearts = this.maxHearts;
+    this.money -= visitCost;
+    return missing;
   }
 
   /**

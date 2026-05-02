@@ -801,7 +801,7 @@ class Game {
     }
   }
 
-  /** Use a First Aid Kit to restore health to full. */
+  /** Use a First Aid Kit to restore up to FIRST_AID_MAX_HEAL hearts. */
   _useFirstAidKit() {
     const p = this.player;
     if (p.firstAidKits <= 0) {
@@ -813,8 +813,9 @@ class Game {
       return;
     }
     p.firstAidKits--;
-    p.hearts = p.maxHearts;
-    p.setMessage(`🩹 First Aid Kit used! Restored to full health. (${p.firstAidKits} left)`);
+    const healed = Math.min(FIRST_AID_MAX_HEAL, p.maxHearts - p.hearts);
+    p.hearts += healed;
+    p.setMessage(`🩹 First Aid Kit used! Restored ${healed} heart${healed !== 1 ? 's' : ''}. (${p.firstAidKits} left)`);
     sounds.playTransaction();
     this.ui.updateHUD(p);
   }
@@ -1034,10 +1035,16 @@ class Game {
 
     // ── Police arrest: dynamite was placed and exploded on the surface ───────
     if (by < 3) {
-      Storage.clear();
       this.state = 'dead';
+      const p = this.player;
       const stats = this.player.familyMode ? this._collectFamilyStats() : null;
-      this.ui.showPoliceArrest(this._elapsedTimeLabel(), stats);
+      const time = this._elapsedTimeLabel();
+      if (p.genieWishes > 0) {
+        this.ui.showPoliceArrest(time, stats, () => this._useGenieWish('death'));
+      } else {
+        Storage.clear();
+        this.ui.showPoliceArrest(time, stats);
+      }
       return;
     }
 
@@ -1154,6 +1161,7 @@ class Game {
    * Pauses the game until the player dismisses it.
    */
   _showItemPickupOverlay(emoji, message) {
+    this.player.itemRecallMessages[emoji] = message;
     this.input.clear();
     this.state = 'overlay';
     this.ui.showItemPickup(emoji, message, () => {
@@ -1328,7 +1336,7 @@ class Game {
           p.hasRing = true;
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
-          this._showItemPickupOverlay('💍', 'You found a ring! Bring it to the bar…');
+          this._showItemPickupOverlay('💍', 'You found a ring! A girl would be lucky to get a ring like that!');
         } else {
           this.world.setTile(x, y, TILE.EMPTY);
         }

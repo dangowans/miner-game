@@ -29,9 +29,16 @@ class UI {
     if (this._hudTools) {
       this._hudTools.addEventListener('click', (e) => {
         const toggle = e.target.closest('[data-action="toggle-extra-inventory"]');
-        if (!toggle) return;
-        this._showExtraInventory = !this._showExtraInventory;
-        if (this._lastHudPlayer) this.updateHUD(this._lastHudPlayer);
+        if (toggle) {
+          this._showExtraInventory = !this._showExtraInventory;
+          if (this._lastHudPlayer) this.updateHUD(this._lastHudPlayer);
+          return;
+        }
+
+        const recall = e.target.closest('[data-action="recall-item-message"]');
+        if (!recall || !this._lastHudPlayer) return;
+        this._lastHudPlayer.setMessage(recall.dataset.recallMessage || '');
+        this._hudMsg.textContent = this._lastHudPlayer.message;
       });
     }
 
@@ -75,59 +82,63 @@ class UI {
 
     const tools = [];
     const extraTools = [];
-    if (player.hasShovel)       tools.push('🪏');
-    if (player.hasPick)         tools.push(`⛏×${player.pickUses}`);
-    if (player.hasBucket)       tools.push(`🪣×${player.bucketUses}`);
-    if (player.hasExtinguisher) tools.push(`🧯×${player.extinguisherUses}`);
-    if (player.hasBag)          tools.push('🎒×2');
-    if (player.hasLantern)      tools.push('🔦');
-    if (player.hasFlower)       tools.push('🌸');
-    if (player.hasRing)         tools.push('💍');
-    if (player.hasRadio)        tools.push('📻');
-    if (player.hasDowsingRod)   tools.push('🪄');
-    if (player.hasHeatVision)   tools.push('🥽');
-    if (player.treasureMapDepth > 0) tools.push(`🗺️${player.treasureMapDepth}m`);
-    if (player.genieWishes > 0) tools.push(`🧞×${player.genieWishes}`);
-    if (player.specialItems.has('rubber_boot'))  tools.push('🥾');
+    const recalls = player.itemRecallMessages;
+    const addTool = (text, recallMessage = '') => tools.push({ text, recallMessage });
+    const addExtraTool = (text, recallMessage = '') => extraTools.push({ text, recallMessage });
+
+    if (player.hasShovel)       addTool('🪏', recalls['🪏']);
+    if (player.hasPick)         addTool(`⛏×${player.pickUses}`, recalls['⛏']);
+    if (player.hasBucket)       addTool(`🪣×${player.bucketUses}`);
+    if (player.hasExtinguisher) addTool(`🧯×${player.extinguisherUses}`);
+    if (player.hasBag)          addTool('🎒×2', recalls['🎒']);
+    if (player.hasLantern)      addTool('🔦', recalls['🔦']);
+    if (player.hasFlower)       addTool('🌸');
+    if (player.hasRing)         addTool('💍', recalls['💍']);
+    if (player.hasRadio)        addTool('📻', recalls['📻']);
+    if (player.hasDowsingRod)   addTool('🪄', recalls['🪄']);
+    if (player.hasHeatVision)   addTool('🥽', recalls['🥽']);
+    if (player.treasureMapDepth > 0) addTool(`🗺️${player.treasureMapDepth}m`, recalls['🗺️']);
+    if (player.genieWishes > 0) addTool(`🧞×${player.genieWishes}`, recalls['🧞']);
+    if (player.specialItems.has('rubber_boot'))  addTool('🥾', recalls['🥾']);
     const knightItemCount = ['helmet', 'armor', 'shield', 'sword']
       .filter(item => player.specialItems.has(item)).length;
-    if (knightItemCount > 0) tools.push(`🛡️×${knightItemCount}`);
+    if (knightItemCount > 0) addTool(`🛡️×${knightItemCount}`, recalls['🛡️']);
 
-    if (player.specialItems.has('pocket_watch')) extraTools.push('⌚');
-    if (player.specialItems.has('glasses'))      extraTools.push('🕶️');
-    if (player.specialItems.has('skull'))        extraTools.push('💀');
-    if (player.specialItems.has('canteen'))      extraTools.push('🫙');
-    if (player.specialItems.has('lunchbox'))     extraTools.push('🍱');
-    if (player.specialItems.has('tin_can'))      extraTools.push('🥫');
-    if (player.specialItems.has('cash_bag'))     extraTools.push('💰');
-    if (player.specialItems.has('scroll'))       extraTools.push('📜');
-    if (player.specialItems.has('fossil'))       extraTools.push('👣');
-    if (player.specialItems.has('newspaper'))    extraTools.push('📰');
-    if (player.specialItems.has('broken_chain')) extraTools.push('⛓️');
-    if (player.specialItems.has('old_coin'))     extraTools.push('🪙');
-    if (player.specialItems.has('bottle'))       extraTools.push('🍾');
-    if (player.specialItems.has('anchor'))       extraTools.push('⚓');
-    if (player.specialItems.has('urn'))          extraTools.push('⚱️');
-    if (player.specialItems.has('old_key'))      extraTools.push('🗝️');
-    if (player.specialItems.has('hourglass'))    extraTools.push('⏳');
-    if (player.specialItems.has('old_mirror'))   extraTools.push('🪞');
-    if (player.specialItems.has('picture_frame')) extraTools.push('🖼️');
-    if (player.specialItems.has('tea_pot'))      extraTools.push('🫖');
-    if (player.specialItems.has('guitar'))       extraTools.push('🎸');
+    if (player.specialItems.has('pocket_watch')) addExtraTool('⌚', recalls['⌚']);
+    if (player.specialItems.has('glasses'))      addExtraTool('🕶️', recalls['🕶️']);
+    if (player.specialItems.has('skull'))        addExtraTool('💀', recalls['💀']);
+    if (player.specialItems.has('canteen'))      addExtraTool('🫙', recalls['🫙']);
+    if (player.specialItems.has('lunchbox'))     addExtraTool('🍱', recalls['🍱']);
+    if (player.specialItems.has('tin_can'))      addExtraTool('🥫', recalls['🥫']);
+    if (player.specialItems.has('cash_bag'))     addExtraTool('💰', recalls['💰']);
+    if (player.specialItems.has('scroll'))       addExtraTool('📜', recalls['📜']);
+    if (player.specialItems.has('fossil'))       addExtraTool('👣', recalls['👣']);
+    if (player.specialItems.has('newspaper'))    addExtraTool('📰', recalls['📰']);
+    if (player.specialItems.has('broken_chain')) addExtraTool('⛓️', recalls['⛓️']);
+    if (player.specialItems.has('old_coin'))     addExtraTool('🪙', recalls['🪙']);
+    if (player.specialItems.has('bottle'))       addExtraTool('🍾', recalls['🍾']);
+    if (player.specialItems.has('anchor'))       addExtraTool('⚓', recalls['⚓']);
+    if (player.specialItems.has('urn'))          addExtraTool('⚱️', recalls['⚱️']);
+    if (player.specialItems.has('old_key'))      addExtraTool('🗝️', recalls['🗝️']);
+    if (player.specialItems.has('hourglass'))    addExtraTool('⏳', recalls['⏳']);
+    if (player.specialItems.has('old_mirror'))   addExtraTool('🪞', recalls['🪞']);
+    if (player.specialItems.has('picture_frame')) addExtraTool('🖼️', recalls['🖼️']);
+    if (player.specialItems.has('tea_pot'))      addExtraTool('🫖', recalls['🫖']);
+    if (player.specialItems.has('guitar'))       addExtraTool('🎸', recalls['🎸']);
     const chessPieceCount = CHESS_PIECES.filter(item => player.specialItems.has(item)).length;
-    if (chessPieceCount > 0) extraTools.push(`♟×${chessPieceCount}`);
-    if (player.necklaceCount > 0)                tools.push(`📿×${player.necklaceCount}`);
+    if (chessPieceCount > 0) addExtraTool(`♟×${chessPieceCount}`, recalls['♟']);
+    if (player.necklaceCount > 0) addTool(`📿×${player.necklaceCount}`, recalls['📿']);
     if (player.dynamiteCount > 0) {
-      tools.push(player.placingDynamite
+      addTool(player.placingDynamite
         ? `🧨×${player.dynamiteCount} [PLACING]`
-        : `🧨×${player.dynamiteCount}`);
+        : `🧨×${player.dynamiteCount}`, recalls['🧨']);
     }
-    if (player.drillCount > 0) tools.push(`🪛×${player.drillCount}`);
-    if (player.firstAidKits > 0) tools.push(`🩹×${player.firstAidKits}`);
+    if (player.drillCount > 0) addTool(`🪛×${player.drillCount}`, recalls['🪛']);
+    if (player.firstAidKits > 0) addTool(`🩹×${player.firstAidKits}`, recalls['🩹']);
 
     // Bank balance — show whenever the mine cart has been purchased
     if (player.hasMineCart && !player.familyMode) {
-      tools.push(`| 🏦$${player.bankBalance}`);
+      addTool(`| 🏦$${player.bankBalance}`);
     }
 
     // Family mode status (appended to tool row)
@@ -136,11 +147,25 @@ class UI {
       const barFull = Math.round(supPct / 10);
       const supBar  = '█'.repeat(barFull) + '░'.repeat(10 - barFull);
       const foodIcon = player.babyCount > 0 ? '🍼' : '🍞';
-      tools.push(`| 🏦$${player.bankBalance} ${foodIcon}[${supBar}]${supPct}%`);
+      addTool(`| 🏦$${player.bankBalance} ${foodIcon}[${supBar}]${supPct}%`);
     }
 
-    const toolsText = tools.join(' ');
-    this._hudTools.textContent = toolsText;
+    this._hudTools.textContent = '';
+    const renderToolList = (container, list) => {
+      list.forEach((tool, index) => {
+        if (index > 0) container.appendChild(document.createTextNode(' '));
+        const span = document.createElement('span');
+        span.textContent = tool.text;
+        if (tool.recallMessage) {
+          span.dataset.action = 'recall-item-message';
+          span.dataset.recallMessage = tool.recallMessage;
+          span.title = 'View item message again';
+          span.style.cursor = 'pointer';
+        }
+        container.appendChild(span);
+      });
+    };
+    renderToolList(this._hudTools, tools);
     if (extraTools.length > 0) {
       const expanded = this._showExtraInventory;
       const titleText = expanded ? 'Hide extra items' : 'Show extra items';
@@ -158,7 +183,7 @@ class UI {
       if (expanded) {
         const extraSpan = document.createElement('span');
         extraSpan.className = 'hud-extra-items';
-        extraSpan.textContent = extraTools.join(' ');
+        renderToolList(extraSpan, extraTools);
         this._hudTools.appendChild(document.createTextNode(' '));
         this._hudTools.appendChild(extraSpan);
       }
@@ -420,12 +445,9 @@ class UI {
 
   openDoctor(player, onClose) {
     const missing    = player.maxHearts - player.hearts;
-    const healCost   = HEAL_PRICE;
-    // Compute how many hearts will actually be restored (mirrors player.heal() logic)
-    const affordable = Math.floor(player.money / healCost);
-    const toHeal     = Math.min(missing, affordable);
-    const canHeal    = toHeal > 0;
-    const totalCost  = toHeal * healCost;
+    const toHeal     = missing;
+    const totalCost  = Math.min(missing * HEAL_PRICE, HEAL_VISIT_CAP);
+    const canHeal    = missing > 0 && player.money >= totalCost;
     const canExpand  = player.maxHearts < MAX_HEARTS && player.money >= EXTRA_HEART_PRICE;
 
     const heartsDisplay = () => {
@@ -440,7 +462,7 @@ class UI {
          </div>`
       : missing === 0
         ? `<div class="shop-item disabled">❤️ You are already at full health</div>`
-        : `<div class="shop-item disabled">❤️ Not enough money to heal ($${healCost} needed)</div>`;
+        : `<div class="shop-item disabled">❤️ Not enough money to heal ($${totalCost} needed)</div>`;
 
     const expandHtml = player.maxHearts >= MAX_HEARTS
       ? `<div class="shop-item disabled">💛 Maximum hearts reached (${MAX_HEARTS})</div>`
@@ -519,11 +541,12 @@ class UI {
     if (restartBtn) restartBtn.addEventListener('click', () => { Storage.clear(); location.reload(); });
   }
 
-  showPoliceArrest(elapsedTime, stats = null) {
+  showPoliceArrest(elapsedTime, stats = null, onGenieWish = null) {
     const timeHtml  = elapsedTime
       ? `<p class="overlay-time">Time: ${elapsedTime}</p>`
       : '';
     const statsHtml = stats ? this._familyStatsHtml(stats) : '';
+    const { html: genieHtml, wireup: genieWireup } = this._genieWishParts(onGenieWish);
     this.overlay.innerHTML = `
       <div class="overlay-centered">
         <p class="overlay-emoji">👮</p>
@@ -531,11 +554,15 @@ class UI {
         <p>You set off dynamite in town! A police officer arrested you on the spot.</p>
         ${timeHtml}
         ${statsHtml}
-        <button class="close-btn" onclick="location.reload()">
+        ${genieHtml}
+        <button class="close-btn" id="police-restart-btn"${onGenieWish ? ' style="margin-top:4px"' : ''}>
           🔄 Try Again
         </button>
       </div>`;
     this._openOverlay(() => {});
+    genieWireup();
+    const restartBtn = document.getElementById('police-restart-btn');
+    if (restartBtn) restartBtn.addEventListener('click', () => { Storage.clear(); location.reload(); });
   }
 
   showMineCollapse(elapsedTime, stats = null) {
