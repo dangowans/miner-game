@@ -82,7 +82,7 @@ class UI {
 
     const tools = [];
     const extraTools = [];
-    const recalls = player.itemRecallMessages ?? {};
+    const recalls = player.itemRecallMessages;
     const addTool = (text, recallMessage = '') => tools.push({ text, recallMessage });
     const addExtraTool = (text, recallMessage = '') => extraTools.push({ text, recallMessage });
 
@@ -159,7 +159,7 @@ class UI {
         if (tool.recallMessage) {
           span.dataset.action = 'recall-item-message';
           span.dataset.recallMessage = tool.recallMessage;
-          span.title = 'Tap to reread item message';
+          span.title = 'View item message again';
           span.style.cursor = 'pointer';
         }
         container.appendChild(span);

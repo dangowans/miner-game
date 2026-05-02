@@ -85,7 +85,7 @@ class Player {
     // HUD message
     this.message      = '';
     this.messageTimer = 0;
-    this.itemRecallMessages = Object.create(null);
+    this.itemRecallMessages = {};
 
     // Invincibility frames after taking damage (prevents multi-hit)
     this.iFrames = 0;
