@@ -1161,6 +1161,7 @@ class Game {
    * Pauses the game until the player dismisses it.
    */
   _showItemPickupOverlay(emoji, message) {
+    this.player.itemRecallMessages[emoji] = message;
     this.input.clear();
     this.state = 'overlay';
     this.ui.showItemPickup(emoji, message, () => {
@@ -1335,7 +1336,7 @@ class Game {
           p.hasRing = true;
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
-          this._showItemPickupOverlay('💍', 'You found a ring! Bring it to the bar…');
+          this._showItemPickupOverlay('💍', 'You found a ring! A girl would be lucky to get a ring like that!');
         } else {
           this.world.setTile(x, y, TILE.EMPTY);
         }

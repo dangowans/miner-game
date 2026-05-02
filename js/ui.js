@@ -29,9 +29,16 @@ class UI {
     if (this._hudTools) {
       this._hudTools.addEventListener('click', (e) => {
         const toggle = e.target.closest('[data-action="toggle-extra-inventory"]');
-        if (!toggle) return;
-        this._showExtraInventory = !this._showExtraInventory;
-        if (this._lastHudPlayer) this.updateHUD(this._lastHudPlayer);
+        if (toggle) {
+          this._showExtraInventory = !this._showExtraInventory;
+          if (this._lastHudPlayer) this.updateHUD(this._lastHudPlayer);
+          return;
+        }
+
+        const recall = e.target.closest('[data-action="recall-item-message"]');
+        if (!recall || !this._lastHudPlayer) return;
+        this._lastHudPlayer.setMessage(recall.dataset.recallMessage || '');
+        this._hudMsg.textContent = this._lastHudPlayer.message;
       });
     }
 
@@ -75,59 +82,63 @@ class UI {
 
     const tools = [];
     const extraTools = [];
-    if (player.hasShovel)       tools.push('🪏');
-    if (player.hasPick)         tools.push(`⛏×${player.pickUses}`);
-    if (player.hasBucket)       tools.push(`🪣×${player.bucketUses}`);
-    if (player.hasExtinguisher) tools.push(`🧯×${player.extinguisherUses}`);
-    if (player.hasBag)          tools.push('🎒×2');
-    if (player.hasLantern)      tools.push('🔦');
-    if (player.hasFlower)       tools.push('🌸');
-    if (player.hasRing)         tools.push('💍');
-    if (player.hasRadio)        tools.push('📻');
-    if (player.hasDowsingRod)   tools.push('🪄');
-    if (player.hasHeatVision)   tools.push('🥽');
-    if (player.treasureMapDepth > 0) tools.push(`🗺️${player.treasureMapDepth}m`);
-    if (player.genieWishes > 0) tools.push(`🧞×${player.genieWishes}`);
-    if (player.specialItems.has('rubber_boot'))  tools.push('🥾');
+    const recalls = player.itemRecallMessages || {};
+    const addTool = (text, recallMessage = '') => tools.push({ text, recallMessage });
+    const addExtraTool = (text, recallMessage = '') => extraTools.push({ text, recallMessage });
+
+    if (player.hasShovel)       addTool('🪏', recalls['🪏']);
+    if (player.hasPick)         addTool(`⛏×${player.pickUses}`, recalls['⛏']);
+    if (player.hasBucket)       addTool(`🪣×${player.bucketUses}`);
+    if (player.hasExtinguisher) addTool(`🧯×${player.extinguisherUses}`);
+    if (player.hasBag)          addTool('🎒×2', recalls['🎒']);
+    if (player.hasLantern)      addTool('🔦', recalls['🔦']);
+    if (player.hasFlower)       addTool('🌸');
+    if (player.hasRing)         addTool('💍', recalls['💍']);
+    if (player.hasRadio)        addTool('📻', recalls['📻']);
+    if (player.hasDowsingRod)   addTool('🪄', recalls['🪄']);
+    if (player.hasHeatVision)   addTool('🥽', recalls['🥽']);
+    if (player.treasureMapDepth > 0) addTool(`🗺️${player.treasureMapDepth}m`, recalls['🗺️']);
+    if (player.genieWishes > 0) addTool(`🧞×${player.genieWishes}`, recalls['🧞']);
+    if (player.specialItems.has('rubber_boot'))  addTool('🥾', recalls['🥾']);
     const knightItemCount = ['helmet', 'armor', 'shield', 'sword']
       .filter(item => player.specialItems.has(item)).length;
-    if (knightItemCount > 0) tools.push(`🛡️×${knightItemCount}`);
+    if (knightItemCount > 0) addTool(`🛡️×${knightItemCount}`, recalls['🛡️']);
 
-    if (player.specialItems.has('pocket_watch')) extraTools.push('⌚');
-    if (player.specialItems.has('glasses'))      extraTools.push('🕶️');
-    if (player.specialItems.has('skull'))        extraTools.push('💀');
-    if (player.specialItems.has('canteen'))      extraTools.push('🫙');
-    if (player.specialItems.has('lunchbox'))     extraTools.push('🍱');
-    if (player.specialItems.has('tin_can'))      extraTools.push('🥫');
-    if (player.specialItems.has('cash_bag'))     extraTools.push('💰');
-    if (player.specialItems.has('scroll'))       extraTools.push('📜');
-    if (player.specialItems.has('fossil'))       extraTools.push('👣');
-    if (player.specialItems.has('newspaper'))    extraTools.push('📰');
-    if (player.specialItems.has('broken_chain')) extraTools.push('⛓️');
-    if (player.specialItems.has('old_coin'))     extraTools.push('🪙');
-    if (player.specialItems.has('bottle'))       extraTools.push('🍾');
-    if (player.specialItems.has('anchor'))       extraTools.push('⚓');
-    if (player.specialItems.has('urn'))          extraTools.push('⚱️');
-    if (player.specialItems.has('old_key'))      extraTools.push('🗝️');
-    if (player.specialItems.has('hourglass'))    extraTools.push('⏳');
-    if (player.specialItems.has('old_mirror'))   extraTools.push('🪞');
-    if (player.specialItems.has('picture_frame')) extraTools.push('🖼️');
-    if (player.specialItems.has('tea_pot'))      extraTools.push('🫖');
-    if (player.specialItems.has('guitar'))       extraTools.push('🎸');
+    if (player.specialItems.has('pocket_watch')) addExtraTool('⌚', recalls['⌚']);
+    if (player.specialItems.has('glasses'))      addExtraTool('🕶️', recalls['🕶️']);
+    if (player.specialItems.has('skull'))        addExtraTool('💀', recalls['💀']);
+    if (player.specialItems.has('canteen'))      addExtraTool('🫙', recalls['🫙']);
+    if (player.specialItems.has('lunchbox'))     addExtraTool('🍱', recalls['🍱']);
+    if (player.specialItems.has('tin_can'))      addExtraTool('🥫', recalls['🥫']);
+    if (player.specialItems.has('cash_bag'))     addExtraTool('💰', recalls['💰']);
+    if (player.specialItems.has('scroll'))       addExtraTool('📜', recalls['📜']);
+    if (player.specialItems.has('fossil'))       addExtraTool('👣', recalls['👣']);
+    if (player.specialItems.has('newspaper'))    addExtraTool('📰', recalls['📰']);
+    if (player.specialItems.has('broken_chain')) addExtraTool('⛓️', recalls['⛓️']);
+    if (player.specialItems.has('old_coin'))     addExtraTool('🪙', recalls['🪙']);
+    if (player.specialItems.has('bottle'))       addExtraTool('🍾', recalls['🍾']);
+    if (player.specialItems.has('anchor'))       addExtraTool('⚓', recalls['⚓']);
+    if (player.specialItems.has('urn'))          addExtraTool('⚱️', recalls['⚱️']);
+    if (player.specialItems.has('old_key'))      addExtraTool('🗝️', recalls['🗝️']);
+    if (player.specialItems.has('hourglass'))    addExtraTool('⏳', recalls['⏳']);
+    if (player.specialItems.has('old_mirror'))   addExtraTool('🪞', recalls['🪞']);
+    if (player.specialItems.has('picture_frame')) addExtraTool('🖼️', recalls['🖼️']);
+    if (player.specialItems.has('tea_pot'))      addExtraTool('🫖', recalls['🫖']);
+    if (player.specialItems.has('guitar'))       addExtraTool('🎸', recalls['🎸']);
     const chessPieceCount = CHESS_PIECES.filter(item => player.specialItems.has(item)).length;
-    if (chessPieceCount > 0) extraTools.push(`♟×${chessPieceCount}`);
-    if (player.necklaceCount > 0)                tools.push(`📿×${player.necklaceCount}`);
+    if (chessPieceCount > 0) addExtraTool(`♟×${chessPieceCount}`);
+    if (player.necklaceCount > 0) addTool(`📿×${player.necklaceCount}`, recalls['📿']);
     if (player.dynamiteCount > 0) {
-      tools.push(player.placingDynamite
+      addTool(player.placingDynamite
         ? `🧨×${player.dynamiteCount} [PLACING]`
         : `🧨×${player.dynamiteCount}`);
     }
-    if (player.drillCount > 0) tools.push(`🪛×${player.drillCount}`);
-    if (player.firstAidKits > 0) tools.push(`🩹×${player.firstAidKits}`);
+    if (player.drillCount > 0) addTool(`🪛×${player.drillCount}`);
+    if (player.firstAidKits > 0) addTool(`🩹×${player.firstAidKits}`);
 
     // Bank balance — show whenever the mine cart has been purchased
     if (player.hasMineCart && !player.familyMode) {
-      tools.push(`| 🏦$${player.bankBalance}`);
+      addTool(`| 🏦$${player.bankBalance}`);
     }
 
     // Family mode status (appended to tool row)
@@ -136,11 +147,25 @@ class UI {
       const barFull = Math.round(supPct / 10);
       const supBar  = '█'.repeat(barFull) + '░'.repeat(10 - barFull);
       const foodIcon = player.babyCount > 0 ? '🍼' : '🍞';
-      tools.push(`| 🏦$${player.bankBalance} ${foodIcon}[${supBar}]${supPct}%`);
+      addTool(`| 🏦$${player.bankBalance} ${foodIcon}[${supBar}]${supPct}%`);
     }
 
-    const toolsText = tools.join(' ');
-    this._hudTools.textContent = toolsText;
+    this._hudTools.textContent = '';
+    const renderToolList = (container, list) => {
+      list.forEach((tool, index) => {
+        if (index > 0) container.appendChild(document.createTextNode(' '));
+        const span = document.createElement('span');
+        span.textContent = tool.text;
+        if (tool.recallMessage) {
+          span.dataset.action = 'recall-item-message';
+          span.dataset.recallMessage = tool.recallMessage;
+          span.title = 'Tap to reread item message';
+          span.style.cursor = 'pointer';
+        }
+        container.appendChild(span);
+      });
+    };
+    renderToolList(this._hudTools, tools);
     if (extraTools.length > 0) {
       const expanded = this._showExtraInventory;
       const titleText = expanded ? 'Hide extra items' : 'Show extra items';
@@ -158,7 +183,7 @@ class UI {
       if (expanded) {
         const extraSpan = document.createElement('span');
         extraSpan.className = 'hud-extra-items';
-        extraSpan.textContent = extraTools.join(' ');
+        renderToolList(extraSpan, extraTools);
         this._hudTools.appendChild(document.createTextNode(' '));
         this._hudTools.appendChild(extraSpan);
       }
