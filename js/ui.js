@@ -458,11 +458,11 @@ class UI {
 
     const healHtml = canHeal
       ? `<div class="shop-item buyable" id="heal-btn">
-           ❤️ Doctor's appointment — restore ${toHeal} heart${toHeal !== 1 ? 's' : ''} — <span class="price">$${totalCost}</span>
+           ❤️ Doctor's appointment (${toHeal} heart${toHeal !== 1 ? 's' : ''}) — <span class="price">$${totalCost}</span>
          </div>`
       : missing === 0
         ? `<div class="shop-item disabled">❤️ You are already at full health</div>`
-        : `<div class="shop-item disabled">❤️ Doctor's appointment — not enough money ($${totalCost} needed)</div>`;
+        : `<div class="shop-item disabled">❤️ Doctor's appointment — not enough money (<span class="price">$${totalCost}</span> needed)</div>`;
 
     const expandHtml = player.maxHearts >= MAX_HEARTS
       ? `<div class="shop-item disabled">💛 Maximum hearts reached (${MAX_HEARTS})</div>`
