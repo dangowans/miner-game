@@ -30,7 +30,10 @@ class Renderer {
 
   updateCamera(player) {
     const idealTop = player.y - Math.floor(VIEWPORT_ROWS / 3);
-    this.cameraY   = Math.max(0, idealTop);
+    // Clamp so the viewport's last row never exceeds the depth-limit boundary,
+    // preventing a large black area below the mine's unlocked depth.
+    const depthCap = player.unlockedDepth + 2 - (VIEWPORT_ROWS - 1);
+    this.cameraY   = Math.max(0, Math.min(idealTop, depthCap));
   }
 
   // -------------------------------------------------------------------------
