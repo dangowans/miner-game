@@ -589,6 +589,7 @@ class UI {
         </button>
       </div>`;
     this._openOverlay(() => {}, { locked: true });
+    const familyBtn = document.getElementById('family-mode-btn');
     if (familyBtn) {
       familyBtn.addEventListener('click', () => {
         this._closeOverlay();
