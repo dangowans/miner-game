@@ -580,6 +580,42 @@ class Renderer {
         const cx1 = px + ((tx * 7 + 4) % (ts - 12)) + 6;
         ctx.fillRect(cx1, py + 10, 12, 4);
         ctx.fillRect(cx1 - 3, py + 12, 18, 3);
+
+        // Billboard signs above building facades (sky row, ty === 0)
+        if (ty === 0) {
+          if (tx === BAR_X) {
+            // Beer glass sign above the bar
+            ctx.fillStyle = '#fffbe6';
+            ctx.fillRect(cx - 8, py + 14, 17, 16);
+            ctx.strokeStyle = '#8a4a00';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(cx - 8, py + 14, 17, 16);
+            ctx.font = '13px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('🍺', cx, py + 27);
+          } else if (tx === DOCTOR_X) {
+            // Red cross sign above the hospital
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(cx - 8, py + 14, 17, 16);
+            ctx.strokeStyle = '#aa0000';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(cx - 8, py + 14, 17, 16);
+            ctx.fillStyle = '#cc0000';
+            ctx.fillRect(cx - 1, py + 16, 3, 10);
+            ctx.fillRect(cx - 4, py + 20, 9, 3);
+          } else if (tx === BANK_X) {
+            // Dollar sign above the bank
+            ctx.fillStyle = '#e8f5e9';
+            ctx.fillRect(cx - 8, py + 14, 17, 16);
+            ctx.strokeStyle = '#1a5c1a';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(cx - 8, py + 14, 17, 16);
+            ctx.fillStyle = '#1a5c1a';
+            ctx.font = 'bold 12px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('$', cx, py + 27);
+          }
+        }
         break;
       }
 
