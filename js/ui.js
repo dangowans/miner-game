@@ -64,12 +64,12 @@ class UI {
 
     this._hudMoney.textContent = player.money;
 
-    // Ore breakdown: count each type then build "🥈×2 🥇×1 (3/10)" string
+    // Ore breakdown: count each type then build "⚪×2 🟡×1 (3/10)" string
     const oreCounts = {};
     for (const g of player.gems) oreCounts[g] = (oreCounts[g] || 0) + 1;
     const ORE_ICON = {
-      [HIDDEN.SILVER]:   '🥈',
-      [HIDDEN.GOLD]:     '🥇',
+      [HIDDEN.SILVER]:   '⚪',
+      [HIDDEN.GOLD]:     '🟡',
       [HIDDEN.PLATINUM]: '🔹',
       [HIDDEN.DIAMOND]:  '💎',
       [HIDDEN.RUBY]:     '🔴',
@@ -133,7 +133,7 @@ class UI {
         ? `🧨×${player.dynamiteCount} [PLACING]`
         : `🧨×${player.dynamiteCount}`, recalls['🧨']);
     }
-    if (player.drillCount > 0) addTool(`🪛×${player.drillCount}`, recalls['🪛']);
+    if (player.drillCount > 0) addTool(`⚒️×${player.drillCount}`, recalls['⚒️']);
     if (player.firstAidKits > 0) addTool(`🩹×${player.firstAidKits}`, recalls['🩹']);
 
     // Bank balance — show whenever the mine cart has been purchased
@@ -458,11 +458,11 @@ class UI {
 
     const healHtml = canHeal
       ? `<div class="shop-item buyable" id="heal-btn">
-           ❤️ Restore ${toHeal} heart${toHeal !== 1 ? 's' : ''} — <span class="price">$${totalCost}</span>
+           ❤️ Doctor's appointment (${toHeal} heart${toHeal !== 1 ? 's' : ''}) — <span class="price">$${totalCost}</span>
          </div>`
       : missing === 0
         ? `<div class="shop-item disabled">❤️ You are already at full health</div>`
-        : `<div class="shop-item disabled">❤️ Not enough money to heal ($${totalCost} needed)</div>`;
+        : `<div class="shop-item disabled">❤️ Doctor's appointment — not enough money (<span class="price">$${totalCost}</span> needed)</div>`;
 
     const expandHtml = player.maxHearts >= MAX_HEARTS
       ? `<div class="shop-item disabled">💛 Maximum hearts reached (${MAX_HEARTS})</div>`
@@ -731,7 +731,7 @@ class UI {
         player.bankBalance += amt;
         player.setMessage(`💳 Deposited $${amt} into bank account. Balance: $${player.bankBalance}`);
         sounds.playTransaction();
-        this._closeOverlay();
+        this.openBank(player, onClose);
       });
     }
 
@@ -744,7 +744,7 @@ class UI {
         player.money       += amt;
         player.setMessage(`💸 Withdrew $${amt} from bank account. Balance: $${player.bankBalance}`);
         sounds.playTransaction();
-        this._closeOverlay();
+        this.openBank(player, onClose);
       });
     }
 
@@ -1262,6 +1262,12 @@ class UI {
   // -------------------------------------------------------------------------
 
   _openOverlay(onClose) {
+    // Remove any previously attached keyboard-nav handler (e.g. when the
+    // overlay content is refreshed in-place without closing it first).
+    if (this._overlayNavHandler) {
+      document.removeEventListener('keydown', this._overlayNavHandler);
+      this._overlayNavHandler = null;
+    }
     this.overlayOpen      = true;
     this._onCloseCallback = onClose;
     this.overlay.classList.add('active');

@@ -181,8 +181,8 @@ const GEM_VALUE = Object.freeze({
 
 // Ore display names and icons (for sell screen)
 const ORE_NAME = Object.freeze({
-  [HIDDEN.SILVER]:   '🥈 Silver',
-  [HIDDEN.GOLD]:     '🥇 Gold',
+  [HIDDEN.SILVER]:   '⚪ Silver',
+  [HIDDEN.GOLD]:     '🟡 Gold',
   [HIDDEN.PLATINUM]: '🔹 Platinum',
   [HIDDEN.DIAMOND]:  '💎 Diamond',
   [HIDDEN.RUBY]:     '🔴 Ruby',
@@ -266,7 +266,7 @@ const SHOP_ITEMS = [
   {
     id:      'drill',
     name:    'Drill',
-    icon:    '🪛',
+    icon:    '⚒️',
     price:   100,
     desc:    'Use from inventory to drill 15 m straight down, clearing dirt and stone while revealing hidden content.',
     oneTime: false,
@@ -335,7 +335,7 @@ const JEWELER_MONEY_COST   = 1000;  // Cash required alongside the ring for prop
 // ---------------------------------------------------------------------------
 // Doctor services
 // ---------------------------------------------------------------------------
-const HEAL_PRICE        = 30;   // Cost to restore 1 heart
+const HEAL_PRICE        = 20;   // Cost to restore 1 heart
 const HEAL_VISIT_CAP    = 60;   // Doctor full-heal visit cap
 const EXTRA_HEART_PRICE = 150;  // Cost to add +1 max heart (up to MAX_HEARTS)
 const MAX_HEARTS        = 6;

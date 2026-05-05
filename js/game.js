@@ -879,11 +879,11 @@ class Game {
   _useDrill() {
     const p = this.player;
     if (p.drillCount <= 0) {
-      p.setMessage('🪛 No drill charges — buy one at the Shop.');
+      p.setMessage('⚒️ No drill charges — buy one at the Shop.');
       return;
     }
     if (p.y < 3) {
-      p.setMessage('🪛 The drill can only be used in the mine.');
+      p.setMessage('⚒️ The drill can only be used in the mine.');
       return;
     }
 
@@ -918,7 +918,7 @@ class Game {
     }
 
     p.drillCount--;
-    p.setMessage(`🪛 Drill used! Cleared ${DRILL_DEPTH} m straight down. (${p.drillCount} left)`);
+    p.setMessage(`⚒️ Drill used! Cleared ${DRILL_DEPTH} m straight down. (${p.drillCount} left)`);
     sounds.playTransaction();
     this.ui.updateHUD(p);
   }
