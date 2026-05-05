@@ -242,7 +242,7 @@ class UI {
       // Same for first aid kits
       const buyable    = (item.id === 'dynamite' || item.id === 'drill' || item.id === 'firstaid') ? affordable : (!owned && affordable);
       const cls        = buyable ? 'shop-item buyable' : 'shop-item disabled';
-      const stockNote  = (count) => count > 0 ? ` <em>(×${count} in stock)</em>` : '';
+      const stockNote  = (count) => count > 0 ? ` <em>(×${count} in inventory)</em>` : '';
       const needNote   = !affordable ? ` <em class="short">(need $${item.price - player.money} more)</em>` : '';
       let note;
       if (item.id === 'dynamite') {
