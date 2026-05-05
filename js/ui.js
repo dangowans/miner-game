@@ -242,7 +242,7 @@ class UI {
       // Same for first aid kits
       const buyable    = (item.id === 'dynamite' || item.id === 'drill' || item.id === 'firstaid') ? affordable : (!owned && affordable);
       const cls        = buyable ? 'shop-item buyable' : 'shop-item disabled';
-      const stockNote  = (count) => count > 0 ? ` <em>(×${count} in stock)</em>` : '';
+      const stockNote  = (count) => count > 0 ? ` <em>(×${count} in inventory)</em>` : '';
       const needNote   = !affordable ? ` <em class="short">(need $${item.price - player.money} more)</em>` : '';
       let note;
       if (item.id === 'dynamite') {
@@ -1277,6 +1277,12 @@ class UI {
       closeBtn.addEventListener('click', () => this._closeOverlay());
     }
 
+    const titleCloseBtn = document.getElementById('title-close-btn');
+    if (titleCloseBtn) {
+      titleCloseBtn.style.display = 'inline-block';
+      titleCloseBtn.onclick = () => this._closeOverlay();
+    }
+
     this._setupOverlayKeyNav();
   }
 
@@ -1287,6 +1293,11 @@ class UI {
     if (this._overlayNavHandler) {
       document.removeEventListener('keydown', this._overlayNavHandler);
       this._overlayNavHandler = null;
+    }
+    const titleCloseBtn = document.getElementById('title-close-btn');
+    if (titleCloseBtn) {
+      titleCloseBtn.style.display = 'none';
+      titleCloseBtn.onclick = null;
     }
     const cb = this._onCloseCallback;
     this._onCloseCallback  = null;

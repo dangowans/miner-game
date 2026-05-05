@@ -34,9 +34,7 @@
       color: #f5c842;
       letter-spacing: 2px;
       padding-top: 2px;
-      margin-bottom: 6px;
       text-shadow: 0 0 8px #a08000;
-      align-self: flex-start;
     }
 
     /* ── Game wrapper ── */
@@ -316,6 +314,33 @@
       flex: 1;
     }
 
+    /* ── Game title bar (title + overlay close button) ── */
+    #game-title-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 800px;
+      margin-bottom: 6px;
+    }
+    #game-title-bar h1 {
+      margin-bottom: 0;
+      align-self: auto;
+    }
+    #title-close-btn {
+      display: none;
+      background: #2a2a2a;
+      border: 1px solid #555;
+      border-radius: 4px;
+      color: #ccc;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.9em;
+      line-height: 1.25;
+      padding: 5px 10px;
+    }
+    #title-close-btn:hover { background: #383838; }
+
     /* ── Page layout: game area + controls ── */
     #page-layout {
       display: flex;
@@ -383,7 +408,10 @@
 
   <div id="page-layout">
     <div id="game-area">
-      <h1>⛏ MINI MINER</h1>
+      <div id="game-title-bar">
+        <h1>⛏ MINI MINER</h1>
+        <button id="title-close-btn">✕ &nbsp;<kbd>Esc</kbd></button>
+      </div>
 
       <div id="game-wrap">
         <canvas id="canvas" width="816" height="476"></canvas>
@@ -416,7 +444,7 @@
         </div>
         <div id="inventory-btns" aria-label="Inventory">
           <button id="btn-dynamite" title="Place dynamite (X)"               aria-label="Dynamite" disabled>🧨</button>
-          <button id="btn-drill"    title="Use drill (V)"                    aria-label="Drill" disabled>⚒️</button>
+          <button id="btn-drill"    title="Use drill (V)"                    aria-label="Drill" disabled>🪛</button>
           <button id="btn-minecart" title="Send mine cart to bank (C)"       aria-label="Mine Cart" style="display:none">🚃</button>
           <button id="btn-firstaid" title="Use First Aid Kit"                aria-label="First Aid Kit" disabled>🩹</button>
           <button id="btn-radio"    title="Use radio — teleport to entrance" aria-label="Radio" style="display:none">📻</button>
