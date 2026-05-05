@@ -291,7 +291,7 @@ class Renderer {
         } else {
           // Side wall extension – flush to connect with main facade
           ctx.fillStyle = '#ddf4ff';
-          ctx.fillRect(px, py + 8, ts, ts - 8);
+          ctx.fillRect(px - 7, py + 8, ts + 7, ts - 8);
           // Window
           ctx.fillStyle = '#aaddff';
           ctx.fillRect(cx - 3, py + 14, 7, 7);

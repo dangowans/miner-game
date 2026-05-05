@@ -274,10 +274,7 @@ class UI {
     }).join('');
 
     this.overlay.innerHTML = `
-      <div class="overlay-header">
-        <h2>🏪 General Store</h2>
-        <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
-      </div>
+      <h2>🏪 General Store</h2>
       <p class="shop-balance">Your money: <strong>$${player.money}</strong></p>
       <p style="color:#aaa;font-size:0.85em;margin:4px 0 8px">Sell your ore at the 🏦 Bank next door.</p>
       <div class="section-label">BUY</div>
@@ -335,10 +332,7 @@ class UI {
       ];
       const line = flowerLines[Math.floor(Math.random() * flowerLines.length)];
       html = `
-        <div class="overlay-header">
-          <h2>🍺 The Bar</h2>
-          <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
-        </div>
+        <h2>🍺 The Bar</h2>
         <p class="bar-girl">👱‍♀️ <em>${line}</em></p>`;
 
     // ── Proposal: drinks done, ring in hand, $1000 available ─────────────
@@ -357,10 +351,7 @@ class UI {
     // ── Ring in hand but not enough money ─────────────────────────────────
     } else if (unlockedByDrinks && player.hasRing && player.money < JEWELER_MONEY_COST) {
       html = `
-        <div class="overlay-header">
-          <h2>🍺 The Bar</h2>
-          <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
-        </div>
+        <h2>🍺 The Bar</h2>
         <p class="bar-girl">👱‍♀️ <em>"That ring is beautiful… but a girl needs security. Come back with $${JEWELER_MONEY_COST}."</em></p>
         <p class="hint">You need $${JEWELER_MONEY_COST - player.money} more to propose.</p>`;
 
@@ -379,10 +370,7 @@ class UI {
       ];
       const line = lines[Math.floor(Math.random() * lines.length)];
       html = `
-        <div class="overlay-header">
-          <h2>🍺 The Bar</h2>
-          <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
-        </div>
+        <h2>🍺 The Bar</h2>
         <p class="bar-girl">👱‍♀️ <em>${line}</em></p>
         <p class="hint">Rumour has it, a man dropped an engagement ring in the outhouse 50 or so years ago. I wonder if it's still down there?</p>`;
 
@@ -406,10 +394,7 @@ class UI {
       const drinkBtnCls  = canAfford ? 'shop-item buyable' : 'shop-item disabled';
       const drinkNote    = canAfford ? '' : ` <em class="short">(need $${DRINK_PRICE - player.money} more)</em>`;
       html = `
-        <div class="overlay-header">
-          <h2>🍺 The Bar</h2>
-          <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
-        </div>
+        <h2>🍺 The Bar</h2>
         <p class="bar-girl">👱‍♀️ <em>${line}</em></p>
         <p class="hint">Buy her ${drinksLeft} more drink${drinksLeft !== 1 ? 's' : ''} to win her over. (${player.drinksBought}/${DRINKS_TO_UNLOCK} bought)</p>
         <div class="${drinkBtnCls}" id="buy-drink-btn">
@@ -432,11 +417,14 @@ class UI {
       });
     }
 
-    document.getElementById('overlay-close').addEventListener('click', () => {
-      const isWin = unlockedByDrinks && hasRingAndMoney;
-      this._closeOverlay();
-      onClose(isWin);
-    });
+    const overlayCloseBtn = document.getElementById('overlay-close');
+    if (overlayCloseBtn) {
+      overlayCloseBtn.addEventListener('click', () => {
+        const isWin = unlockedByDrinks && hasRingAndMoney;
+        this._closeOverlay();
+        onClose(isWin);
+      });
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -476,10 +464,7 @@ class UI {
            </div>`;
 
     this.overlay.innerHTML = `
-      <div class="overlay-header">
-        <h2>🏥 Doctor's Office</h2>
-        <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
-      </div>
+      <h2>🏥 Doctor's Office</h2>
       <p class="shop-balance">Your money: <strong>$${player.money}</strong></p>
       <p class="shop-balance">Health: <strong style="color:#ff8888">${heartsDisplay()}</strong>
          (${player.hearts}/${player.maxHearts})</p>
@@ -701,10 +686,7 @@ class UI {
     }
 
     this.overlay.innerHTML = `
-      <div class="overlay-header">
-        <h2>🏦 Town Bank</h2>
-        <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
-      </div>
+      <h2>🏦 Town Bank</h2>
       <p class="shop-balance">Your money: <strong>$${player.money}</strong></p>
       <div class="section-label">SELL ORE</div>
       ${itemsHtml}
@@ -819,10 +801,7 @@ class UI {
     const cartCls     = canCart ? 'shop-item buyable' : 'shop-item disabled';
 
     this.overlay.innerHTML = `
-      <div class="overlay-header">
-        <h2>🏗️ Contractor Mike</h2>
-        <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
-      </div>
+      <h2>🏗️ Contractor Mike</h2>
       <p class="shop-balance">Your money: <strong>$${player.money}</strong></p>
 
       <div class="section-label">HOME EXPANSION</div>
@@ -943,10 +922,7 @@ class UI {
     }
 
     this.overlay.innerHTML = `
-      <div class="overlay-header">
-        <h2>${houseEmoji} Your Home</h2>
-        <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
-      </div>
+      <h2>${houseEmoji} Your Home</h2>
       <p class="shop-balance">Your money: <strong>$${player.money}</strong></p>
       <p style="font-size:0.88em;margin:2px 0 4px">
         House level: <strong>${player.houseLevel} / ${HOUSE_MAX_LEVEL}</strong>
@@ -1115,10 +1091,7 @@ class UI {
       : '';
 
     this.overlay.innerHTML = `
-      <div class="overlay-header">
-        <h2>🚽 Outhouse</h2>
-        <button class="close-btn" id="overlay-close">✕ &nbsp;<kbd>Esc</kbd></button>
-      </div>
+      <h2>🚽 Outhouse</h2>
       <p style="text-align:center;font-size:2.5em;margin:16px 0 4px">🚽</p>
       <p style="text-align:center;font-size:0.95em;margin:0 0 16px"><em>"You feel relieved."</em></p>
 
