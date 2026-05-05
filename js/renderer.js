@@ -586,34 +586,34 @@ class Renderer {
           if (tx === BAR_X) {
             // Beer glass sign above the bar
             ctx.fillStyle = '#fffbe6';
-            ctx.fillRect(cx - 8, py + 14, 17, 16);
+            ctx.fillRect(cx - 12, py + 8, 24, 22);
             ctx.strokeStyle = '#8a4a00';
             ctx.lineWidth = 1;
-            ctx.strokeRect(cx - 8, py + 14, 17, 16);
-            ctx.font = '13px monospace';
+            ctx.strokeRect(cx - 12, py + 8, 24, 22);
+            ctx.font = '18px monospace';
             ctx.textAlign = 'center';
-            ctx.fillText('🍺', cx, py + 27);
+            ctx.fillText('🍺', cx, py + 26);
           } else if (tx === DOCTOR_X) {
             // Red cross sign above the hospital
             ctx.fillStyle = '#ffffff';
-            ctx.fillRect(cx - 8, py + 14, 17, 16);
+            ctx.fillRect(cx - 12, py + 8, 24, 22);
             ctx.strokeStyle = '#aa0000';
             ctx.lineWidth = 1;
-            ctx.strokeRect(cx - 8, py + 14, 17, 16);
+            ctx.strokeRect(cx - 12, py + 8, 24, 22);
             ctx.fillStyle = '#cc0000';
-            ctx.fillRect(cx - 1, py + 16, 3, 10);
-            ctx.fillRect(cx - 4, py + 20, 9, 3);
+            ctx.fillRect(cx - 2, py + 11, 4, 15);
+            ctx.fillRect(cx - 6, py + 16, 12, 4);
           } else if (tx === BANK_X) {
             // Dollar sign above the bank
             ctx.fillStyle = '#e8f5e9';
-            ctx.fillRect(cx - 8, py + 14, 17, 16);
+            ctx.fillRect(cx - 12, py + 8, 24, 22);
             ctx.strokeStyle = '#1a5c1a';
             ctx.lineWidth = 1;
-            ctx.strokeRect(cx - 8, py + 14, 17, 16);
+            ctx.strokeRect(cx - 12, py + 8, 24, 22);
             ctx.fillStyle = '#1a5c1a';
-            ctx.font = 'bold 12px monospace';
+            ctx.font = 'bold 17px monospace';
             ctx.textAlign = 'center';
-            ctx.fillText('$', cx, py + 27);
+            ctx.fillText('$', cx, py + 26);
           }
         }
         break;
