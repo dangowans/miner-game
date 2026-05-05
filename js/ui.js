@@ -1279,7 +1279,7 @@ class UI {
 
     const titleCloseBtn = document.getElementById('title-close-btn');
     if (titleCloseBtn) {
-      titleCloseBtn.style.display = '';
+      titleCloseBtn.style.display = 'inline-block';
       titleCloseBtn.onclick = () => this._closeOverlay();
     }
 
