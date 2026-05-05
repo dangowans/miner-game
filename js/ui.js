@@ -1277,6 +1277,12 @@ class UI {
       closeBtn.addEventListener('click', () => this._closeOverlay());
     }
 
+    const titleCloseBtn = document.getElementById('title-close-btn');
+    if (titleCloseBtn) {
+      titleCloseBtn.style.display = '';
+      titleCloseBtn.onclick = () => this._closeOverlay();
+    }
+
     this._setupOverlayKeyNav();
   }
 
@@ -1287,6 +1293,11 @@ class UI {
     if (this._overlayNavHandler) {
       document.removeEventListener('keydown', this._overlayNavHandler);
       this._overlayNavHandler = null;
+    }
+    const titleCloseBtn = document.getElementById('title-close-btn');
+    if (titleCloseBtn) {
+      titleCloseBtn.style.display = 'none';
+      titleCloseBtn.onclick = null;
     }
     const cb = this._onCloseCallback;
     this._onCloseCallback  = null;

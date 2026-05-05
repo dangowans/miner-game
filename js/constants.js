@@ -266,7 +266,7 @@ const SHOP_ITEMS = [
   {
     id:      'drill',
     name:    'Drill',
-    icon:    '⚒️',
+    icon:    '🪛',
     price:   100,
     desc:    'Use from inventory to drill 15 m straight down, clearing dirt and stone while revealing hidden content.',
     oneTime: false,
@@ -386,6 +386,7 @@ const deepestElevEntry = (maxY) => Math.floor((maxY - 2) / 5) * 5 + 2;
 // Surface building x-positions in the building facade row (y=0)
 // ---------------------------------------------------------------------------
 const OUTHOUSE_X  = 1;   // Left-side outhouse
+const DOCTOR_X    = 13;  // Doctor / hospital
 const JEWELER_X   = 19;  // Jeweler (between Bank and mine entrance)
 const BANK_X      = 17;  // Town bank (between Doctor and mine entrance)
 

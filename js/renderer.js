@@ -277,34 +277,62 @@ class Renderer {
       }
 
       case TILE.DOCTOR: {
-        ctx.fillStyle = '#ddf4ff';
-        ctx.fillRect(px + 7, py + 8, ts - 14, ts - 8);
-        ctx.fillStyle = '#cc0000';
-        ctx.fillRect(cx - 1, py + 10, 3, 10);
-        ctx.fillRect(cx - 4, py + 13, 9, 3);
-        ctx.fillStyle = '#004488';
-        ctx.font      = 'bold 6px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('DOC', cx, py + ts - 4);
+        if (tx === DOCTOR_X) {
+          // Main facade: door with red cross and "DOC" label
+          ctx.fillStyle = '#ddf4ff';
+          ctx.fillRect(px + 7, py + 8, ts - 14, ts - 8);
+          ctx.fillStyle = '#cc0000';
+          ctx.fillRect(cx - 1, py + 10, 3, 10);
+          ctx.fillRect(cx - 4, py + 13, 9, 3);
+          ctx.fillStyle = '#004488';
+          ctx.font      = 'bold 6px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('DOC', cx, py + ts - 4);
+        } else {
+          // Side wall extension – flush to connect with main facade
+          ctx.fillStyle = '#ddf4ff';
+          ctx.fillRect(px, py + 8, ts, ts - 8);
+          // Window
+          ctx.fillStyle = '#aaddff';
+          ctx.fillRect(cx - 3, py + 14, 7, 7);
+          ctx.fillStyle = '#88bbdd';
+          ctx.fillRect(cx - 2, py + 16, 5, 1);
+          ctx.fillRect(cx,     py + 14, 1, 5);
+        }
         break;
       }
 
       case TILE.BANK: {
-        // Green facade with "$" sign and column hints
-        ctx.fillStyle = '#d4edda';
-        ctx.fillRect(px + 4, py + 8, ts - 8, ts - 8);
-        // Columns
-        ctx.fillStyle = '#a0c8a8';
-        ctx.fillRect(px + 5,  py + 8, 4, ts - 8);
-        ctx.fillRect(px + ts - 9, py + 8, 4, ts - 8);
-        // "$" label
-        ctx.fillStyle = '#1a5c1a';
-        ctx.font      = 'bold 9px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('BANK', cx, cy + 2);
-        // Door handle
-        ctx.fillStyle = '#2a8a2a';
-        ctx.fillRect(cx - 2, py + 22, 3, 3);
+        if (tx === BANK_X) {
+          // Main facade: green building with "BANK" label, columns and door
+          ctx.fillStyle = '#d4edda';
+          ctx.fillRect(px + 4, py + 8, ts - 8, ts - 8);
+          // Columns
+          ctx.fillStyle = '#a0c8a8';
+          ctx.fillRect(px + 5,      py + 8, 4, ts - 8);
+          ctx.fillRect(px + ts - 9, py + 8, 4, ts - 8);
+          // Label
+          ctx.fillStyle = '#1a5c1a';
+          ctx.font      = 'bold 9px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('BANK', cx, cy + 2);
+          // Door handle
+          ctx.fillStyle = '#2a8a2a';
+          ctx.fillRect(cx - 2, py + 22, 3, 3);
+        } else {
+          // Side wall extension – flush to connect with main facade
+          ctx.fillStyle = '#d4edda';
+          ctx.fillRect(px, py + 8, ts, ts - 8);
+          // Column on left edge (abutting main facade)
+          ctx.fillStyle = '#a0c8a8';
+          ctx.fillRect(px, py + 8, 4, ts - 8);
+          // Window
+          ctx.fillStyle = '#b8e8c0';
+          ctx.fillRect(cx - 3, py + 13, 7, 7);
+          ctx.fillStyle = '#88bb90';
+          ctx.fillRect(cx - 2, py + 15, 5, 1);
+          ctx.fillRect(cx,     py + 13, 1, 5);
+        }
         break;
       }
 

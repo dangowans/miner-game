@@ -359,8 +359,10 @@ class World {
     top[0]          = TILE.FLOWER;     // Flower to the left of the outhouse (x=0)
     top[5]          = TILE.SHOP;       // General store
     top[9]          = TILE.BAR;        // Bar
-    top[13]         = TILE.DOCTOR;     // Doctor
-    top[BANK_X]     = TILE.BANK;       // Town bank (x=17)
+    top[DOCTOR_X]       = TILE.DOCTOR;     // Doctor (left tile)
+    top[DOCTOR_X + 1]   = TILE.DOCTOR;     // Doctor (right tile – 2 wide)
+    top[BANK_X]         = TILE.BANK;       // Town bank (left tile, x=17)
+    top[BANK_X + 1]     = TILE.BANK;       // Town bank (right tile – 2 wide, x=18)
     top[WORKER_X]   = TILE.SKY;        // Contractor Mike only visible in family mode
     // Jeweler removed – x=19 remains SKY
 
