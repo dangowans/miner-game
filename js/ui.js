@@ -42,9 +42,9 @@ class UI {
       });
     }
 
-    // Close on Escape key
+    // Close on Escape key (death/game-over screens block this)
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.overlayOpen) this._closeOverlay();
+      if (e.key === 'Escape' && this.overlayOpen && !this._overlayLocked) this._closeOverlay();
     });
   }
 
@@ -520,7 +520,7 @@ class UI {
           🔄 Try Again
         </button>
       </div>`;
-    this._openOverlay(() => {});
+    this._openOverlay(() => {}, { locked: true });
     genieWireup();
     const restartBtn = document.getElementById('dead-restart-btn');
     if (restartBtn) restartBtn.addEventListener('click', () => { Storage.clear(); location.reload(); });
@@ -544,7 +544,7 @@ class UI {
           🔄 Try Again
         </button>
       </div>`;
-    this._openOverlay(() => {});
+    this._openOverlay(() => {}, { locked: true });
     genieWireup();
     const restartBtn = document.getElementById('police-restart-btn');
     if (restartBtn) restartBtn.addEventListener('click', () => { Storage.clear(); location.reload(); });
@@ -566,7 +566,7 @@ class UI {
           🔄 Try Again
         </button>
       </div>`;
-    this._openOverlay(() => {});
+    this._openOverlay(() => {}, { locked: true });
   }
 
   showWin(elapsedTime, onFamilyMode) {
@@ -588,8 +588,7 @@ class UI {
           🎊 Play Again
         </button>
       </div>`;
-    this._openOverlay(() => {});
-
+    this._openOverlay(() => {}, { locked: true });
     const familyBtn = document.getElementById('family-mode-btn');
     if (familyBtn) {
       familyBtn.addEventListener('click', () => {
@@ -1024,7 +1023,7 @@ class UI {
           🔄 Try Again
         </button>
       </div>`;
-    this._openOverlay(() => {});
+    this._openOverlay(() => {}, { locked: true });
     genieWireup();
     const restartBtn = document.getElementById('eviction-restart-btn');
     if (restartBtn) restartBtn.addEventListener('click', () => { Storage.clear(); location.reload(); });
@@ -1047,7 +1046,7 @@ class UI {
           🔄 Try Again
         </button>
       </div>`;
-    this._openOverlay(() => {});
+    this._openOverlay(() => {}, { locked: true });
     genieWireup();
     const restartBtn = document.getElementById('divorce-restart-btn');
     if (restartBtn) restartBtn.addEventListener('click', () => { Storage.clear(); location.reload(); });
@@ -1227,14 +1226,14 @@ class UI {
           🔄 Try Again
         </button>
       </div>`;
-    this._openOverlay(() => {});
+    this._openOverlay(() => {}, { locked: true });
   }
 
   // -------------------------------------------------------------------------
   // Internal helpers
   // -------------------------------------------------------------------------
 
-  _openOverlay(onClose) {
+  _openOverlay(onClose, { locked = false } = {}) {
     // Remove any previously attached keyboard-nav handler (e.g. when the
     // overlay content is refreshed in-place without closing it first).
     if (this._overlayNavHandler) {
@@ -1242,6 +1241,7 @@ class UI {
       this._overlayNavHandler = null;
     }
     this.overlayOpen      = true;
+    this._overlayLocked   = locked;
     this._onCloseCallback = onClose;
     this.overlay.classList.add('active');
 
@@ -1252,8 +1252,13 @@ class UI {
 
     const titleCloseBtn = document.getElementById('title-close-btn');
     if (titleCloseBtn) {
-      titleCloseBtn.style.display = 'inline-block';
-      titleCloseBtn.onclick = () => this._closeOverlay();
+      if (locked) {
+        titleCloseBtn.style.display = 'none';
+        titleCloseBtn.onclick = null;
+      } else {
+        titleCloseBtn.style.display = 'inline-block';
+        titleCloseBtn.onclick = () => this._closeOverlay();
+      }
     }
 
     this._setupOverlayKeyNav();
@@ -1263,6 +1268,7 @@ class UI {
     this.overlay.classList.remove('active');
     this.overlay.innerHTML = '';
     this.overlayOpen       = false;
+    this._overlayLocked    = false;
     if (this._overlayNavHandler) {
       document.removeEventListener('keydown', this._overlayNavHandler);
       this._overlayNavHandler = null;
