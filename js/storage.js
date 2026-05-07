@@ -15,6 +15,7 @@ const SAVE_KEY            = 'minerGameSave';
 const SAVE_VERSION        = 6;
 const FAMILY_UNLOCKED_KEY = 'minerGameFamilyUnlocked';
 const START_FAMILY_KEY    = 'minerGameStartFamily';
+const MAX_TILE_ID         = Math.max(...Object.values(TILE));
 
 const Storage = {
 
@@ -314,7 +315,7 @@ function _isValidSaveData(data) {
 
   const playerTile = rowEntry[1][px];
   if (!Number.isInteger(playerTile)) return false;
-  if (playerTile < 0 || playerTile > TILE.BLACK_PAWN) return false;
+  if (playerTile < 0 || playerTile > MAX_TILE_ID) return false;
 
   return true;
 }
