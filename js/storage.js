@@ -15,7 +15,8 @@ const SAVE_KEY            = 'minerGameSave';
 const SAVE_VERSION        = 6;
 const FAMILY_UNLOCKED_KEY = 'minerGameFamilyUnlocked';
 const START_FAMILY_KEY    = 'minerGameStartFamily';
-const MAX_TILE_ID         = Math.max(...Object.values(TILE));
+const TILE_IDS            = Object.values(TILE).filter(Number.isInteger);
+const MAX_TILE_ID         = TILE_IDS.length > 0 ? Math.max(...TILE_IDS) : 0;
 
 const Storage = {
 
@@ -308,6 +309,7 @@ function _isValidSaveData(data) {
 
   const depth = data.world.deepestGenY;
   if (!Number.isInteger(depth) || depth < PLAYER_START_Y) return false;
+  if (py > depth) return false;
 
   const rowEntry = data.world.rowTiles.find(([y]) => y === py);
   if (!rowEntry || !Array.isArray(rowEntry[1])) return false;
