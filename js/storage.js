@@ -15,6 +15,8 @@ const SAVE_KEY            = 'minerGameSave';
 const SAVE_VERSION        = 6;
 const FAMILY_UNLOCKED_KEY = 'minerGameFamilyUnlocked';
 const START_FAMILY_KEY    = 'minerGameStartFamily';
+const TILE_IDS            = Object.values(TILE).filter(Number.isInteger);
+const MAX_TILE_ID         = TILE_IDS.length > 0 ? Math.max(...TILE_IDS) : 0;
 
 const Storage = {
 
@@ -47,6 +49,10 @@ const Storage = {
       if (!raw) return null;
       const data = JSON.parse(raw);
       if (!data || data.version !== SAVE_VERSION) {
+        this.clear();
+        return null;
+      }
+      if (!_isValidSaveData(data)) {
         this.clear();
         return null;
       }
@@ -288,4 +294,30 @@ function _serializeGame(g) {
     suppliesGraceStart:     g._suppliesGraceStart,
     suppliesInGrace:        g._suppliesInGrace,
   };
+}
+
+function _isValidSaveData(data) {
+  if (!data || typeof data !== 'object') return false;
+  if (!data.player || typeof data.player !== 'object') return false;
+  if (!data.world  || typeof data.world  !== 'object') return false;
+  if (!Array.isArray(data.world.rowTiles)) return false;
+
+  const px = data.player.x;
+  const py = data.player.y;
+  if (!Number.isInteger(px) || px < 0 || px >= MAP_WIDTH) return false;
+  if (!Number.isInteger(py) || py < PLAYER_START_Y) return false;
+
+  const depth = data.world.deepestGenY;
+  if (!Number.isInteger(depth) || depth < PLAYER_START_Y) return false;
+  if (py > depth) return false;
+
+  const rowEntry = data.world.rowTiles.find(([y]) => y === py);
+  if (!rowEntry || !Array.isArray(rowEntry[1])) return false;
+  if (rowEntry[1].length !== MAP_WIDTH) return false;
+
+  const playerTile = rowEntry[1][px];
+  if (!Number.isInteger(playerTile)) return false;
+  if (playerTile < 0 || playerTile > MAX_TILE_ID) return false;
+
+  return true;
 }
