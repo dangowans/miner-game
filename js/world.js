@@ -234,7 +234,7 @@ class World {
           case HIDDEN.BLACK_BISHOP:   return !player.specialItems.has(HIDDEN.BLACK_BISHOP);
           case HIDDEN.BLACK_KNIGHT:   return !player.specialItems.has(HIDDEN.BLACK_KNIGHT);
           case HIDDEN.BLACK_PAWN:     return !player.specialItems.has(HIDDEN.BLACK_PAWN);
-          case HIDDEN.RING:           return !player.hasRing;
+          case HIDDEN.RING:           return !player.hasRing && !player.familyMode;
           case HIDDEN.LANTERN:        return !player.hasLantern;
           case HIDDEN.RADIO:          return !player.hasRadio;
           case HIDDEN.DOWSING_ROD:    return !player.hasDowsingRod;

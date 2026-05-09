@@ -9,7 +9,8 @@
  *   - Hearts reach 0 → dead.
  *   - Visit the Doctor on the surface to restore all missing hearts in one visit
  *     (capped at HEAL_VISIT_CAP).
- *   - Also buy additional max-heart slots (EXTRA_HEART_PRICE each, up to MAX_HEARTS=6).
+ *   - Also buy additional max-heart slots with an increasing price curve.
+ *   - The normal cap is MAX_HEARTS, increasing to FAMILY_MODE_MAX_HEARTS in family mode.
  *
  * Tool durability:
  *   - Pick, bucket, and fire extinguisher each last TOOL_USES uses.
@@ -114,6 +115,14 @@ class Player {
   /** Current mine depth (0 = surface). */
   get depth() { return Math.max(0, this.y); }
 
+  get maxHeartLimit() {
+    return this.familyMode ? FAMILY_MODE_MAX_HEARTS : MAX_HEARTS;
+  }
+
+  get nextExtraHeartPrice() {
+    return EXTRA_HEART_PRICE + Math.max(0, this.maxHearts - START_HEARTS) * EXTRA_HEART_PRICE_STEP;
+  }
+
   // -------------------------------------------------------------------------
   // Inventory
   // -------------------------------------------------------------------------
@@ -180,9 +189,10 @@ class Player {
    * Returns true on success.
    */
   buyExtraHeart() {
-    if (this.maxHearts >= MAX_HEARTS)        return false;
-    if (this.money     <  EXTRA_HEART_PRICE) return false;
-    this.money    -= EXTRA_HEART_PRICE;
+    const price = this.nextExtraHeartPrice;
+    if (this.maxHearts >= this.maxHeartLimit) return false;
+    if (this.money < price) return false;
+    this.money -= price;
     this.maxHearts++;
     this.hearts++;    // Grant the new heart filled
     return true;

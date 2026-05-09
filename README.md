@@ -127,9 +127,9 @@ Available in Family Mode (stand at x=20 and press E):
 | Service | Cost |
 |---------|-----:|
 | Restore all missing hearts | $30 per missing heart (max $60) |
-| Buy +1 max heart slot | $150 |
+| Buy +1 max heart slot | Starts at $150, then +$50 per extra heart |
 
-Maximum hearts: **6**. New heart slots are granted full.
+Maximum hearts: **6** normally, increasing to **10** in Family Mode. New heart slots are granted full.
 
 ---
 

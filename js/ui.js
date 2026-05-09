@@ -435,8 +435,10 @@ class UI {
     const missing    = player.maxHearts - player.hearts;
     const toHeal     = missing;
     const totalCost  = Math.min(missing * HEAL_PRICE, HEAL_VISIT_CAP);
+    const heartLimit = player.maxHeartLimit;
+    const extraHeartPrice = player.nextExtraHeartPrice;
     const canHeal    = missing > 0 && player.money >= totalCost;
-    const canExpand  = player.maxHearts < MAX_HEARTS && player.money >= EXTRA_HEART_PRICE;
+    const canExpand  = player.maxHearts < heartLimit && player.money >= extraHeartPrice;
 
     const heartsDisplay = () => {
       let s = '';
@@ -452,16 +454,16 @@ class UI {
         ? `<div class="shop-item disabled">❤️ You are already at full health</div>`
         : `<div class="shop-item disabled">❤️ Doctor's appointment — not enough money (<span class="price">$${totalCost}</span> needed)</div>`;
 
-    const expandHtml = player.maxHearts >= MAX_HEARTS
-      ? `<div class="shop-item disabled">💛 Maximum hearts reached (${MAX_HEARTS})</div>`
+    const expandHtml = player.maxHearts >= heartLimit
+      ? `<div class="shop-item disabled">💛 Maximum hearts reached (${heartLimit})${!player.familyMode ? ' <em>(family mode unlocks up to 10)</em>' : ''}</div>`
       : canExpand
         ? `<div class="shop-item buyable" id="expand-btn">
-             💛 Buy extra heart slot — <span class="price">$${EXTRA_HEART_PRICE}</span>
-             <small> (${player.maxHearts} → ${player.maxHearts + 1} max)</small>
-           </div>`
-        : `<div class="shop-item disabled">💛 Extra heart slot — $${EXTRA_HEART_PRICE}
-             <em class="short">(need $${EXTRA_HEART_PRICE - player.money} more)</em>
-           </div>`;
+             💛 Buy extra heart slot — <span class="price">$${extraHeartPrice}</span>
+              <small> (${player.maxHearts} → ${player.maxHearts + 1} max)</small>
+            </div>`
+        : `<div class="shop-item disabled">💛 Extra heart slot — $${extraHeartPrice}
+             <em class="short">(need $${extraHeartPrice - player.money} more)</em>
+            </div>`;
 
     this.overlay.innerHTML = `
       <h2>🏥 Doctor's Office</h2>
@@ -928,7 +930,7 @@ class UI {
         &nbsp;·&nbsp; Babies: <strong>${player.babyCount}</strong> ${player.babyCount > 0 ? babyEmojis : ''}
       </p>
       <p style="font-size:0.88em;margin:2px 0 8px">
-        Taxes every 30 min: <span class="price">$${taxAmount}</span>
+        Taxes every ${Math.round(FAMILY_TAX_INTERVAL_MS / 60000)} min: <span class="price">$${taxAmount}</span>
         <small style="color:#888"> (paid from bank account)</small>
       </p>
       ${foodSectionHtml}

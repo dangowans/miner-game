@@ -82,6 +82,7 @@ class Game {
         this.world.setTile(WORKER_X, 1, TILE.WORKER);
         // Reapply expansion tiles so saves that predate this feature are correct.
         this._applyHouseExpansionTiles(this.player.houseLevel);
+        this.world.uniqueItemPositions = this.world.uniqueItemPositions.filter(pos => pos.content !== HIDDEN.RING);
       }
       // Migrate old saves: if the elevator was already built but the surface
       // entrance tile (x=23, y=2) is still MINE_ENT, rebuild to place ELEV_ENT there.
@@ -1856,10 +1857,13 @@ class Game {
     if (!skipPayment) {
       p.money -= JEWELER_MONEY_COST;
     }
+    p.hasRing = false;
+    delete p.itemRecallMessages['💍'];
 
     // Replace bar with house tile and apply any expansion tiles for this level
     this.world.setTile(BAR_X, 1, TILE.HOUSE);
     this._applyHouseExpansionTiles(p.houseLevel);
+    this.world.uniqueItemPositions = this.world.uniqueItemPositions.filter(pos => pos.content !== HIDDEN.RING);
 
     // Ensure Contractor Mike is present for house upgrades
     this.world.setTile(WORKER_X, 1, TILE.WORKER);
@@ -1949,7 +1953,8 @@ class Game {
           this._suppliesInGrace    = true;
           this._suppliesGraceStart = now;
           const runOut = p.babyCount > 0 ? 'food and diapers' : 'food';
-          p.setMessage(`⚠️ You are out of ${runOut}! Visit your home — 10 minutes before divorce!`);
+          const graceMinutes = Math.round(FAMILY_SUPPLIES_GRACE_MS / 60000);
+          p.setMessage(`🚨 You are out of ${runOut}! Get home now — only ${graceMinutes} minutes before divorce!`, 360);
         }
       }
     }
@@ -1996,7 +2001,8 @@ class Game {
         this._taxInGrace    = true;
         this._taxGraceStart = now;
         this._lastTaxTime   = now;   // Reset so it doesn't re-fire immediately
-        p.setMessage(`⚠️ Tax bill of $${total} (incl. ${Math.round(FAMILY_TAX_INTEREST * 100)}% interest) due! Deposit funds at the Bank within 10 minutes!`);
+        const graceMinutes = Math.round(FAMILY_TAX_GRACE_MS / 60000);
+        p.setMessage(`🚨 Tax bill of $${total} due now (incl. ${Math.round(FAMILY_TAX_INTEREST * 100)}% interest)! Deposit funds at the Bank within ${graceMinutes} minutes!`, 360);
       }
     }
   }

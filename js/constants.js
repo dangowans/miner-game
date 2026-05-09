@@ -301,14 +301,14 @@ const BAR_X             = 9;    // x-column of the bar building
 // ---------------------------------------------------------------------------
 // Family Mode
 // ---------------------------------------------------------------------------
-const FAMILY_TAX_INTERVAL_MS   = 30 * 60 * 1000;   // Taxes due every 30 minutes
-const FAMILY_TAX_GRACE_MS      = 10 * 60 * 1000;   // 10-minute grace before eviction
+const FAMILY_TAX_INTERVAL_MS   = 25 * 60 * 1000;   // Taxes due every 25 minutes
+const FAMILY_TAX_GRACE_MS      = 7 * 60 * 1000;    // 7-minute grace before eviction
 const FAMILY_BASE_TAX          = 50;                // Base tax per cycle
 const FAMILY_TAX_PER_LEVEL     = 25;               // Extra tax per extra house level
 const FAMILY_TAX_INTEREST      = 0.25;             // 25 % surcharge if bank is short
 
-const FAMILY_SUPPLIES_TICK_MS  = 60 * 1000;        // Supplies deplete 1 % per minute
-const FAMILY_SUPPLIES_GRACE_MS = 10 * 60 * 1000;   // 10-minute grace before divorce
+const FAMILY_SUPPLIES_TICK_MS  = 50 * 1000;        // Supplies deplete slightly faster than 1 % per minute
+const FAMILY_SUPPLIES_GRACE_MS = 7 * 60 * 1000;    // 7-minute grace before divorce
 const FAMILY_SUPPLIES_PER_BABY = 0.5;              // Extra % depletion per minute per baby
 
 const HOUSE_UPGRADE_COST       = 1000;  // Cost to expand house (per level)
@@ -337,8 +337,10 @@ const JEWELER_MONEY_COST   = 1000;  // Cash required alongside the ring for prop
 // ---------------------------------------------------------------------------
 const HEAL_PRICE        = 20;   // Cost to restore 1 heart
 const HEAL_VISIT_CAP    = 60;   // Doctor full-heal visit cap
-const EXTRA_HEART_PRICE = 150;  // Cost to add +1 max heart (up to MAX_HEARTS)
-const MAX_HEARTS        = 6;
+const EXTRA_HEART_PRICE      = 150;  // First extra heart cost
+const EXTRA_HEART_PRICE_STEP = 50;   // Each extra heart costs this much more than the previous one
+const MAX_HEARTS             = 6;
+const FAMILY_MODE_MAX_HEARTS = 10;
 const START_HEARTS      = 3;
 const FIRST_AID_MAX_HEAL = 3;   // First Aid Kit restores at most this many hearts
 
