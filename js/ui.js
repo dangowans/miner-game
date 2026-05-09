@@ -459,7 +459,7 @@ class UI {
       : canExpand
         ? `<div class="shop-item buyable" id="expand-btn">
              💛 Buy extra heart slot — <span class="price">$${extraHeartPrice}</span>
-              <small> (${player.maxHearts} → ${player.maxHearts + 1} max)</small>
+             <small> (${player.maxHearts} → ${player.maxHearts + 1} max)</small>
             </div>`
         : `<div class="shop-item disabled">💛 Extra heart slot — $${extraHeartPrice}
              <em class="short">(need $${extraHeartPrice - player.money} more)</em>
