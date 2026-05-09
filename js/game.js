@@ -1954,7 +1954,7 @@ class Game {
           this._suppliesGraceStart = now;
           const runOut = p.babyCount > 0 ? 'food and diapers' : 'food';
           const graceMinutes = Math.round(FAMILY_SUPPLIES_GRACE_MS / 60000);
-          p.setMessage(`🚨 You are out of ${runOut}! Get home now — only ${graceMinutes} minutes before divorce!`, 360);
+          p.setMessage(`🚨 You are out of ${runOut}! Get home now — only ${graceMinutes} minutes before divorce!`, FAMILY_URGENT_MESSAGE_FRAMES);
         }
       }
     }
@@ -2002,7 +2002,7 @@ class Game {
         this._taxGraceStart = now;
         this._lastTaxTime   = now;   // Reset so it doesn't re-fire immediately
         const graceMinutes = Math.round(FAMILY_TAX_GRACE_MS / 60000);
-        p.setMessage(`🚨 Tax bill of $${total} due now (incl. ${Math.round(FAMILY_TAX_INTEREST * 100)}% interest)! Deposit funds at the Bank within ${graceMinutes} minutes!`, 360);
+        p.setMessage(`🚨 Tax bill of $${total} due now (incl. ${Math.round(FAMILY_TAX_INTEREST * 100)}% interest)! Deposit funds at the Bank within ${graceMinutes} minutes!`, FAMILY_URGENT_MESSAGE_FRAMES);
       }
     }
   }

@@ -310,6 +310,7 @@ const FAMILY_TAX_INTEREST      = 0.25;             // 25 % surcharge if bank is 
 const FAMILY_SUPPLIES_TICK_MS  = 50 * 1000;        // Supplies deplete slightly faster than 1 % per minute
 const FAMILY_SUPPLIES_GRACE_MS = 7 * 60 * 1000;    // 7-minute grace before divorce
 const FAMILY_SUPPLIES_PER_BABY = 0.5;              // Extra % depletion per minute per baby
+const FAMILY_URGENT_MESSAGE_FRAMES = 360;          // How long urgent family-mode warnings stay on the HUD
 
 const HOUSE_UPGRADE_COST       = 1000;  // Cost to expand house (per level)
 const HOUSE_MAX_LEVEL          = 6;     // Maximum house expansion level
