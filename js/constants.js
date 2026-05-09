@@ -397,6 +397,7 @@ const BANK_X      = 17;  // Town bank (between Doctor and mine entrance)
 // Ring location – hidden in the mine ~50 m below the outhouse (randomised 50-60 m)
 // ---------------------------------------------------------------------------
 const RING_X = OUTHOUSE_X;  // Same x-column as the outhouse (x=1)
+const RING_EMOJI = '💍';
 
 // ---------------------------------------------------------------------------
 // Glasses location – hidden directly below the outhouse (shallow)

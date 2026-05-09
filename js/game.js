@@ -1337,7 +1337,7 @@ class Game {
           p.hasRing = true;
           this.world.setTile(x, y, TILE.EMPTY);
           sounds.playItemPickup();
-          this._showItemPickupOverlay('💍', 'You found a ring! A girl would be lucky to get a ring like that!');
+          this._showItemPickupOverlay(RING_EMOJI, 'You found a ring! A girl would be lucky to get a ring like that!');
         } else {
           this.world.setTile(x, y, TILE.EMPTY);
         }
@@ -2069,7 +2069,7 @@ class Game {
 
   _removeRingFromFamilyMode() {
     this.player.hasRing = false;
-    delete this.player.itemRecallMessages['💍'];
+    delete this.player.itemRecallMessages[RING_EMOJI];
     this.world.uniqueItemPositions = this.world.uniqueItemPositions.filter(pos => pos.content !== HIDDEN.RING);
   }
 
