@@ -583,7 +583,7 @@ class Renderer {
 
         // Billboard signs above building facades (sky row, ty === 0)
         if (ty === 0) {
-          if (tx === BAR_X && !(player && player.familyMode)) {
+          if (tx === BAR_X && (!player || !player.familyMode)) {
             // Beer glass sign above the bar
             ctx.fillStyle = '#fffbe6';
             ctx.fillRect(cx - 12, py + 8, 24, 22);
