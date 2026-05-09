@@ -455,7 +455,7 @@ class UI {
         : `<div class="shop-item disabled">❤️ Doctor's appointment — not enough money (<span class="price">$${totalCost}</span> needed)</div>`;
 
     const expandHtml = player.maxHearts >= heartLimit
-      ? `<div class="shop-item disabled">💛 Maximum hearts reached (${heartLimit})${!player.familyMode ? ' <em>(family mode unlocks up to 10)</em>' : ''}</div>`
+      ? `<div class="shop-item disabled">💛 Maximum hearts reached (${heartLimit})${!player.familyMode ? ` <em>(family mode unlocks up to ${FAMILY_MODE_MAX_HEARTS})</em>` : ''}</div>`
       : canExpand
         ? `<div class="shop-item buyable" id="expand-btn">
              💛 Buy extra heart slot — <span class="price">$${extraHeartPrice}</span>

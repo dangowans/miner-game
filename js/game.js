@@ -82,7 +82,7 @@ class Game {
         this.world.setTile(WORKER_X, 1, TILE.WORKER);
         // Reapply expansion tiles so saves that predate this feature are correct.
         this._applyHouseExpansionTiles(this.player.houseLevel);
-        this.world.uniqueItemPositions = this.world.uniqueItemPositions.filter(pos => pos.content !== HIDDEN.RING);
+        this._removeRingFromFamilyMode();
       }
       // Migrate old saves: if the elevator was already built but the surface
       // entrance tile (x=23, y=2) is still MINE_ENT, rebuild to place ELEV_ENT there.
@@ -1857,13 +1857,11 @@ class Game {
     if (!skipPayment) {
       p.money -= JEWELER_MONEY_COST;
     }
-    p.hasRing = false;
-    delete p.itemRecallMessages['💍'];
+    this._removeRingFromFamilyMode();
 
     // Replace bar with house tile and apply any expansion tiles for this level
     this.world.setTile(BAR_X, 1, TILE.HOUSE);
     this._applyHouseExpansionTiles(p.houseLevel);
-    this.world.uniqueItemPositions = this.world.uniqueItemPositions.filter(pos => pos.content !== HIDDEN.RING);
 
     // Ensure Contractor Mike is present for house upgrades
     this.world.setTile(WORKER_X, 1, TILE.WORKER);
@@ -2067,6 +2065,12 @@ class Game {
         this.ui.showDivorce(stats);
       }
     }
+  }
+
+  _removeRingFromFamilyMode() {
+    this.player.hasRing = false;
+    delete this.player.itemRecallMessages['💍'];
+    this.world.uniqueItemPositions = this.world.uniqueItemPositions.filter(pos => pos.content !== HIDDEN.RING);
   }
 
   /**
