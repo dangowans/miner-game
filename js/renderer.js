@@ -913,7 +913,7 @@ class Renderer {
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         ctx.font      = '20px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(iconByTile[t] || '❔', cx, cy + 8);
+        ctx.fillText(iconByTile[tile] || '❔', cx, cy + 8);
         break;
       }
 
