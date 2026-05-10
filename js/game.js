@@ -1549,7 +1549,11 @@ class Game {
       case TILE.BLACK_ROOK:
       case TILE.BLACK_BISHOP:
       case TILE.BLACK_KNIGHT:
-      case TILE.BLACK_PAWN: {
+      case TILE.BLACK_PAWN:
+      case TILE.PLATE:
+      case TILE.FORK:
+      case TILE.SPOON:
+      case TILE.KNIFE: {
         const collectibleByTile = {
           [TILE.ANCHOR]: { hidden: HIDDEN.ANCHOR, icon: '⚓', text: 'An old anchor. Strange thing to find this far underground.' },
           [TILE.URN]: { hidden: HIDDEN.URN, icon: '⚱️', text: 'An urn sealed shut for ages. You carefully pack it away.' },
@@ -1571,6 +1575,10 @@ class Game {
           [TILE.BLACK_BISHOP]: { hidden: HIDDEN.BLACK_BISHOP, icon: '♝', text: 'You found the black bishop chess piece.' },
           [TILE.BLACK_KNIGHT]: { hidden: HIDDEN.BLACK_KNIGHT, icon: '♞', text: 'You found the black knight chess piece.' },
           [TILE.BLACK_PAWN]: { hidden: HIDDEN.BLACK_PAWN, icon: '♟', text: 'You found the black pawn chess piece.' },
+          [TILE.PLATE]: { hidden: HIDDEN.PLATE, icon: '🍽️', text: 'A hidden plate, surprisingly spotless despite the dust.' },
+          [TILE.FORK]: { hidden: HIDDEN.FORK, icon: '🍴', text: 'A bent fork. Dinner must have ended in a hurry.' },
+          [TILE.SPOON]: { hidden: HIDDEN.SPOON, icon: '🥄', text: 'An old spoon. It gleams when your lantern catches it.' },
+          [TILE.KNIFE]: { hidden: HIDDEN.KNIFE, icon: '🔪', text: 'A rusty knife. You wrap it carefully before packing it away.' },
         };
         const collectible = collectibleByTile[tile];
         if (collectible && !p.specialItems.has(collectible.hidden)) {

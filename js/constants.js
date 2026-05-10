@@ -100,6 +100,10 @@ const TILE = Object.freeze({
   BLACK_BISHOP:  76,   // Black bishop chess piece
   BLACK_KNIGHT:  77,   // Black knight chess piece
   BLACK_PAWN:    78,   // Black pawn chess piece
+  PLATE:         79,   // Hidden plate collectible
+  FORK:          80,   // Hidden fork collectible
+  SPOON:         81,   // Hidden spoon collectible
+  KNIFE:         82,   // Hidden knife collectible
 });
 
 // ---------------------------------------------------------------------------
@@ -166,6 +170,10 @@ const HIDDEN = Object.freeze({
   BLACK_BISHOP:   'black_bishop',   // Unique – chess collectible
   BLACK_KNIGHT:   'black_knight',   // Unique – chess collectible
   BLACK_PAWN:     'black_pawn',     // Unique – chess collectible
+  PLATE:          'plate',          // Unique – tableware collectible
+  FORK:           'fork',           // Unique – tableware collectible
+  SPOON:          'spoon',          // Unique – tableware collectible
+  KNIFE:          'knife',          // Unique – tableware collectible
 });
 
 // ---------------------------------------------------------------------------
@@ -509,6 +517,10 @@ const TILE_COLOR = {
   [TILE.BLACK_BISHOP]:   '#0a0a0a',   // Black bishop chess piece – hidden
   [TILE.BLACK_KNIGHT]:   '#0a0a0a',   // Black knight chess piece – hidden
   [TILE.BLACK_PAWN]:     '#0a0a0a',   // Black pawn chess piece – hidden
+  [TILE.PLATE]:          '#0a0a0a',   // Hidden plate – very dark
+  [TILE.FORK]:           '#0a0a0a',   // Hidden fork – very dark
+  [TILE.SPOON]:          '#0a0a0a',   // Hidden spoon – very dark
+  [TILE.KNIFE]:          '#0a0a0a',   // Hidden knife – very dark
 };
 
 // Ore tile types that can be destroyed when a hazard spreads over them

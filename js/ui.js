@@ -20,6 +20,8 @@ class UI {
     this._hudHearts     = document.getElementById('hud-hearts');
     this._hudMoney      = document.getElementById('hud-money');
     this._hudGemsDetail = document.getElementById('hud-gems-detail');
+    this._hudBankBalance = document.getElementById('hud-bank-balance');
+    this._hudHouseSupplies = document.getElementById('hud-house-supplies');
     this._hudTools      = document.getElementById('hud-tools');
     this._hudMsg        = document.getElementById('hud-msg');
     this._btnDynamite   = document.getElementById('btn-dynamite');
@@ -136,18 +138,24 @@ class UI {
     if (player.drillCount > 0) addTool(`⚒️×${player.drillCount}`, recalls['⚒️']);
     if (player.firstAidKits > 0) addTool(`🩹×${player.firstAidKits}`, recalls['🩹']);
 
-    // Bank balance — show whenever the mine cart has been purchased
-    if (player.hasMineCart && !player.familyMode) {
-      addTool(`| 🏦$${player.bankBalance}`);
-    }
+    if (player.specialItems.has('plate'))        addExtraTool('🍽️', recalls['🍽️']);
+    if (player.specialItems.has('fork'))         addExtraTool('🍴', recalls['🍴']);
+    if (player.specialItems.has('spoon'))        addExtraTool('🥄', recalls['🥄']);
+    if (player.specialItems.has('knife'))        addExtraTool('🔪', recalls['🔪']);
 
-    // Family mode status (appended to tool row)
-    if (player.familyMode) {
-      const supPct  = Math.round(player.suppliesMeter);
-      const barFull = Math.round(supPct / 10);
-      const supBar  = '█'.repeat(barFull) + '░'.repeat(10 - barFull);
-      const foodIcon = player.babyCount > 0 ? '🍼' : '🍞';
-      addTool(`| 🏦$${player.bankBalance} ${foodIcon}[${supBar}]${supPct}%`);
+    const bankBalance = player.hasMineCart || player.familyMode ? player.bankBalance : 0;
+    if (this._hudBankBalance) this._hudBankBalance.textContent = `🏦 $${bankBalance}`;
+
+    if (this._hudHouseSupplies) {
+      if (player.familyMode) {
+        const supPct  = Math.round(player.suppliesMeter);
+        const barFull = Math.round(supPct / 10);
+        const supBar  = '█'.repeat(barFull) + '░'.repeat(10 - barFull);
+        const foodIcon = player.babyCount > 0 ? '🍼' : '🍞';
+        this._hudHouseSupplies.textContent = `🏠 ${foodIcon}[${supBar}]${supPct}%`;
+      } else {
+        this._hudHouseSupplies.textContent = '🏠 —';
+      }
     }
 
     this._hudTools.textContent = '';

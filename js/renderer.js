@@ -893,7 +893,11 @@ class Renderer {
       case TILE.BLACK_ROOK:
       case TILE.BLACK_BISHOP:
       case TILE.BLACK_KNIGHT:
-      case TILE.BLACK_PAWN: {
+      case TILE.BLACK_PAWN:
+      case TILE.PLATE:
+      case TILE.FORK:
+      case TILE.SPOON:
+      case TILE.KNIFE: {
         const iconByTile = {
           [TILE.ANCHOR]: '⚓',
           [TILE.URN]: '⚱️',
@@ -915,11 +919,20 @@ class Renderer {
           [TILE.BLACK_BISHOP]: '♝',
           [TILE.BLACK_KNIGHT]: '♞',
           [TILE.BLACK_PAWN]: '♟',
+          [TILE.PLATE]: '🍽️',
+          [TILE.FORK]: '🍴',
+          [TILE.SPOON]: '🥄',
+          [TILE.KNIFE]: '🔪',
         };
+        const chessTiles = new Set([
+          TILE.WHITE_KING, TILE.WHITE_QUEEN, TILE.WHITE_ROOK, TILE.WHITE_BISHOP, TILE.WHITE_KNIGHT, TILE.WHITE_PAWN,
+          TILE.BLACK_KING, TILE.BLACK_QUEEN, TILE.BLACK_ROOK, TILE.BLACK_BISHOP, TILE.BLACK_KNIGHT, TILE.BLACK_PAWN,
+        ]);
         ctx.fillStyle = '#111';
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         ctx.font      = '20px monospace';
         ctx.textAlign = 'center';
+        ctx.fillStyle = chessTiles.has(tile) ? '#f4e6c0' : '#d8d8d8';
         ctx.fillText(iconByTile[tile] || '❔', cx, cy + 8);
         break;
       }

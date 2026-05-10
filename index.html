@@ -174,11 +174,24 @@
       gap: 2px;
       font-size: 0.82em;
     }
-    #hud-stats {
+    .hud-row {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       align-items: center;
       gap: 14px;
+      min-height: 22px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #hud-stats {
+      gap: 14px;
+    }
+    #hud-economy {
+      color: #c8d6b0;
+      gap: 14px;
+    }
+    #hud-inventory {
       min-height: 22px;
     }
     #hud-hearts { font-size: 1.05em; letter-spacing: 1px; color: #ff8888; }
@@ -203,13 +216,16 @@
       color: #aaa;
       margin-left: 6px;
     }
+    #hud-tools {
+      color: #ddd;
+    }
     #hud-msg {
       color: #aad4ff;
       font-size: 0.85em;
       white-space: normal;
       overflow: hidden;
       text-overflow: ellipsis;
-      min-height: 16px;
+      min-height: calc(1.5em * 2);
       line-height: 1.5;
       user-select: none;
     }
@@ -428,14 +444,18 @@
     <div id="side-panel">
       <!-- HUD -->
       <div id="hud">
-        <div id="hud-stats">
+        <div id="hud-stats" class="hud-row">
           <span id="hud-hearts">♥♥♥</span>
           <span class="hud-sep">|</span>
           <span>💰&nbsp;<span id="hud-money">0</span></span>
           <span class="hud-sep">|</span>
           <span id="hud-gems-detail">💎 0/10</span>
-          <span id="hud-tools"></span>
         </div>
+        <div id="hud-economy" class="hud-row">
+          <span id="hud-bank-balance">🏦&nbsp;$0</span>
+          <span id="hud-house-supplies">🏠&nbsp;—</span>
+        </div>
+        <div id="hud-inventory" class="hud-row"><span id="hud-tools"></span></div>
         <span id="hud-msg"></span>
       </div>
 

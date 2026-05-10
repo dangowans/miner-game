@@ -125,6 +125,10 @@ class World {
       { content: HIDDEN.BLACK_BISHOP, y: 160 + Math.floor(rng() * 95), x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.BLACK_KNIGHT, y: 165 + Math.floor(rng() * 95), x: 1 + Math.floor(rng() * xRange) },
       { content: HIDDEN.BLACK_PAWN,   y: 170 + Math.floor(rng() * 95), x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.PLATE,        y: 18 + Math.floor(rng() * 45),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.FORK,         y: 20 + Math.floor(rng() * 45),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.SPOON,        y: 22 + Math.floor(rng() * 45),  x: 1 + Math.floor(rng() * xRange) },
+      { content: HIDDEN.KNIFE,        y: 24 + Math.floor(rng() * 45),  x: 1 + Math.floor(rng() * xRange) },
 
       // ── Functional utility items (midway in main mine) ────────────────────
       { content: HIDDEN.DOWSING_ROD,  y: 17 + Math.floor(rng() * 30),  x: 1 + Math.floor(rng() * xRange) },
@@ -234,6 +238,10 @@ class World {
           case HIDDEN.BLACK_BISHOP:   return !player.specialItems.has(HIDDEN.BLACK_BISHOP);
           case HIDDEN.BLACK_KNIGHT:   return !player.specialItems.has(HIDDEN.BLACK_KNIGHT);
           case HIDDEN.BLACK_PAWN:     return !player.specialItems.has(HIDDEN.BLACK_PAWN);
+          case HIDDEN.PLATE:          return !player.specialItems.has(HIDDEN.PLATE);
+          case HIDDEN.FORK:           return !player.specialItems.has(HIDDEN.FORK);
+          case HIDDEN.SPOON:          return !player.specialItems.has(HIDDEN.SPOON);
+          case HIDDEN.KNIFE:          return !player.specialItems.has(HIDDEN.KNIFE);
           case HIDDEN.RING:           return !player.hasRing && !player.familyMode;
           case HIDDEN.LANTERN:        return !player.hasLantern;
           case HIDDEN.RADIO:          return !player.hasRadio;
@@ -630,6 +638,10 @@ class World {
       case HIDDEN.BLACK_BISHOP: this.setTile(x, y, TILE.BLACK_BISHOP); break;
       case HIDDEN.BLACK_KNIGHT: this.setTile(x, y, TILE.BLACK_KNIGHT); break;
       case HIDDEN.BLACK_PAWN:   this.setTile(x, y, TILE.BLACK_PAWN);   break;
+      case HIDDEN.PLATE:        this.setTile(x, y, TILE.PLATE);        break;
+      case HIDDEN.FORK:         this.setTile(x, y, TILE.FORK);         break;
+      case HIDDEN.SPOON:        this.setTile(x, y, TILE.SPOON);        break;
+      case HIDDEN.KNIFE:        this.setTile(x, y, TILE.KNIFE);        break;
       case HIDDEN.DOWSING_ROD:  this.setTile(x, y, TILE.DOWSING_ROD);  break;
       case HIDDEN.HEAT_VISION:  this.setTile(x, y, TILE.HEAT_VISION);  break;
       case HIDDEN.TREASURE_MAP:   this.setTile(x, y, TILE.TREASURE_MAP);   break;
@@ -753,6 +765,10 @@ class World {
       case TILE.BLACK_BISHOP:
       case TILE.BLACK_KNIGHT:
       case TILE.BLACK_PAWN:
+      case TILE.PLATE:
+      case TILE.FORK:
+      case TILE.SPOON:
+      case TILE.KNIFE:
       case TILE.DOWSING_ROD:
       case TILE.HEAT_VISION:
       case TILE.TREASURE_MAP:
