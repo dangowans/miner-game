@@ -183,7 +183,7 @@ const GEM_VALUE = Object.freeze({
 const ORE_NAME = Object.freeze({
   [HIDDEN.SILVER]:   '⚪ Silver',
   [HIDDEN.GOLD]:     '🟡 Gold',
-  [HIDDEN.PLATINUM]: '🔹 Platinum',
+  [HIDDEN.PLATINUM]: '🔵 Platinum',
   [HIDDEN.DIAMOND]:  '💎 Diamond',
   [HIDDEN.RUBY]:     '🔴 Ruby',
 });
