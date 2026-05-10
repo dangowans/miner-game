@@ -523,6 +523,9 @@ const TILE_COLOR = {
   [TILE.KNIFE]:          '#0a0a0a',   // Hidden knife – very dark
 };
 
+const CHESS_PIECE_GLYPH_COLOR = '#f4e6c0';
+const COLLECTIBLE_GLYPH_COLOR = '#d8d8d8';
+
 // Ore tile types that can be destroyed when a hazard spreads over them
 const HAZARD_DESTROYABLE_TILES = new Set([
   TILE.SILVER, TILE.GOLD, TILE.PLATINUM, TILE.DIAMOND, TILE.RUBY,

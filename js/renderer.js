@@ -932,7 +932,7 @@ class Renderer {
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         ctx.font      = '20px monospace';
         ctx.textAlign = 'center';
-        ctx.fillStyle = chessTiles.has(tile) ? '#f4e6c0' : '#d8d8d8';
+        ctx.fillStyle = chessTiles.has(tile) ? CHESS_PIECE_GLYPH_COLOR : COLLECTIBLE_GLYPH_COLOR;
         ctx.fillText(iconByTile[tile] || '❔', cx, cy + 8);
         break;
       }

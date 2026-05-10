@@ -138,10 +138,10 @@ class UI {
     if (player.drillCount > 0) addTool(`⚒️×${player.drillCount}`, recalls['⚒️']);
     if (player.firstAidKits > 0) addTool(`🩹×${player.firstAidKits}`, recalls['🩹']);
 
-    if (player.specialItems.has('plate'))        addExtraTool('🍽️', recalls['🍽️']);
-    if (player.specialItems.has('fork'))         addExtraTool('🍴', recalls['🍴']);
-    if (player.specialItems.has('spoon'))        addExtraTool('🥄', recalls['🥄']);
-    if (player.specialItems.has('knife'))        addExtraTool('🔪', recalls['🔪']);
+    if (player.specialItems.has(HIDDEN.PLATE))   addExtraTool('🍽️', recalls['🍽️']);
+    if (player.specialItems.has(HIDDEN.FORK))    addExtraTool('🍴', recalls['🍴']);
+    if (player.specialItems.has(HIDDEN.SPOON))   addExtraTool('🥄', recalls['🥄']);
+    if (player.specialItems.has(HIDDEN.KNIFE))   addExtraTool('🔪', recalls['🔪']);
 
     const bankBalance = player.hasMineCart || player.familyMode ? player.bankBalance : 0;
     if (this._hudBankBalance) this._hudBankBalance.textContent = `🏦 $${bankBalance}`;
