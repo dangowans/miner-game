@@ -699,9 +699,21 @@ class Game {
       this._onContentRevealed(content, exitX, p.y);
       const newTile = this.world.getTile(exitX, p.y);
       if (newTile === TILE.STONE) { sounds.playTinkStone(); return; }
-      if (newTile === TILE.LAVA)  { p.inElevator = false; this._enterLava(p, exitX, p.y);  return; }
-      if (newTile === TILE.WATER) { p.inElevator = false; this._enterWater(p, exitX, p.y); return; }
-      if (newTile === TILE.GAS)   { p.inElevator = false; this._enterGas(p, exitX, p.y);   return; }
+      if (newTile === TILE.LAVA)  {
+        this._enterLava(p, exitX, p.y);
+        if (p.x === exitX) p.inElevator = false;
+        return;
+      }
+      if (newTile === TILE.WATER) {
+        this._enterWater(p, exitX, p.y);
+        if (p.x === exitX) p.inElevator = false;
+        return;
+      }
+      if (newTile === TILE.GAS)   {
+        this._enterGas(p, exitX, p.y);
+        if (p.x === exitX) p.inElevator = false;
+        return;
+      }
       if (this.world.isPassable(exitX, p.y)) {
         p.inElevator = false;
         p.x = exitX;
