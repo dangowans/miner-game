@@ -100,6 +100,10 @@ const TILE = Object.freeze({
   BLACK_BISHOP:  76,   // Black bishop chess piece
   BLACK_KNIGHT:  77,   // Black knight chess piece
   BLACK_PAWN:    78,   // Black pawn chess piece
+  PLATE:         79,   // Hidden plate collectible
+  FORK:          80,   // Hidden fork collectible
+  SPOON:         81,   // Hidden spoon collectible
+  KNIFE:         82,   // Hidden knife collectible
 });
 
 // ---------------------------------------------------------------------------
@@ -166,6 +170,10 @@ const HIDDEN = Object.freeze({
   BLACK_BISHOP:   'black_bishop',   // Unique – chess collectible
   BLACK_KNIGHT:   'black_knight',   // Unique – chess collectible
   BLACK_PAWN:     'black_pawn',     // Unique – chess collectible
+  PLATE:          'plate',          // Unique – tableware collectible
+  FORK:           'fork',           // Unique – tableware collectible
+  SPOON:          'spoon',          // Unique – tableware collectible
+  KNIFE:          'knife',          // Unique – tableware collectible
 });
 
 // ---------------------------------------------------------------------------
@@ -509,7 +517,14 @@ const TILE_COLOR = {
   [TILE.BLACK_BISHOP]:   '#0a0a0a',   // Black bishop chess piece – hidden
   [TILE.BLACK_KNIGHT]:   '#0a0a0a',   // Black knight chess piece – hidden
   [TILE.BLACK_PAWN]:     '#0a0a0a',   // Black pawn chess piece – hidden
+  [TILE.PLATE]:          '#0a0a0a',   // Hidden plate – very dark
+  [TILE.FORK]:           '#0a0a0a',   // Hidden fork – very dark
+  [TILE.SPOON]:          '#0a0a0a',   // Hidden spoon – very dark
+  [TILE.KNIFE]:          '#0a0a0a',   // Hidden knife – very dark
 };
+
+const CHESS_PIECE_GLYPH_COLOR = '#f4e6c0';
+const COLLECTIBLE_GLYPH_COLOR = '#d8d8d8';
 
 // Ore tile types that can be destroyed when a hazard spreads over them
 const HAZARD_DESTROYABLE_TILES = new Set([
@@ -530,3 +545,7 @@ const TREASURE_CHEST_RUBY_COUNT = 10;  // 10 × $500 ruby = $5,000 total
 // Knight item set – collect all four to slay the dragon
 // ---------------------------------------------------------------------------
 const KNIGHT_ITEMS = Object.freeze(['helmet', 'armor', 'shield', 'sword']);
+const CHESS_TILE_SET = new Set([
+  TILE.WHITE_KING, TILE.WHITE_QUEEN, TILE.WHITE_ROOK, TILE.WHITE_BISHOP, TILE.WHITE_KNIGHT, TILE.WHITE_PAWN,
+  TILE.BLACK_KING, TILE.BLACK_QUEEN, TILE.BLACK_ROOK, TILE.BLACK_BISHOP, TILE.BLACK_KNIGHT, TILE.BLACK_PAWN,
+]);

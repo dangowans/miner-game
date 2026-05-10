@@ -893,7 +893,11 @@ class Renderer {
       case TILE.BLACK_ROOK:
       case TILE.BLACK_BISHOP:
       case TILE.BLACK_KNIGHT:
-      case TILE.BLACK_PAWN: {
+      case TILE.BLACK_PAWN:
+      case TILE.PLATE:
+      case TILE.FORK:
+      case TILE.SPOON:
+      case TILE.KNIFE: {
         const iconByTile = {
           [TILE.ANCHOR]: '⚓',
           [TILE.URN]: '⚱️',
@@ -915,11 +919,16 @@ class Renderer {
           [TILE.BLACK_BISHOP]: '♝',
           [TILE.BLACK_KNIGHT]: '♞',
           [TILE.BLACK_PAWN]: '♟',
+          [TILE.PLATE]: '🍽️',
+          [TILE.FORK]: '🍴',
+          [TILE.SPOON]: '🥄',
+          [TILE.KNIFE]: '🔪',
         };
         ctx.fillStyle = '#111';
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         ctx.font      = '20px monospace';
         ctx.textAlign = 'center';
+        ctx.fillStyle = CHESS_TILE_SET.has(tile) ? CHESS_PIECE_GLYPH_COLOR : COLLECTIBLE_GLYPH_COLOR;
         ctx.fillText(iconByTile[tile] || '❔', cx, cy + 8);
         break;
       }
