@@ -693,7 +693,7 @@ class Game {
     const p     = this.player;
     const exitX = ELEVATOR_X - 1;
     const tile  = this.world.getTile(exitX, p.y);
-    const handleHazardExit = (enterFn) => {
+    const clearElevatorStateIfPlayerMoved = (enterFn) => {
       enterFn.call(this, p, exitX, p.y);
       if (p.x === exitX) p.inElevator = false;
     };
@@ -703,9 +703,9 @@ class Game {
       this._onContentRevealed(content, exitX, p.y);
       const newTile = this.world.getTile(exitX, p.y);
       if (newTile === TILE.STONE) { sounds.playTinkStone(); return; }
-      if (newTile === TILE.LAVA)  { handleHazardExit(this._enterLava);  return; }
-      if (newTile === TILE.WATER) { handleHazardExit(this._enterWater); return; }
-      if (newTile === TILE.GAS)   { handleHazardExit(this._enterGas);   return; }
+      if (newTile === TILE.LAVA)  { clearElevatorStateIfPlayerMoved(this._enterLava);  return; }
+      if (newTile === TILE.WATER) { clearElevatorStateIfPlayerMoved(this._enterWater); return; }
+      if (newTile === TILE.GAS)   { clearElevatorStateIfPlayerMoved(this._enterGas);   return; }
       if (this.world.isPassable(exitX, p.y)) {
         p.inElevator = false;
         p.x = exitX;
