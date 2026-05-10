@@ -693,27 +693,19 @@ class Game {
     const p     = this.player;
     const exitX = ELEVATOR_X - 1;
     const tile  = this.world.getTile(exitX, p.y);
+    const handleHazardExit = (enterFn) => {
+      enterFn.call(this, p, exitX, p.y);
+      if (p.x === exitX) p.inElevator = false;
+    };
 
     if (tile === TILE.DIRT) {
       const content = this.world.digInto(exitX, p.y);
       this._onContentRevealed(content, exitX, p.y);
       const newTile = this.world.getTile(exitX, p.y);
       if (newTile === TILE.STONE) { sounds.playTinkStone(); return; }
-      if (newTile === TILE.LAVA)  {
-        this._enterLava(p, exitX, p.y);
-        if (p.x === exitX) p.inElevator = false;
-        return;
-      }
-      if (newTile === TILE.WATER) {
-        this._enterWater(p, exitX, p.y);
-        if (p.x === exitX) p.inElevator = false;
-        return;
-      }
-      if (newTile === TILE.GAS)   {
-        this._enterGas(p, exitX, p.y);
-        if (p.x === exitX) p.inElevator = false;
-        return;
-      }
+      if (newTile === TILE.LAVA)  { handleHazardExit(this._enterLava);  return; }
+      if (newTile === TILE.WATER) { handleHazardExit(this._enterWater); return; }
+      if (newTile === TILE.GAS)   { handleHazardExit(this._enterGas);   return; }
       if (this.world.isPassable(exitX, p.y)) {
         p.inElevator = false;
         p.x = exitX;
