@@ -442,7 +442,14 @@ class Renderer {
       case TILE.SILVER:   this._drawOreVein(ctx, px, py, ts, tx, ty, '#9aaab4', '#c8d8e0', 'Ag'); break;
       case TILE.GOLD:     this._drawOreVein(ctx, px, py, ts, tx, ty, '#a07800', '#d4a800', 'Au'); break;
       case TILE.PLATINUM: this._drawOreVein(ctx, px, py, ts, tx, ty, '#3d6f88', '#72b2cf', 'Pt'); break;
-      case TILE.DIAMOND:  this._drawDiamond(ctx, px, py, ts, cx, cy, hs);                         break;
+      case TILE.DIAMOND: {
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(px, py, ts, ts);
+        ctx.font      = '20px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('💎', cx, cy + 8);
+        break;
+      }
 
       // ── Unique ore ─────────────────────────────────────────────────────────
       case TILE.RUBY: {
