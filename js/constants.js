@@ -545,3 +545,7 @@ const TREASURE_CHEST_RUBY_COUNT = 10;  // 10 × $500 ruby = $5,000 total
 // Knight item set – collect all four to slay the dragon
 // ---------------------------------------------------------------------------
 const KNIGHT_ITEMS = Object.freeze(['helmet', 'armor', 'shield', 'sword']);
+const CHESS_TILE_SET = new Set([
+  TILE.WHITE_KING, TILE.WHITE_QUEEN, TILE.WHITE_ROOK, TILE.WHITE_BISHOP, TILE.WHITE_KNIGHT, TILE.WHITE_PAWN,
+  TILE.BLACK_KING, TILE.BLACK_QUEEN, TILE.BLACK_ROOK, TILE.BLACK_BISHOP, TILE.BLACK_KNIGHT, TILE.BLACK_PAWN,
+]);

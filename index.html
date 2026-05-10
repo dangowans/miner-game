@@ -220,12 +220,13 @@
       color: #ddd;
     }
     #hud-msg {
+      --message-lines: 2;
       color: #aad4ff;
       font-size: 0.85em;
       white-space: normal;
       overflow: hidden;
       text-overflow: ellipsis;
-      min-height: calc(1.5em * 2);
+      min-height: calc(1.5em * var(--message-lines));
       line-height: 1.5;
       user-select: none;
     }

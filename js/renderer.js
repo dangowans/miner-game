@@ -924,15 +924,11 @@ class Renderer {
           [TILE.SPOON]: '🥄',
           [TILE.KNIFE]: '🔪',
         };
-        const chessTiles = new Set([
-          TILE.WHITE_KING, TILE.WHITE_QUEEN, TILE.WHITE_ROOK, TILE.WHITE_BISHOP, TILE.WHITE_KNIGHT, TILE.WHITE_PAWN,
-          TILE.BLACK_KING, TILE.BLACK_QUEEN, TILE.BLACK_ROOK, TILE.BLACK_BISHOP, TILE.BLACK_KNIGHT, TILE.BLACK_PAWN,
-        ]);
         ctx.fillStyle = '#111';
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         ctx.font      = '20px monospace';
         ctx.textAlign = 'center';
-        ctx.fillStyle = chessTiles.has(tile) ? CHESS_PIECE_GLYPH_COLOR : COLLECTIBLE_GLYPH_COLOR;
+        ctx.fillStyle = CHESS_TILE_SET.has(tile) ? CHESS_PIECE_GLYPH_COLOR : COLLECTIBLE_GLYPH_COLOR;
         ctx.fillText(iconByTile[tile] || '❔', cx, cy + 8);
         break;
       }
