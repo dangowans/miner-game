@@ -540,7 +540,7 @@ class Renderer {
         ctx.fillRect(px + 1, py + 1, ts - 2, ts - 2);
         ctx.font      = '20px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('⛏\uFE0F', cx, cy + 8);
+        ctx.fillText('⛏', cx, cy + 8);
         break;
       }
 
