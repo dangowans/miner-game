@@ -38,6 +38,9 @@ class World {
     // Track lava-source tiles (original, not spread).
     this.lavaSources = new Set();
 
+    // Elevator damage state (world-row y keys for cracked shaft sections).
+    this.elevatorDamagedRows = new Set();
+
     this._buildSurface();
     this._generateChunk(3);   // First mine chunk (mine starts at y=3)
   }
@@ -187,6 +190,8 @@ class World {
 
     // Elevator shaft state
     this.elevatorBuilt = false;
+    // Earthquake rebuilds the mine from scratch, so any prior shaft damage is discarded.
+    this.elevatorDamagedRows = new Set();
 
     // Re-seed the RNG and recompute unique item positions
     this._rng = this._makeRng(Date.now());
@@ -300,6 +305,7 @@ class World {
    */
   buildElevator() {
     this.elevatorBuilt = true;
+    this.elevatorDamagedRows = new Set();
     // Start from y=2 (pavement row) so the surface entrance column also becomes an
     // ELEV_ENT door tile, replacing the regular mine-entrance tile there.
     for (let y = 2; y <= this.deepestGenY; y++) {
@@ -310,6 +316,54 @@ class World {
         this.setData(ELEVATOR_X, y, null);
       }
     }
+  }
+
+  /** True when the tile at (x, y) is part of the elevator shaft system. */
+  isElevatorTile(x, y) {
+    const t = this.getTile(x, y);
+    return t === TILE.ELEV_ENT || t === TILE.ELEV_SHAFT;
+  }
+
+  /**
+   * Mark one elevator section row as damaged.
+   * Returns true only when the section was newly marked.
+   */
+  markElevatorDamage(y) {
+    if (!this.elevatorBuilt) return false;
+    if (!this.isElevatorTile(ELEVATOR_X, y)) return false;
+    if (this.elevatorDamagedRows.has(y)) return false;
+    this.elevatorDamagedRows.add(y);
+    const d = this.getData(ELEVATOR_X, y);
+    const next = d ? Object.assign({}, d) : {};
+    next.elevatorDamaged = true;
+    this.setData(ELEVATOR_X, y, next);
+    return true;
+  }
+
+  /** Return how many elevator sections are currently damaged. */
+  getElevatorDamageCount() {
+    return this.elevatorDamagedRows.size;
+  }
+
+  /** True when any shaft section is damaged and the elevator should be offline. */
+  isElevatorOutOfService() {
+    return this.elevatorDamagedRows.size > 0;
+  }
+
+  /** Clear damage flags from all damaged elevator sections and reset damage state. */
+  repairElevator() {
+    if (this.elevatorDamagedRows.size === 0) return;
+    for (const y of this.elevatorDamagedRows) {
+      const d = this.getData(ELEVATOR_X, y);
+      if (!d || typeof d !== 'object') {
+        this.setData(ELEVATOR_X, y, null);
+        continue;
+      }
+      const next = Object.assign({}, d);
+      delete next.elevatorDamaged;
+      this.setData(ELEVATOR_X, y, Object.keys(next).length > 0 ? next : null);
+    }
+    this.elevatorDamagedRows = new Set();
   }
 
   // -------------------------------------------------------------------------

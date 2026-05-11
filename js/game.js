@@ -233,6 +233,10 @@ class Game {
       if (dx < 0) {
         this._tryExitElevator();
       } else if (dy !== 0) {
+        if (this.world.isElevatorOutOfService()) {
+          p.setMessage('🛗 Elevator out of service — see Contractor Mike for repairs.');
+          return;
+        }
         // Move up or down to the next elevator door
         const nextY = this._nextElevEntry(p.y, dy);
         if (nextY === PLAYER_START_Y) {
@@ -622,6 +626,10 @@ class Game {
    */
   _showElevatorRidePrompt(targetY) {
     const p = this.player;
+    if (this.world.isElevatorOutOfService()) {
+      p.setMessage('🛗 Elevator out of service — see Contractor Mike for repairs.');
+      return;
+    }
     if (p.money < ELEVATOR_RIDE_COST) {
       p.setMessage(`🛗 Need $${ELEVATOR_RIDE_COST} to ride. (You have $${p.money})`);
       return;
@@ -1030,7 +1038,8 @@ class Game {
    */
   _explodeDynamite(dyn) {
     const { x: bx, y: by } = dyn;
-    const blastRadius = Math.random() < DYNAMITE_BIG_BLAST_CHANCE ? DYNAMITE_BIG_RADIUS : DYNAMITE_RADIUS;
+    const initialBlastRadius = Math.random() < DYNAMITE_BIG_BLAST_CHANCE ? DYNAMITE_BIG_RADIUS : DYNAMITE_RADIUS;
+    const blastRadius = this._expandedBlastRadiusForGasLeaks(bx, by, initialBlastRadius);
     sounds.playDynamiteExplode();
 
     // Always clear the dynamite's own tile first (the blast loop skips surface
@@ -1059,6 +1068,7 @@ class Game {
     const blastTouchesSurface = (by - blastRadius) < 3;
 
     // Reveal / clear tiles in blast radius (mine rows only)
+    let damagedSections = 0;
     for (let dx = -blastRadius; dx <= blastRadius; dx++) {
       for (let dy = -blastRadius; dy <= blastRadius; dy++) {
         if (dx * dx + dy * dy > blastRadius * blastRadius) continue;
@@ -1066,6 +1076,10 @@ class Game {
         const ty = by + dy;
         if (ty < 3) continue;  // Don't blast the surface
         const t = this.world.getTile(tx, ty);
+        if (t === TILE.ELEV_ENT || t === TILE.ELEV_SHAFT) {
+          if (this.world.markElevatorDamage(ty)) damagedSections++;
+          continue;
+        }
         if (t === TILE.DIRT) {
           // Reveal the hidden content rather than destroying it
           const content = this.world.digInto(tx, ty);
@@ -1103,6 +1117,10 @@ class Game {
           this.world.setTile(tx, ty, TILE.EMPTY);
           this.world.setData(tx, ty, null);
           this._dynamites = this._dynamites.filter(d => d.x !== tx || d.y !== ty);
+        } else if (t === TILE.GAS) {
+          // Gas leaks are ignited and burned away by the blast.
+          this.world.setTile(tx, ty, TILE.EMPTY);
+          this.world.setData(tx, ty, null);
         }
         // Ore, water and lava tiles are left intact — dynamite just reveals/destroys
       }
@@ -1136,9 +1154,30 @@ class Game {
         return;
       }
       p.setMessage(`💥 Caught in the blast! 1 damage (${p.hearts}/${p.maxHearts} ♥)`);
+    } else if (damagedSections > 0) {
+      const total = this.world.getElevatorDamageCount();
+      p.setMessage(`🛗 Elevator damaged (${total} cracked section${total !== 1 ? 's' : ''}) — out of service.`);
     }
 
     this.ui.updateHUD(p);
+  }
+
+  /**
+   * Return blast radius after adding one tile per gas leak inside base radius.
+   * Gas leaks are counted before any blast tiles are modified.
+   */
+  _expandedBlastRadiusForGasLeaks(bx, by, baseRadius) {
+    let gasLeakCount = 0;
+    for (let dx = -baseRadius; dx <= baseRadius; dx++) {
+      for (let dy = -baseRadius; dy <= baseRadius; dy++) {
+        if (dx * dx + dy * dy > baseRadius * baseRadius) continue;
+        const tx = bx + dx;
+        const ty = by + dy;
+        if (ty < 3) continue;
+        if (this.world.getTile(tx, ty) === TILE.GAS) gasLeakCount++;
+      }
+    }
+    return baseRadius + gasLeakCount;
   }
 
   // -------------------------------------------------------------------------
@@ -1814,6 +1853,7 @@ class Game {
       this.state = 'overlay';
       this.ui.openWorker(p, {
         onClose: () => { this.state = 'playing'; this.input.clear(); this.ui.updateHUD(p); },
+        elevatorDamageCount: this.world.getElevatorDamageCount(),
         onBuildElevator: () => {
           p.money -= ELEVATOR_COST;
           p.hasElevator = true;
@@ -1826,6 +1866,17 @@ class Game {
           p.unlockedDepth += ELEVATOR_DEPTH_INCREMENT;
           p.money -= ELEVATOR_DEPTH_COST;
           p.setMessage(`⛏ Mine expanded to ${p.unlockedDepth} m! Deeper ore awaits.`);
+          this.ui.updateHUD(p);
+          Storage.save(p, this.world, this);
+        },
+        onRepairElevator: () => {
+          const damagedSections = this.world.getElevatorDamageCount();
+          if (damagedSections <= 0) return;
+          const repairCost = damagedSections * ELEVATOR_REPAIR_COST;
+          if (p.money < repairCost) return;
+          p.money -= repairCost;
+          this.world.repairElevator();
+          p.setMessage(`🛠️ Elevator repaired (${damagedSections} section${damagedSections !== 1 ? 's' : ''}) for $${repairCost}.`);
           this.ui.updateHUD(p);
           Storage.save(p, this.world, this);
         },

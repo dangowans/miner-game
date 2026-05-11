@@ -1048,6 +1048,10 @@ class Renderer {
         ctx.fillRect(px + 2, py, 4, ts);
         // Right rail
         ctx.fillRect(px + ts - 6, py, 4, ts);
+        const shaftData = world.getData(tx, ty);
+        if (shaftData && shaftData.elevatorDamaged === true) {
+          this._drawElevatorCracks(ctx, px, py, ts);
+        }
         break;
       }
 
@@ -1072,9 +1076,35 @@ class Renderer {
         ctx.fillStyle = '#aaddff';
         ctx.font      = 'bold 7px monospace';
         ctx.fillText(`$${ELEVATOR_RIDE_COST}`, cx, cy + 16);
+        const entryData = world.getData(tx, ty);
+        if (entryData && entryData.elevatorDamaged === true) {
+          this._drawElevatorCracks(ctx, px, py, ts);
+        }
         break;
       }
     }
+  }
+
+  /**
+   * Draw crack marks over a damaged elevator tile.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {number} px
+   * @param {number} py
+   * @param {number} ts
+   */
+  _drawElevatorCracks(ctx, px, py, ts) {
+    ctx.strokeStyle = '#98a6ba';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(px + 9, py + 6);
+    ctx.lineTo(px + 15, py + 12);
+    ctx.lineTo(px + 12, py + 19);
+    ctx.lineTo(px + 18, py + 28);
+    ctx.moveTo(px + ts - 10, py + 8);
+    ctx.lineTo(px + ts - 15, py + 13);
+    ctx.lineTo(px + ts - 13, py + 20);
+    ctx.lineTo(px + ts - 19, py + 27);
+    ctx.stroke();
   }
 
   // -------------------------------------------------------------------------

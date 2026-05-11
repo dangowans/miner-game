@@ -178,6 +178,24 @@ const Storage = {
     // original seed sequence.
     w._rng.setState(data.rngState);
     w.elevatorBuilt = data.elevatorBuilt ?? false;
+    const savedDamagedRows = Array.isArray(data.elevatorDamagedRows)
+      ? data.elevatorDamagedRows.filter((y) =>
+        Number.isInteger(y)
+        && y >= PLAYER_START_Y
+        && y <= data.deepestGenY
+        && w.isElevatorTile(ELEVATOR_X, y))
+      : [];
+    if (savedDamagedRows.length > 0) {
+      w.elevatorDamagedRows = new Set(savedDamagedRows);
+    } else {
+      // Backward-compatibility for saves written before elevatorDamagedRows existed.
+      const derivedRows = [];
+      for (const [y, arr] of w.rowData) {
+        const d = arr[ELEVATOR_X];
+        if (d && d.elevatorDamaged === true) derivedRows.push(y);
+      }
+      w.elevatorDamagedRows = new Set(derivedRows);
+    }
     w.treasureChestDepth = data.treasureChestDepth ?? 0;
   },
 
@@ -278,6 +296,7 @@ function _serializeWorld(w) {
     uniqueItemPositions:  w.uniqueItemPositions.map(p => Object.assign({}, p)),
     rngState:             w._rng.getState(),
     elevatorBuilt:        w.elevatorBuilt,
+    elevatorDamagedRows:  Array.from(w.elevatorDamagedRows),
     treasureChestDepth:   w.treasureChestDepth,
   };
 }
