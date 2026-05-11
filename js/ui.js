@@ -570,7 +570,7 @@ class UI {
     const statsHtml = stats ? this._familyStatsHtml(stats) : '';
     this.overlay.innerHTML = `
       <div class="overlay-centered">
-        <p class="overlay-emoji">⛏️💥</p>
+        <p class="overlay-emoji">⛏💥</p>
         <h2 class="overlay-title" style="color:#ff4444">MINE COLLAPSE!</h2>
         <p>The blast reached the surface and caused a catastrophic mine collapse. You didn't make it out.</p>
         ${timeHtml}
