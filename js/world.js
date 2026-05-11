@@ -317,11 +317,16 @@ class World {
     }
   }
 
+  /** True when the tile at (x, y) is part of the elevator shaft system. */
   isElevatorTile(x, y) {
     const t = this.getTile(x, y);
     return t === TILE.ELEV_ENT || t === TILE.ELEV_SHAFT;
   }
 
+  /**
+   * Mark one elevator section row as damaged.
+   * Returns true only when the section was newly marked.
+   */
   markElevatorDamage(y) {
     if (!this.elevatorBuilt) return false;
     if (!this.isElevatorTile(ELEVATOR_X, y)) return false;
@@ -334,14 +339,17 @@ class World {
     return true;
   }
 
+  /** Return how many elevator sections are currently damaged. */
   getElevatorDamageCount() {
     return this.elevatorDamagedRows.size;
   }
 
+  /** True when any shaft section is damaged and the elevator should be offline. */
   isElevatorOutOfService() {
     return this.elevatorDamagedRows.size > 0;
   }
 
+  /** Clear damage flags from all damaged elevator sections and reset damage state. */
   repairElevator() {
     if (this.elevatorDamagedRows.size === 0) return;
     for (const y of this.elevatorDamagedRows) {

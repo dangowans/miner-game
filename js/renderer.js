@@ -1085,6 +1085,13 @@ class Renderer {
     }
   }
 
+  /**
+   * Draw crack marks over a damaged elevator tile.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {number} px
+   * @param {number} py
+   * @param {number} ts
+   */
   _drawElevatorCracks(ctx, px, py, ts) {
     ctx.strokeStyle = '#98a6ba';
     ctx.lineWidth = 1.5;

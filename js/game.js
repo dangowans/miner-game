@@ -1162,6 +1162,10 @@ class Game {
     this.ui.updateHUD(p);
   }
 
+  /**
+   * Return blast radius after adding one tile per gas leak inside base radius.
+   * Gas leaks are counted before any blast tiles are modified.
+   */
   _expandedBlastRadiusForGasLeaks(bx, by, baseRadius) {
     let leaks = 0;
     for (let dx = -baseRadius; dx <= baseRadius; dx++) {
