@@ -383,6 +383,7 @@ const WORKER_X        = 20;   // Contractor Mike building x-column
 const ELEVATOR_X      = 23;   // Elevator shaft x-column (rightmost mine-entrance column)
 const ELEVATOR_COST   = 500;  // One-time cost to build the elevator shaft
 const ELEVATOR_RIDE_COST = 5; // Cost per elevator ride (enter the cabin)
+const ELEVATOR_REPAIR_COST = 500; // Cost to repair one damaged elevator section
 const ELEVATOR_DEPTH_INCREMENT = 50;   // Metres added per depth expansion purchase
 const ELEVATOR_DEPTH_MAX       = 300;  // Maximum purchasable mine depth (metres)
 const ELEVATOR_DEPTH_COST      = 200;  // Cost per 50 m depth expansion
