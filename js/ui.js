@@ -777,6 +777,9 @@ class UI {
         ? ` <em class="short">(need $${HOUSE_UPGRADE_COST - player.money} more)</em>` : '';
     const expandCls   = (canExpand && player.familyMode) ? 'shop-item buyable' : 'shop-item disabled';
     const expandAvail = player.familyMode ? '' : ' <em>(available in family mode)</em>';
+    const damageCount = Number.isInteger(elevatorDamageCount) && elevatorDamageCount > 0
+      ? elevatorDamageCount
+      : 0;
 
     const elevatorAlready = player.hasElevator;
     const canElevator     = !elevatorAlready && player.money >= ELEVATOR_COST;
@@ -784,9 +787,9 @@ class UI {
       : player.money < ELEVATOR_COST
         ? ` <em class="short">(need $${ELEVATOR_COST - player.money} more)</em>` : '';
     const elevatorCls     = canElevator ? 'shop-item buyable' : 'shop-item disabled';
-    const repairCost      = elevatorDamageCount * ELEVATOR_REPAIR_COST;
-    const canRepair       = player.hasElevator && elevatorDamageCount > 0 && player.money >= repairCost;
-    const repairNote      = elevatorDamageCount <= 0 ? ' <em>(no damage)</em>'
+    const repairCost      = damageCount * ELEVATOR_REPAIR_COST;
+    const canRepair       = player.hasElevator && damageCount > 0 && player.money >= repairCost;
+    const repairNote      = damageCount <= 0 ? ' <em>(no damage)</em>'
       : player.money < repairCost
         ? ` <em class="short">(need $${repairCost - player.money} more)</em>` : '';
     const repairCls       = canRepair ? 'shop-item buyable' : 'shop-item disabled';
@@ -841,7 +844,7 @@ class UI {
         <br><small>Digs a shaft in the rightmost mine column. Entry points every 5 m. $${ELEVATOR_RIDE_COST}/ride.</small>
       </div>
       <div class="${repairCls}" id="worker-elevator-repair-btn">
-        🛠️ Repair elevator (${elevatorDamageCount} damaged section${elevatorDamageCount !== 1 ? 's' : ''}) — <span class="price">$${repairCost}</span>${repairNote}
+        🛠️ Repair elevator (${damageCount} damaged section${damageCount !== 1 ? 's' : ''}) — <span class="price">$${repairCost}</span>${repairNote}
         <br><small>Repairs all damaged shaft sections and restores elevator service.</small>
       </div>
       ${depthSectionHtml}
@@ -888,7 +891,7 @@ class UI {
     const repairBtn = document.getElementById('worker-elevator-repair-btn');
     if (repairBtn && repairBtn.classList.contains('buyable')) {
       repairBtn.addEventListener('click', () => {
-        if (elevatorDamageCount <= 0) return;
+        if (damageCount <= 0) return;
         if (player.money < repairCost) return;
         this._closeOverlay();
         if (onRepairElevator) onRepairElevator();
