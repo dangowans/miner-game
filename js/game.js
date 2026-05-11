@@ -1163,22 +1163,17 @@ class Game {
   }
 
   _expandedBlastRadiusForGasLeaks(bx, by, baseRadius) {
-    let radius = baseRadius;
-    while (true) {
-      let leaks = 0;
-      for (let dx = -radius; dx <= radius; dx++) {
-        for (let dy = -radius; dy <= radius; dy++) {
-          if (dx * dx + dy * dy > radius * radius) continue;
-          const tx = bx + dx;
-          const ty = by + dy;
-          if (ty < 3) continue;
-          if (this.world.getTile(tx, ty) === TILE.GAS) leaks++;
-        }
+    let leaks = 0;
+    for (let dx = -baseRadius; dx <= baseRadius; dx++) {
+      for (let dy = -baseRadius; dy <= baseRadius; dy++) {
+        if (dx * dx + dy * dy > baseRadius * baseRadius) continue;
+        const tx = bx + dx;
+        const ty = by + dy;
+        if (ty < 3) continue;
+        if (this.world.getTile(tx, ty) === TILE.GAS) leaks++;
       }
-      const next = baseRadius + leaks;
-      if (next === radius) return radius;
-      radius = next;
     }
+    return baseRadius + leaks;
   }
 
   // -------------------------------------------------------------------------

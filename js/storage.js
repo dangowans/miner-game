@@ -184,6 +184,7 @@ const Storage = {
     if (savedDamagedRows.length > 0) {
       w.elevatorDamagedRows = new Set(savedDamagedRows);
     } else {
+      // Backward-compatibility for saves written before elevatorDamagedRows existed.
       const derivedRows = [];
       for (const [y, arr] of w.rowData) {
         const d = arr[ELEVATOR_X];
