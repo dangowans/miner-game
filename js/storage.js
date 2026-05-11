@@ -179,7 +179,11 @@ const Storage = {
     w._rng.setState(data.rngState);
     w.elevatorBuilt = data.elevatorBuilt ?? false;
     const savedDamagedRows = Array.isArray(data.elevatorDamagedRows)
-      ? data.elevatorDamagedRows.filter(Number.isInteger)
+      ? data.elevatorDamagedRows.filter((y) =>
+        Number.isInteger(y)
+        && y >= PLAYER_START_Y
+        && y <= data.deepestGenY
+        && w.isElevatorTile(ELEVATOR_X, y))
       : [];
     if (savedDamagedRows.length > 0) {
       w.elevatorDamagedRows = new Set(savedDamagedRows);

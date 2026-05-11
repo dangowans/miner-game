@@ -190,6 +190,7 @@ class World {
 
     // Elevator shaft state
     this.elevatorBuilt = false;
+    // Earthquake rebuilds the mine from scratch, so any prior shaft damage is discarded.
     this.elevatorDamagedRows = new Set();
 
     // Re-seed the RNG and recompute unique item positions
