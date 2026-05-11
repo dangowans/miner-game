@@ -1038,8 +1038,8 @@ class Game {
    */
   _explodeDynamite(dyn) {
     const { x: bx, y: by } = dyn;
-    const baseBlastRadius = Math.random() < DYNAMITE_BIG_BLAST_CHANCE ? DYNAMITE_BIG_RADIUS : DYNAMITE_RADIUS;
-    const blastRadius = this._expandedBlastRadiusForGasLeaks(bx, by, baseBlastRadius);
+    const initialBlastRadius = Math.random() < DYNAMITE_BIG_BLAST_CHANCE ? DYNAMITE_BIG_RADIUS : DYNAMITE_RADIUS;
+    const blastRadius = this._expandedBlastRadiusForGasLeaks(bx, by, initialBlastRadius);
     sounds.playDynamiteExplode();
 
     // Always clear the dynamite's own tile first (the blast loop skips surface
@@ -1167,17 +1167,17 @@ class Game {
    * Gas leaks are counted before any blast tiles are modified.
    */
   _expandedBlastRadiusForGasLeaks(bx, by, baseRadius) {
-    let leaks = 0;
+    let gasLeakCount = 0;
     for (let dx = -baseRadius; dx <= baseRadius; dx++) {
       for (let dy = -baseRadius; dy <= baseRadius; dy++) {
         if (dx * dx + dy * dy > baseRadius * baseRadius) continue;
         const tx = bx + dx;
         const ty = by + dy;
         if (ty < 3) continue;
-        if (this.world.getTile(tx, ty) === TILE.GAS) leaks++;
+        if (this.world.getTile(tx, ty) === TILE.GAS) gasLeakCount++;
       }
     }
-    return baseRadius + leaks;
+    return baseRadius + gasLeakCount;
   }
 
   // -------------------------------------------------------------------------
